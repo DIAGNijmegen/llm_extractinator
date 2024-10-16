@@ -13,16 +13,20 @@ class OllamaServerManager:
 
         # Ensure the output directory exists
         os.makedirs(self.log_directory, exist_ok=True)
+        
 
     def pull_model(self):
         """
         Pull the specified model using the `ollama pull` command.
         """
-        pull_command = f"ollama pull {self.model_name}"
-        print(f"Pulling model: {self.model_name}...")
-        pull_process = subprocess.Popen(pull_command, shell=True)
-        pull_process.wait()  # Wait for the pull command to complete
-        print(f"Model {self.model_name} pulled successfully.")
+        try:
+            pull_command = f"ollama pull {self.model_name}"
+            print(f"Pulling model: {self.model_name}...")
+            pull_process = subprocess.Popen(pull_command, shell=True)
+            pull_process.wait()  # Wait for the pull command to complete
+            print(f"Model {self.model_name} pulled successfully.")
+        except Exception as e:
+            print(f"Error pulling model {self.model_name}: {e}")
 
     def start_server(self):
         """
@@ -30,15 +34,19 @@ class OllamaServerManager:
         """
         log_file_handle = open(self.log_file_path, "w")
         
-        serve_command = f"ollama serve"
-        print(f"Starting server...")
-        self.serve_process = subprocess.Popen(
-            serve_command, 
-            shell=True,
-            stdout=log_file_handle,
-            stderr=subprocess.STDOUT
-        )
-        print("Ollama server is running...")
+        try:
+            serve_command = f"ollama serve"
+            print(f"Starting server...")
+            self.serve_process = subprocess.Popen(
+                serve_command, 
+                shell=True,
+                stdout=log_file_handle,
+                stderr=subprocess.STDOUT
+            )
+            print("Ollama server is running...")
+        except Exception as e:
+            print(f"Error starting Ollama server: {e}")
+            log_file_handle.close()
 
     def stop_server(self):
         """

@@ -20,8 +20,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_community.llms import VLLM
 from langchain.globals import set_debug
-from src.utils import preprocess_text, save_json
-from src.output_parsers import load_parser
+from data_extractor.utils import preprocess_text, save_json
+from data_extractor.output_parsers import load_parser
 
 # Disable debug mode for LangChain
 set_debug(False)

@@ -5,11 +5,10 @@ def read_requirements():
         return f.read().splitlines()
 
 setup(
-    name='llm_data_extractor',  # The name of your package
-    version='0.1.0',           # The initial release version
-    packages=find_packages('data_extractor'),  # Automatically find all packages inside src/
-    package_dir={'': 'data_extractor'},        # Specify that packages are inside src/
-    install_requires=read_requirements(),      # Define dependencies
+    name='llm_data_extractor',  
+    version='0.1.0',           
+    packages=find_packages(),  # Automatically find all packages in the project
+    install_requires=read_requirements(),  # Define dependencies
     python_requires='>=3.6',    # Specify the Python version requirement
     description='A brief description of your package',
     long_description=open('README.md').read(),

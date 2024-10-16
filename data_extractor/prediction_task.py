@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 from typing import Tuple, Dict
-from src.data_loader import DataLoader
-from src.predictor import Predictor
-from src.utils import save_json
+from data_extractor.data_loader import DataLoader
+from data_extractor.predictor import Predictor
+from data_extractor.utils import save_json
 from langchain_ollama import ChatOllama
 
 

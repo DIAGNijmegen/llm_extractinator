@@ -4,8 +4,8 @@ from itertools import product
 import argparse
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor
-from src.prediction_task import PredictionTask
-from src.ollama_server import OllamaServerManager
+from data_extractor.prediction_task import PredictionTask
+from data_extractor.ollama_server import OllamaServerManager
 from dragon_eval import DragonEval
 
 
@@ -14,7 +14,7 @@ class TaskRunner:
     A class to handle prediction task execution with multiprocessing support.
     """
 
-    def __init__(self, model_name, task_ids, num_examples, n_runs, temperatures, example_selectors, run_name, access_token=None):
+    def __init__(self, datapath, model_name, task_ids, num_examples, n_runs, temperatures, example_selectors, run_name, access_token=None):
         self.model_name = model_name
         self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
         self.num_examples = num_examples
@@ -22,9 +22,8 @@ class TaskRunner:
         self.temperatures = temperatures
         self.example_selectors = example_selectors
         self.run_name = run_name
-        self.access_token = access_token
 
-        self.datapath = Path("/data/bodyct/experiments/luc_t10162/DRAGON")
+        self.datapath = Path(datapath)
         self.homepath = Path(__file__).resolve().parents[1]
         self.output_path_base = self.homepath / f"output/{model_name}/{run_name}"
 
@@ -135,13 +134,15 @@ def parse_args():
     Parse command-line arguments.
     """
     parser = argparse.ArgumentParser(description="Run prediction tasks for a given model.")
-    parser.add_argument("--model_name", type=str, required=False, help="The name of the model to run the prediction tasks for.")
+    parser.add_argument("--datapath", type=str, required=True, help="Path to the data directory.")
+    parser.add_argument("--model_name", type=str, required=False, help="The name of the model to run the prediction tasks for.", default="mistral-nemo")
     parser.add_argument("--num_examples", type=int, nargs="+", help="Number of examples to generate for each task.", required=False, default=[0, 5, 10])
     parser.add_argument("--task_ids", type=int, nargs="+", help="Task IDs to generate examples for.", required=False, default=[1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23])
     parser.add_argument("--n_runs", type=int, help="Number of runs.", required=False, default=5)
     parser.add_argument("--temperature", type=float, nargs="+", help="Temperature for generation.", required=False, default=[0.3])
     parser.add_argument("--example_selectors", type=str, nargs="+", help="Example selectors to use for generation.", required=False, default=["MMR"])
     parser.add_argument("--run_name", type=str, help="Name of the run.", required=False, default="run")
+    parser.add_argument("--skip_evaluation", action="store_true", help="Skip evaluation of the generated examples.")
     return parser.parse_args()
 
 
@@ -152,27 +153,26 @@ def main():
     args = parse_args()
 
     task_runner = TaskRunner(
+        datapath=args.datapath,
         model_name=args.model_name,
         task_ids=args.task_ids,
         num_examples=args.num_examples,
         n_runs=args.n_runs,
         temperatures=args.temperature,
         example_selectors=args.example_selectors,
-        run_name=args.run_name,
-        access_token=args.access_token
+        run_name=args.run_name
     )
-
-    # Run the tasks
+    
     task_runner.run_tasks()
 
-    # Evaluate the tasks
-    evaluator = PredictionEvaluator(
-        num_examples=args.num_examples,
-        task_ids=task_runner.task_ids,
-        datapath=task_runner.datapath,
-        output_path_base=task_runner.output_path_base
-    )
-    evaluator.evaluate()
+    if not args.skip_evaluation:
+        evaluator = PredictionEvaluator(
+            num_examples=args.num_examples,
+            task_ids=task_runner.task_ids,
+            datapath=task_runner.datapath,
+            output_path_base=task_runner.output_path_base
+        )
+        evaluator.evaluate()
 
 
 if __name__ == "__main__":
