@@ -1,0 +1,7 @@
+[INST] **Input:**
+
+{{text}}
+
+[/INST]
+
+**Output:** 

@@ -1,0 +1,9 @@
+pandas==latest
+tqdm==latest
+pydantic==latest
+dragon-eval==latest
+langchain-core==latest
+langchain-huggingface==latest
+langchain-chroma==latest
+langchain-community==latest
+langchain-ollama==latest
