@@ -24,7 +24,7 @@ from data_extractor.utils import preprocess_text, save_json
 from data_extractor.output_parsers import load_parser
 
 # Disable debug mode for LangChain
-set_debug(True)
+set_debug(False)
 
 class RandomExampleSelector(BaseExampleSelector):
     """A custom random example selector."""
@@ -399,7 +399,6 @@ class Predictor:
 
         # Preprocess test data
         test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_name]]
-        test_data_processed = test_data_processed[:1]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.with_retry().batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()

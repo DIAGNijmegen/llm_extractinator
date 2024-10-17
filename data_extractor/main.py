@@ -87,9 +87,7 @@ class TaskRunner:
             task.run()
             return True
         except Exception as error:
-            import traceback
-            error_message = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
-            print(f"Error in task {config['task_id']}: {error_message}")
+            print(f"Error in task {config['task_id']}: {error}")
             return False
 
 
