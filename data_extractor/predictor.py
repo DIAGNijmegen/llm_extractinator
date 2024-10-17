@@ -24,7 +24,7 @@ from data_extractor.utils import preprocess_text, save_json
 from data_extractor.output_parsers import load_parser
 
 # Disable debug mode for LangChain
-set_debug(False)
+set_debug(True)
 
 class RandomExampleSelector(BaseExampleSelector):
     """A custom random example selector."""
@@ -137,7 +137,7 @@ class Predictor:
 
         # Preprocess training data
         train_data_processed = [
-            {"text": preprocess_text(row[self.input_name]), "label": str(row[self.label_name])}
+            {"text": preprocess_text(row[self.input_name]), "label": row[self.label_name]}
             for _, row in train_data.iterrows()
         ]
 
@@ -148,7 +148,7 @@ class Predictor:
 
         # Combine results with original data to form examples
         examples = [
-            {"text": row[self.input_name], "label": row['label'], "reasoning": reasoning}
+            {"text": row["text"], "label": row["label"], "reasoning": reasoning}
             for reasoning, row in zip(reasonings, train_data_processed)
         ]
 
@@ -399,6 +399,7 @@ class Predictor:
 
         # Preprocess test data
         test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_name]]
+        test_data_processed = test_data_processed[:1]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.with_retry().batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
