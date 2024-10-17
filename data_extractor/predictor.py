@@ -110,22 +110,30 @@ class Predictor:
         print("Generating examples...")
         
         parser_model = load_parser(task_type="Example Generation", valid_items=None, list_length=None)
-        example_parser = JsonOutputParser(pydantic_object=parser_model)
-        example_format_instructions = example_parser.get_format_instructions()
+        self.example_parser = JsonOutputParser(pydantic_object=parser_model)
+        example_format_instructions = self.example_parser.get_format_instructions()
 
-        # Prepare system and human prompts
-        system_prompt_base = self._load_template("ollama_example_generating_template_system").format(
-            task=self.task,
-            labels=self.labels,
-            description=self.description
+        system_prompt = SystemMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template = self._load_template("example_generation/system_prompt").format(
+                    task=self.task, 
+                    labels=self.labels, 
+                    description=self.description
+                ) + '\n**Format instructions:**\n{format_instructions}',
+                input_variables=[],
+                partial_variables={"format_instructions": example_format_instructions}
+            )
         )
-        system_prompt = self._create_system_prompt(system_prompt_base, example_format_instructions)
-        human_prompt = self._create_human_prompt("ollama_example_generating_template_human", ["text", "label"])
-
+        human_prompt = HumanMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template=self._load_template("example_generation/human_prompt"), 
+                input_variables=["text", "label"]
+            )
+        )
         example_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
 
         # Chain: prompt -> model -> output parser
-        chain = example_prompt | self.model | example_parser
+        chain = example_prompt | self.model | self.example_parser
 
         # Preprocess training data
         train_data_processed = [
@@ -161,7 +169,7 @@ class Predictor:
         """
         return SystemMessagePromptTemplate(
             prompt=PromptTemplate(
-                template=template_base + '\n {format_instructions}',
+                template=template_base + '\n**Format instructions:**\n{format_instructions}',
                 input_variables=[],
                 partial_variables={"format_instructions": format_instructions}
             )
@@ -239,11 +247,11 @@ class Predictor:
 
         if examples:
             self._initialize_example_selector(example_selector_name, examples)
-            self.prompt = self._build_few_shot_prompt(examples)
+            self.prompt = self._build_few_shot_prompt()
         else:
             self.prompt = self._build_zero_shot_prompt()
 
-    def _build_few_shot_prompt(self, examples: List[Dict[str, Any]]) -> ChatPromptTemplate:
+    def _build_few_shot_prompt(self) -> ChatPromptTemplate:
         """
         Build a few-shot prompt with examples.
         
@@ -253,20 +261,32 @@ class Predictor:
         Returns:
             ChatPromptTemplate: A chat prompt template for few-shot learning.
         """
-        final_system_prompt = self._create_system_prompt(
-            self._load_template("ollama_system_prompt").format(
-                task=self.task, labels=self.labels, description=self.description
-            ), self.format_instructions
+        final_system_prompt = SystemMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template = self._load_template("data_extraction/system_prompt").format(
+                    task=self.task, 
+                    labels=self.labels, 
+                    description=self.description
+                ) + '\n**Format instructions:**\n{format_instructions}',
+                input_variables=[],
+                partial_variables={"format_instructions": self.format_instructions}
+            )
         )
         final_human_prompt = HumanMessagePromptTemplate(
-            prompt=PromptTemplate(template="{text}", input_variables=["text"])
+            prompt=PromptTemplate(
+                template=self._load_template("data_extraction/human_prompt"), 
+                input_variables=["text"]
+            )
         )
         example_human_prompt = HumanMessagePromptTemplate(
-            prompt=PromptTemplate(template="{text}", input_variables=["text"])
+            prompt=PromptTemplate(
+                template=self._load_template("data_extraction/human_prompt"), 
+                input_variables=["text"]
+            )
         )
         example_ai_prompt = AIMessagePromptTemplate(
             prompt=PromptTemplate(
-                template="{{\"reasoning\": \"{reasoning}\", \"label\": \"{label}\"}}",
+                template=self._load_template("data_extraction/ai_prompt"), 
                 input_variables=["reasoning", "label"]
             )
         )
@@ -285,13 +305,22 @@ class Predictor:
         Returns:
             ChatPromptTemplate: A chat prompt template for zero-shot learning.
         """
-        final_system_prompt = self._create_system_prompt(
-            self._load_template("ollama_system_prompt").format(
-                task=self.task, labels=self.labels, description=self.description
-            ), self.format_instructions
+        final_system_prompt = SystemMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template = self._load_template("data_extraction/system_prompt").format(
+                    task=self.task, 
+                    labels=self.labels, 
+                    description=self.description
+                ) + '\n**Format instructions:**\n{format_instructions}',
+                input_variables=[],
+                partial_variables={"format_instructions": self.format_instructions}
+            )
         )
         final_human_prompt = HumanMessagePromptTemplate(
-            prompt=PromptTemplate(template="{text}", input_variables=["text"])
+            prompt=PromptTemplate(
+                template=self._load_template("data_extraction/human_prompt"), 
+                input_variables=["text"]
+            )
         )
         return ChatPromptTemplate.from_messages([final_system_prompt, final_human_prompt])
 
@@ -299,13 +328,13 @@ class Predictor:
         """Prepare a prompt for fixing incorrectly formatted JSON output."""
         system_prompt = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
-                template="You are a helpful model that helps correct an incorrectly formatted JSON output.",
+                template=self._load_template("output_fixing/system_prompt"),
                 input_variables=[]
             )
         )
         human_prompt = HumanMessagePromptTemplate(
             prompt=PromptTemplate(
-                template=self._load_template("ollama_output_fixing_template"),
+                template=self._load_template("output_fixing/human_prompt"),
                 input_variables=["completion"],
                 partial_variables={"format_instructions": self.format_instructions}
             )

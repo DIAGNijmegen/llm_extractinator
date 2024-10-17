@@ -135,9 +135,9 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Run prediction tasks for a given model.")
     parser.add_argument("--datapath", type=str, required=True, help="Path to the data directory.")
+    parser.add_argument("--task_ids", type=int, nargs="+", help="Task IDs to generate examples for.", required=True)
     parser.add_argument("--model_name", type=str, required=False, help="The name of the model to run the prediction tasks for.", default="mistral-nemo")
     parser.add_argument("--num_examples", type=int, nargs="+", help="Number of examples to generate for each task.", required=False, default=[0, 5, 10])
-    parser.add_argument("--task_ids", type=int, nargs="+", help="Task IDs to generate examples for.", required=False, default=[1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23])
     parser.add_argument("--n_runs", type=int, help="Number of runs.", required=False, default=5)
     parser.add_argument("--temperature", type=float, nargs="+", help="Temperature for generation.", required=False, default=[0.3])
     parser.add_argument("--example_selectors", type=str, nargs="+", help="Example selectors to use for generation.", required=False, default=["MMR"])

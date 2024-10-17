@@ -1,7 +1,0 @@
-[INST] **Input:**
-
-{text}
-
-[/INST]
-
-**Output:** {{{{"reasoning": "{reasoning}", "label": {label}}}}}

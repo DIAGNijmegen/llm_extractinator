@@ -1,0 +1,5 @@
+**Radiology Report:**
+
+{{text}}
+
+**Correct Label:** {{label}}
