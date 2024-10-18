@@ -14,7 +14,7 @@ class TaskRunner:
     A class to handle prediction task execution with multiprocessing support.
     """
 
-    def __init__(self, datapath, model_name, task_ids, num_examples, n_runs, temperatures, example_selectors, run_name, access_token=None):
+    def __init__(self, datapath, model_name, task_ids, num_examples, n_runs, temperatures, example_selectors, run_name):
         self.model_name = model_name
         self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
         self.num_examples = num_examples
@@ -23,7 +23,7 @@ class TaskRunner:
         self.example_selectors = example_selectors
         self.run_name = run_name
 
-        self.datapath = Path(datapath)
+        self.datapath = datapath
         self.homepath = Path(__file__).resolve().parents[1]
         self.output_path_base = self.homepath / f"output/{model_name}/{run_name}"
 
@@ -96,10 +96,11 @@ class PredictionEvaluator:
     A class to handle evaluation of prediction results.
     """
 
-    def __init__(self, num_examples, task_ids, datapath, output_path_base):
+    def __init__(self, num_examples, task_ids, datapath, ground_truth_path, output_path_base):
         self.num_examples = num_examples
         self.task_ids = task_ids
         self.datapath = datapath
+        self.ground_truth_path = ground_truth_path
         self.output_path_base = output_path_base
 
     def evaluate(self):
@@ -107,11 +108,11 @@ class PredictionEvaluator:
         Evaluate the prediction tasks using DragonEval.
         """
         for num in self.num_examples:
-            ground_truth_path, predictions_path, output_file = self._get_evaluation_paths(num)
+            predictions_path, output_file = self._get_evaluation_paths(num)
             
             try:
                 DragonEval(
-                    ground_truth_path=ground_truth_path,
+                    ground_truth_path=self.ground_truth_path,
                     predictions_path=predictions_path,
                     output_file=output_file,
                     tasks=self.task_ids
@@ -123,10 +124,9 @@ class PredictionEvaluator:
         """
         Helper method to generate paths for evaluation.
         """
-        ground_truth_path = self.datapath / "debug-test-set"
         predictions_path = self.output_path_base / f"{num_examples}_examples"
         output_file = predictions_path / f"metrics_{num_examples}_examples.json"
-        return ground_truth_path, predictions_path, output_file
+        return predictions_path, output_file
 
 
 def parse_args():
@@ -134,7 +134,8 @@ def parse_args():
     Parse command-line arguments.
     """
     parser = argparse.ArgumentParser(description="Run prediction tasks for a given model.")
-    parser.add_argument("--datapath", type=str, required=True, help="Path to the data directory.")
+    parser.add_argument("--datapath", type=Path, required=True, help="Path to the data directory.")
+    parser.add_argument("--ground_truth_path", type=Path, required=False, help="Path to the ground truth data directory.")
     parser.add_argument("--task_ids", type=int, nargs="+", help="Task IDs to generate examples for.", required=True)
     parser.add_argument("--model_name", type=str, required=False, help="The name of the model to run the prediction tasks for.", default="mistral-nemo")
     parser.add_argument("--num_examples", type=int, nargs="+", help="Number of examples to generate for each task.", required=False, default=[0, 5, 10])
@@ -151,6 +152,8 @@ def main():
     Main function to initialize and run the task runner and evaluation.
     """
     args = parse_args()
+    if not args.skip_evaluation and not args.ground_truth_path:
+        raise ValueError("Ground truth data path is required for evaluation.")
 
     task_runner = TaskRunner(
         datapath=args.datapath,
@@ -170,6 +173,7 @@ def main():
             num_examples=args.num_examples,
             task_ids=task_runner.task_ids,
             datapath=task_runner.datapath,
+            ground_truth_path=args.ground_truth_path,
             output_path_base=task_runner.output_path_base
         )
         evaluator.evaluate()
