@@ -341,18 +341,17 @@ class Predictor:
         )
         self.fixing_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
 
-    def fix_results(self, result: Dict[str, Any], fixing_chain: ChatPromptTemplate, callbacks: BaseCallbackHandler, max_attempts: int = 3) -> Dict[str, Any]:
+    def validate_and_fix_results(self, results: List[Dict[str, Any]], fixing_chain: ChatPromptTemplate, max_attempts: int = 3) -> List[Dict[str, Any]]:
         """
-        Attempt to fix results by invoking the fixing_chain up to a maximum number of attempts.
+        Validate and batch-fix results. If any results are invalid, try fixing them in batches.
         
         Args:
-            result (Dict[str, Any]): The result to be fixed.
+            results (List[Dict[str, Any]]): The list of results to be validated and potentially fixed.
             fixing_chain (ChatPromptTemplate): The prompt chain used to attempt fixes.
-            callbacks (BaseCallbackHandler): The callback handler to manage progress.
             max_attempts (int, optional): Maximum number of attempts to fix each result. Defaults to 3.
         
         Returns:
-            Dict[str, Any]: The fixed or failed result after maximum attempts.
+            List[Dict[str, Any]]: The list of results with all items validated or attempted to be fixed.
         """
         def handle_failure(key: str) -> Any:
             """Handle failure by assigning default values for missing fields."""
@@ -360,26 +359,75 @@ class Predictor:
                 return ''
             return random.choices(self.labels, k=self.length) if self.length else random.choice(self.labels)
 
-        for attempt in range(max_attempts):
+        # Ensure 'original_index' and 'status' are initialized for all results
+        for i, result in enumerate(results):
+            result['original_index'] = i
+            result.setdefault('status', 'pending')
+
+        attempt = 0
+        while attempt < max_attempts:
+            # Collect indices of invalid results
+            invalid_indices = []
+            for i, result in enumerate(results):
+                try:
+                    # Validate the result
+                    self.parser_model.model_validate(result)
+                    result['retries'] = attempt
+                    result['status'] = 'success'
+                except ValidationError:
+                    # Add to list of invalid results
+                    invalid_indices.append(i)
+
+            # If no invalid results, exit loop
+            if not invalid_indices:
+                break
+
+            # Prepare the batch for fixing
+            invalid_results = [results[i] for i in invalid_indices]
+            fixing_inputs = [{"completion": str(result)} for result in invalid_results]
+            print(f"Retry {attempt + 1}: Attempting to fix {len(invalid_indices)} invalid results...")
+
             try:
-                fixing_input = {"completion": str(result)}
-                result = fixing_chain.invoke(fixing_input, config={"callbacks": [callbacks]})
+                # Attempt to fix the batch
+                callbacks = BatchCallBack(len(invalid_indices))
+                fixed_results = fixing_chain.batch(fixing_inputs, config={"callbacks": [callbacks]})
                 callbacks.progress_bar.close()
-                self.parser_model.model_validate(result)
-                result['retries'] = attempt + 1
-                result['status'] = 'success'
-                return result
-            except ValidationError:
-                print(f"Failed to fix output after attempt {attempt + 1}. Trying again...")
 
-        # If max attempts fail, assign default values
-        print(f"Failed to fix output after {max_attempts} attempts. Assigning random value.")
-        result['label'] = handle_failure('label')
-        result['reasoning'] = handle_failure('reasoning')
-        result['retries'] = max_attempts
-        result['status'] = 'failed'
+                # Update the results with fixed outputs
+                for idx, fixed_result in zip(invalid_indices, fixed_results):
+                    try:
+                        self.parser_model.model_validate(fixed_result)
+                        fixed_result['retries'] = attempt + 1
+                        fixed_result['status'] = 'success'
+                        results[idx] = fixed_result
+                    except ValidationError:
+                        results[idx]['status'] = 'failed'
+            except Exception as e:
+                print(f"Batch fixing failed at attempt {attempt + 1}: {str(e)}")
 
-        return result
+            attempt += 1
+
+        # Handle any remaining failures after max_attempts
+        for i in invalid_indices:
+            if results[i].get('status') != 'success':
+                print(f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values.")
+                results[i]['label'] = handle_failure('label')
+                results[i]['reasoning'] = handle_failure('reasoning')
+                results[i]['retries'] = max_attempts
+                results[i]['status'] = 'failed'
+
+        # Sort results back to original order
+        try:
+            results.sort(key=lambda x: x['original_index'])  # Sort based on the original index
+        except KeyError as e:
+            print(f"KeyError during sorting: {str(e)}")
+
+        # Remove the 'original_index' key after sorting is complete
+        for result in results:
+            result.pop('original_index', None)
+
+        return results
+
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """
@@ -400,17 +448,7 @@ class Predictor:
         # Preprocess test data
         test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_name]]
         callbacks = BatchCallBack(len(test_data_processed))
-        results = chain.with_retry().batch(test_data_processed, config={"callbacks": [callbacks]})
+        results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
 
-        # Fix results if necessary
-        for i, result in enumerate(results):
-            try:
-                self.parser_model.model_validate(result)
-                result['retries'] = 0
-                result['status'] = 'success'
-            except ValidationError:
-                print(f"Fixing output for report {i}")
-                results[i] = self.fix_results(result, fixing_chain, callbacks)
-
-        return results
+        return self.validate_and_fix_results(results, fixing_chain)

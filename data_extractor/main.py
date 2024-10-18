@@ -8,6 +8,7 @@ from data_extractor.prediction_task import PredictionTask
 from data_extractor.ollama_server import OllamaServerManager
 from dragon_eval import DragonEval
 
+debug = True
 
 class TaskRunner:
     """
@@ -87,8 +88,12 @@ class TaskRunner:
             task.run()
             return True
         except Exception as error:
-            print(f"Error in task {config['task_id']}: {error}")
-            return False
+            if debug:
+                import traceback
+                traceback.print_exc()
+            else:
+                print(f"Error in task {config['task_id']}: {error}")
+                return False
 
 
 class PredictionEvaluator:
