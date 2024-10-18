@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]  # Build requirements
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm_data_extractor"
+version = "0.1.0"
+description = "A brief description of your package"
+requires-python = ">=3.6"
+readme = "README.md"
+authors = [
+    { name = "Luc Builtjes", email = "Luc.Builtjes@radboudumc.nl" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+urls = { "Homepage" = "https://github.com/yourusername/your-repo" }
+
+[project.optional-dependencies]
+# If you have optional dependencies, define them here
+# For example: tests = ["pytest", "coverage"]
+
+[tool.setuptools.packages.find]
+where = ["."]
