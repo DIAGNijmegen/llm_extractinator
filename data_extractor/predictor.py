@@ -74,31 +74,24 @@ class Predictor:
         self.embedding_model_name = 'paraphrase-multilingual-MiniLM-L12-v2'
         self.embedding_model = HuggingFaceEmbeddings(model_name=self.embedding_model_name)
 
-        self.task_name = task_config['task_name']
-        self.input_name = task_config['input_name']
-        self.label_name = task_config['label_name']
-        self.task_info = self.load_tasks()[self.task_name]
+        self._extract_task_info()
 
-        # Load task-specific information
-        self.task = self.task_info.get('Task')
-        self.type = self.task_info.get('Type')
-        self.labels = self.task_info.get('Labels')
-        self.length = self.task_info.get('Length')
-        self.description = self.task_info.get('Description')
-        self.input_field = self.task_info.get('Input_Field')
 
-    def load_tasks(self) -> Dict[str, Any]:
+    def _extract_task_info(self) -> None:
         """
-        Load the task information from a JSON file.
-        
-        Returns:
-            Dict[str, Any]: A dictionary containing the task information.
+        Extract task information from the task configuration.
         """
-        task_folder = Path(__file__).parent.parent / "tasks"
-        # Search for the task file that contains the task_id
-        task_path = next(task_folder.glob(f"**/{self.task_name}.json"))
-        with task_path.open("r") as f:
-            return json.load(f)
+        self.task = self.task_config.get('Task')
+        self.type = self.task_config.get('Type')
+        self.labels = self.task_config.get('Labels')
+        self.length = self.task_config.get('Length')
+        self.description = self.task_config.get('Description')
+        self.input_field = self.task_config.get('Input_Field')
+        self.train_path = self.task_config.get('Example_Path')
+        self.test_path = self.task_config.get('Data_Path')
+        self.label_field = self.task_config.get('Label_Field')
+        self.task_name = self.task_config.get('Task_Name')
+
 
     def generate_examples(self, train_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """
@@ -140,7 +133,7 @@ class Predictor:
 
         # Preprocess training data
         train_data_processed = [
-            {"text": preprocess_text(row[self.input_name]), "label": row[self.label_name]}
+            {"text": preprocess_text(row[self.input_field]), "label": row[self.label_field]}
             for _, row in train_data.iterrows()
         ]
 
@@ -425,7 +418,7 @@ class Predictor:
         fixing_chain = self.fixing_prompt | self.model | JsonOutputParser()
 
         # Preprocess test data
-        test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_name]]
+        test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_field]]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()

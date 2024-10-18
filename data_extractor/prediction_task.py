@@ -36,10 +36,8 @@ class PredictionTask:
         self.homepath = Path(__file__).resolve().parents[1]
         
         # Extract task information such as config, train and test paths
-        self.task_config, self.train_path, self.test_path = self._extract_task_info()
-        self.task_name = self.task_config['task_name']
-        self.input_name = self.task_config['input_name']
-        self.label_name = self.task_config['label_name']
+        self.task_path = self.homepath / "tasks"
+        self._extract_task_info()
 
         # Setup output paths
         self.output_path_base = self.output_path_base / f"{self.num_examples}_examples"
@@ -69,34 +67,18 @@ class PredictionTask:
             format="json",
         )
 
-    def _extract_task_info(self) -> Tuple[Dict, Path, Path]:
-        """
-        Extract task configuration and find the train and test file paths based on the task ID.
-        
-        Returns:
-            Tuple[Dict, Path, Path]: Task configuration, training data path, and test data path.
-        
-        Raises:
-            ValueError: If no matching folders or files are found for the task_id.
-        """
-        train_folder = self.data_path / "debug-input"
-        test_folder = self.data_path / "debug-test-set"
-
-        train_task_folder = next((folder for folder in train_folder.iterdir() if self.task_id in folder.name), None)
-        if not train_task_folder:
-            raise ValueError(f"No matching training folder found for task_id: {self.task_id}")
-        
-        train_path = next((file for file in train_task_folder.iterdir() if "training" in file.name), None)
-        test_path = next((file for file in test_folder.iterdir() if self.task_id in file.name), None)
-
-        if not train_path or not test_path:
-            raise ValueError(f"No training or test files found for task_id: {self.task_id}")
-        
-        task_config_path = train_task_folder / "nlp-task-configuration.json"
-        with task_config_path.open('r') as f:
-            task_config = json.load(f)
-        
-        return task_config, train_path, test_path
+    def _extract_task_info(self) -> None:
+        # Find the task file that contains the task_id
+        task_path = next(self.task_path.glob(f"**/{self.task_id}.json"))
+        with task_path.open("r") as f:
+            self.task_config = json.load(f)
+            self.task_config['Task_Name'] = task_path.stem
+                    
+        self.train_path = self.task_config.get('Example_Path')
+        self.test_path = self.task_config.get('Data_Path')
+        self.label_field = self.task_config.get('Label_Field')
+        self.input_field = self.task_config.get('Input_Field')
+        self.task_name = self.task_config.get('Task_Name')
 
     def _load_examples(self) -> Dict:
         """
@@ -152,7 +134,7 @@ class PredictionTask:
         predictions = [
             {
                 "uid": uid, 
-                self.label_name.replace("_target", ""): label, 
+                self.input_field.replace("_target", ""): label, 
                 "reasoning": reasoning,
                 "retries": retries,
                 "status": status
