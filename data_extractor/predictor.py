@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 from uuid import UUID
 from pydantic import ValidationError
 from langchain_core.example_selectors import (
-    SemanticSimilarityExampleSelector, MaxMarginalRelevanceExampleSelector, BaseExampleSelector
+    MaxMarginalRelevanceExampleSelector, BaseExampleSelector
 )
 from langchain_core.prompts import (
     PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate,
@@ -205,40 +205,11 @@ class Predictor:
         with template_path.open() as f:
             return f.read()
 
-    def _initialize_example_selector(self, example_selector_name: str, examples: List[Dict[str, Any]]) -> None:
-        """
-        Initialize the example selector based on the provided type.
-        
-        Args:
-            example_selector_name (str): The type of example selector to use.
-            examples (List[Dict[str, Any]]): List of examples for selection.
-        
-        Raises:
-            ValueError: If the provided selector type is invalid.
-        """
-        selector_classes = {
-            "mmr": MaxMarginalRelevanceExampleSelector,
-            "semantic": SemanticSimilarityExampleSelector,
-            "random": RandomExampleSelector
-        }
-        selector_cls = selector_classes.get(example_selector_name.lower())
-
-        if not selector_cls:
-            raise ValueError(f"Invalid example selector: {example_selector_name}")
-
-        if example_selector_name.lower() == "random":
-            self.example_selector = RandomExampleSelector(examples=examples, k=self.num_examples)
-        else:
-            self.example_selector = selector_cls.from_examples(
-                examples, self.embedding_model, Chroma, k=self.num_examples
-            )
-
-    def prepare_prompt_ollama(self, example_selector_name: str, examples: Optional[List[Dict[str, Any]]] = None) -> None:
+    def prepare_prompt_ollama(self, examples: Optional[List[Dict[str, Any]]] = None) -> None:
         """
         Prepare the system and human prompts for few-shot learning based on provided examples.
         
         Args:
-            example_selector_name (str): The name of the example selector.
             examples (Optional[List[Dict[str, Any]]]): The examples to use for the prompt.
         """
         self.parser_model = load_parser(task_type=self.type, valid_items=self.labels, list_length=self.length)
@@ -246,7 +217,9 @@ class Predictor:
         self.format_instructions = self.parser.get_format_instructions()
 
         if examples:
-            self._initialize_example_selector(example_selector_name, examples)
+            self.example_selector = MaxMarginalRelevanceExampleSelector.from_examples(
+                examples, self.embedding_model, Chroma, k=self.num_examples
+            )
             self.prompt = self._build_few_shot_prompt()
         else:
             self.prompt = self._build_zero_shot_prompt()

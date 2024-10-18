@@ -14,8 +14,7 @@ class PredictionTask:
     """
 
     def __init__(self, task_id: str, model_name: str, datapath: Path, output_path_base: Path, 
-                num_examples: int, n_runs: int, temperature: float, 
-                example_selector_name: str) -> None:
+                num_examples: int, n_runs: int, temperature: float) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
         
@@ -27,7 +26,6 @@ class PredictionTask:
             num_examples (int): Number of examples to generate.
             n_runs (int): Number of runs for the prediction task.
             temperature (float): Temperature setting for the model.
-            example_selector_name (str): The name of the example selector.
         """
         self.task_id = task_id
         self.model_name = model_name
@@ -36,7 +34,6 @@ class PredictionTask:
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
-        self.example_selector_name = example_selector_name
 
         self.homepath = Path(__file__).resolve().parents[1]
         
@@ -126,7 +123,7 @@ class PredictionTask:
         examples = self._load_examples() if self.num_examples > 0 else None
 
         # Prepare the predictor with the loaded examples
-        self.predictor.prepare_prompt_ollama(examples=examples, example_selector_name=self.example_selector_name)
+        self.predictor.prepare_prompt_ollama(examples=examples)
 
         # Run predictions across multiple runs
         for run_idx in range(self.n_runs):
