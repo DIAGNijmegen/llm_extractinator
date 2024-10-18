@@ -85,6 +85,7 @@ class Predictor:
         self.labels = self.task_info.get('Labels')
         self.length = self.task_info.get('Length')
         self.description = self.task_info.get('Description')
+        self.input_field = self.task_info.get('Input_Field')
 
     def load_tasks(self) -> Dict[str, Any]:
         """
@@ -355,8 +356,9 @@ class Predictor:
             if not invalid_indices:
                 break
 
-            # Prepare the batch for fixing
+            # Prepare the batch for fixing and maintain index mapping
             invalid_results = [results[i] for i in invalid_indices]
+            index_mapping = {i: results[i]['original_index'] for i in invalid_indices}  # Map original index
             fixing_inputs = [{"completion": str(result)} for result in invalid_results]
             print(f"Retry {attempt + 1}: Attempting to fix {len(invalid_indices)} invalid results...")
 
@@ -366,12 +368,15 @@ class Predictor:
                 fixed_results = fixing_chain.batch(fixing_inputs, config={"callbacks": [callbacks]})
                 callbacks.progress_bar.close()
 
-                # Update the results with fixed outputs
+                # Update the results with fixed outputs, using the index mapping
                 for idx, fixed_result in zip(invalid_indices, fixed_results):
+                    original_index = index_mapping[idx]
                     try:
+                        # Validate the fixed result
                         self.parser_model.model_validate(fixed_result)
                         fixed_result['retries'] = attempt + 1
                         fixed_result['status'] = 'success'
+                        fixed_result['original_index'] = original_index  # Retain original index
                         results[idx] = fixed_result
                     except ValidationError:
                         results[idx]['status'] = 'failed'
@@ -389,18 +394,17 @@ class Predictor:
                 results[i]['retries'] = max_attempts
                 results[i]['status'] = 'failed'
 
-        # Sort results back to original order
+        # Sort results back to original order using 'original_index'
         try:
             results.sort(key=lambda x: x['original_index'])  # Sort based on the original index
         except KeyError as e:
-            print(f"KeyError during sorting: {str(e)}")
+            raise KeyError(f"KeyError during sorting: {str(e)}")
 
         # Remove the 'original_index' key after sorting is complete
         for result in results:
             result.pop('original_index', None)
 
         return results
-
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """

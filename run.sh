@@ -3,7 +3,7 @@
 pip install -e .
 
 extract_data \
-    --datapath /data/bodyct/experiments/luc_t10162/DRAGON \
+    --data_path /data/bodyct/experiments/luc_t10162/DRAGON \
     --ground_truth_path /data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set \
     --task_ids 1 \
     --num_examples 0\

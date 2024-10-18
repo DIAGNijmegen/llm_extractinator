@@ -24,7 +24,8 @@ setup(
     include_package_data=True,   # Include files from MANIFEST.in
     entry_points={
         'console_scripts': [
-            'extract_data=data_extractor.main:main',  # Allows you to run as a CLI if needed
+            'extract_data=data_extractor.main:extract_data',
+            'evaluate=data_extractor.main:evaluate',
         ],
     },
 )

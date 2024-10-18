@@ -14,10 +14,11 @@ class TaskRunner:
     Handles prediction task execution with multiprocessing support.
     """
 
-    def __init__(self, datapath, model_name, task_ids, num_examples, n_runs, temperature, run_name):
-        self.datapath = datapath
+    def __init__(self, data_path, example_path, model_name, task_id, num_examples, n_runs, temperature, run_name):
+        self.data_path = data_path
+        self.example_path = example_path
         self.model_name = model_name
-        self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
+        self.task_id = f"{int(task_id):03}"
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
@@ -35,7 +36,7 @@ class TaskRunner:
         with OllamaServerManager(self.model_name):
             # Execute tasks in parallel using multiprocessing
             with ProcessPoolExecutor() as executor:
-                results = list(executor.map(self._run_task, self.task_ids))
+                results = list(executor.map(self._run_task, self.task_id))
 
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken: {total_time}")
@@ -48,7 +49,8 @@ class TaskRunner:
             task = PredictionTask(
                 task_id=task_id,
                 model_name=self.model_name,
-                datapath=self.datapath,
+                data_path=self.data_path,
+                example_path=self.example_path,
                 output_path_base=self.output_path_base,
                 num_examples=self.num_examples,
                 n_runs=self.n_runs,
@@ -70,10 +72,9 @@ class PredictionEvaluator:
     Evaluates the results of prediction tasks using DragonEval.
     """
 
-    def __init__(self, num_examples, task_ids, datapath, ground_truth_path, output_path_base):
+    def __init__(self, num_examples, task_ids, ground_truth_path, output_path_base):
         self.num_examples = num_examples
         self.task_ids = task_ids
-        self.datapath = datapath
         self.ground_truth_path = ground_truth_path
         self.output_path_base = output_path_base
 
@@ -101,39 +102,46 @@ class PredictionEvaluator:
         return predictions_path, output_file
 
 
-def parse_args():
+def parse_args_extract_data():
     """
     Parses command-line arguments.
     """
     parser = argparse.ArgumentParser(description="Run prediction tasks for a given model.")
-    parser.add_argument("--datapath", type=Path, required=True, help="Path to the data directory.")
+    parser.add_argument("--data_path", type=Path, required=True, help="Path to the data directory.")
     parser.add_argument("--example_path", type=Path, help="Path to data for example generation.")
-    parser.add_argument("--ground_truth_path", type=Path, help="Path to ground truth data.")
-    parser.add_argument("--task_ids", type=int, nargs="+", required=True, help="Task IDs to generate examples for.")
+    parser.add_argument("--task_id", type=int, required=True, help="Task ID to generate examples for.")
     parser.add_argument("--model_name", type=str, default="mistral-nemo", help="Name of the model for prediction tasks.")
     parser.add_argument("--num_examples", type=int, default=0, help="Number of examples to generate for each task.")
     parser.add_argument("--n_runs", type=int, default=5, help="Number of runs.")
     parser.add_argument("--temperature", type=float, default=0.3, help="Temperature for generation.")
     parser.add_argument("--run_name", type=str, default="run", help="Name of the run.")
-    parser.add_argument("--skip_evaluation", action="store_true", help="Skip evaluation of the generated examples.")
+    return parser.parse_args()
+
+def parse_args_evaluate():
+    """
+    Parses command-line arguments.
+    """
+    parser = argparse.ArgumentParser(description="Evaluate prediction tasks.")
+    parser.add_argument("--task_ids", nargs="+", type=int, required=True, help="Task IDs to evaluate.")
+    parser.add_argument("--ground_truth_path", type=Path, required=True, help="Path to ground truth data.")
+    parser.add_argument("--output_path_base", type=Path, required=True, help="Base path for output files.")
     return parser.parse_args()
 
 
-def main():
+def extract_data():
     """
     Main function to initialize and run task execution and evaluation.
     """
-    args = parse_args()
+    args = parse_args_extract_data()
 
-    if not args.skip_evaluation and not args.ground_truth_path:
-        raise ValueError("Ground truth data path is required for evaluation.")
     if not args.example_path and args.num_examples > 0:
         raise ValueError("Example path is required for generating examples.")
 
     task_runner = TaskRunner(
-        datapath=args.datapath,
+        data_path=args.data_path,
+        example_path=args.example_path,
         model_name=args.model_name,
-        task_ids=args.task_ids,
+        task_id=args.task_id,
         num_examples=args.num_examples,
         n_runs=args.n_runs,
         temperature=args.temperature,
@@ -141,17 +149,21 @@ def main():
     )
 
     task_runner.run_tasks()
+    
+def evaluate():
+    """
+    Main function to evaluate the results of prediction tasks.
+    """
+    args = parse_args_evaluate()
 
-    if not args.skip_evaluation:
-        evaluator = PredictionEvaluator(
-            num_examples=args.num_examples,
-            task_ids=task_runner.task_ids,
-            datapath=task_runner.datapath,
-            ground_truth_path=args.ground_truth_path,
-            output_path_base=task_runner.output_path_base
-        )
-        evaluator.evaluate()
+    evaluator = PredictionEvaluator(
+        num_examples=args.num_examples,
+        task_ids=args.task_ids,
+        ground_truth_path=args.ground_truth_path,
+        output_path_base=args.output_path_base
+    )
+    evaluator.evaluate()
 
 
 if __name__ == "__main__":
-    main()
+    extract_data()

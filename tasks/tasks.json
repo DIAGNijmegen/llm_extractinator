@@ -4,98 +4,112 @@
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves analyzing radiology reports to identify whether adhesions are mentioned. The output should be a binary classification: 'True' if adhesions are described, and 'False' if they are not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task002_nodule_clf": {
         "Task": "Determine if a pulmonary nodule is described in the radiology report.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task requires analyzing the text of radiology reports to identify whether a pulmonary nodule is specifically mentioned. It is only relevant whether one is written literally in the text or not. You should not make inferences of the patient's health based on the report. The result should be a binary classification: 'True' if a nodule is mentioned, and 'False' if it is not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task003_kidney_clf": {
         "Task": "Determine if any kidney abnormality is mentioned in the radiology report.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves determining whether a radiology report mentions any abnormalities related to the kidneys. The output should be a binary classification: 'True' if a kidney abnormality is mentioned, and 'False' if it is not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task004_skin_case_selection_clf": {
         "Task": "Evaluate if the report matches any exclusion criteria.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task requires evaluating radiology reports to determine if they meet exclusion criteria. It is up to the evaluator to determine what these exclusion criteria are. The output should be a binary classification: 'True' if the report matches exclusion criteria, and 'False' if it does not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task005_recist_timeline_clf": {
         "Task": "Determine if the report is about a baseline scan.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves analyzing radiology reports to determine whether the scan is a baseline (initial) scan or a follow-up scan. The result should be a binary classification: 'True' for a baseline scan and 'False' for a follow-up scan.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task006_pathology_tumor_origin_clf": {
         "Task": "Identify if the cancer described in the report originated in the lung (as opposed to being a metastasis from another organ).",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves analyzing pathology reports to determine if the cancer originated in the lung or if it is a metastasis from another organ. The output should be a binary classification: 'True' if the tumor originated in the lung, and 'False' if it did not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task007_nodule_diameter_presence_clf": {
         "Task": "Determine if the pulmonary nodule described in the radiology report has a size measurement.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves analyzing radiology reports to check whether a pulmonary nodule mentioned in the report includes a size measurement. The result should be a binary classification: 'True' if a size is provided, and 'False' if it is not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task008_pdac_size_presence_clf": {
         "Task": "Determine if the pancreatic ductal adenocarcinoma (PDAC) described in the radiology report has a size measurement.",
         "Type": "Classification",
         "Labels": [true, false],
         "Description": "This task involves analyzing radiology reports to check if a pancreatic ductal adenocarcinoma (PDAC) mentioned in the report includes a size measurement. The result should be a binary classification: 'True' if a size is provided, and 'False' if it is not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_binary_classification_target"
     },
     "Task009_pdac_diagnosis_clf": {
         "Task": "Classify the diagnosis described in the radiology report as either pancreatic ductal adenocarcinoma (PDAC), other pancreatic disease, or a normal pancreas.",
         "Type": "Classification",
         "Labels": ["PDAC", "Other pancreatic disease", "Normal pancreas"],
         "Description": "This task involves classifying the diagnosis mentioned in the radiology report into one of three categories: pancreatic ductal adenocarcinoma (PDAC), other pancreatic disease, or a normal pancreas.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task010_prostate_radiology_clf": {
         "Task": "Count the number of PI-RADS 3-5 lesions in the prostate radiology report.",
         "Type": "Classification",
         "Labels": [0, 1, 2, 3, 4],
         "Description": "This task involves analyzing the prostate radiology report to count the number of PI-RADS 3-5 lesions described. The output should be an ordinal classification with labels representing the number of lesions from 0 to 4.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task011_prostate_pathology_clf": {
         "Task": "Count the number of lesions that are described with a Gleason score larger than 7 in the prostate pathology report.",
         "Type": "Classification",
         "Labels": [0, 1, 2, 3],
         "Description": "This task involves analyzing the prostate pathology report to count the number of lesions that have a Gleason score greater than 7. The output should be an ordinal classification with labels representing the number of such lesions from 0 to 3.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task012_pathology_tissue_type_clf": {
         "Task": "Classify whether the tissue described in the pathology report is from a biopsy, resection, or excision.",
         "Type": "Classification",
         "Labels": ["Biopsy", "Resection", "Excision"],
         "Description": "This task involves analyzing pathology reports to classify the type of tissue described. The output should be a classification into one of three categories: Biopsy, Resection, or Excision.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task013_pathology_tissue_origin_clf": {
         "Task": "Determine whether the material described in the pathology report originated from the lung, lymph node, bronchus, liver, brain, pleural fluid, bone, or other tissue.",
         "Type": "Classification",
         "Labels": ["lung", "lymph node", "bronchus", "liver", "brain", "pleural fluid", "bone", "other"],
         "Description": "This task involves determining the origin of the tissue described in the pathology report. The output should classify the tissue origin into one of the following categories: lung, lymph node, bronchus, liver, brain, pleural fluid, bone, or other.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task014_textual_entailment_clf": {
         "Task": "Determine whether the two given sentences show entailment, contradiction, or are neutral.",
         "Type": "Classification",
         "Labels": ["contradiction", "neutral", "entailment"],
         "Description": "This task involves analyzing pairs of sentences to determine their relationship. The output should classify the relationship as either contradiction, neutral, or entailment.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "single_label_multi_class_classification_target"
     },
     "Task015_colon_pathology_clf": {
         "Task": "For each block, predict whether the specimen was obtained from 1) biopsy or polypectomy, and whether the pathologist rated the specimen as 2) hyperplastic polyps, 3) low-grade dysplasia (lgd), 4) high-grade dysplasia (hgd), 5) cancer, 6) serrated polyps, or 7) non-informative (ni).",
@@ -103,7 +117,8 @@
         "Length": 7,
         "Labels": [true, false],
         "Description": "This task involves analyzing colon pathology reports to determine multiple aspects of each specimen. For each block, classify whether the specimen was obtained from a biopsy or polypectomy, and then classify whether it was rated for each of the following: hyperplastic polyps, low-grade dysplasia, high-grade dysplasia, cancer, serrated polyps, and non-informative. Each of these seven properties is binary, and multiple can be present per block.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "multi_label_binary_classification_target"
     },
     "Task016_recist_lesion_size_presence_clf": {
         "Task": "Determine whether the size is mentioned for the 5 RECIST target lesions in the radiology report.",
@@ -111,7 +126,8 @@
         "Length": 5,
         "Labels": [true, false],
         "Description": "This task involves analyzing radiology reports to determine whether the size is mentioned for each of the 5 RECIST target lesions. The output should be a binary classification for each lesion: 'True' if the size is mentioned, and 'False' if it is not.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "multi_label_binary_classification_target"
     },
     "Task017_pdac_attributes_clf": {
         "Task": "Classify the attributes of pancreatic ductal adenocarcinoma (PDAC) described in the radiology report: attenuation (iso/hyper/hypo/not mentioned) and location (head/body/tail/not mentioned).",
@@ -119,7 +135,8 @@
         "Length": 2,
         "Labels": ["iso", "hyper", "hypo", "not mentioned", "head", "body", "tail"],
         "Description": "This task involves classifying the attributes of pancreatic ductal adenocarcinoma (PDAC) as described in the radiology report. The attributes to be classified include attenuation (iso/hyper/hypo/not mentioned) and location (head/body/tail/not mentioned). The output should provide a classification for each of these attributes. The first entry in the list of labels corresponds to the attenuation, and the second entry corresponds to the location.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "multi_label_multi_class_classification_target"
     },
     "Task018_osteoarthritis_clf": {
         "Task": "Classify the Kellgren-Lawrence grade of osteoarthritis described in the radiology report for both the left and the right side out of the following: [0, 1, 2, 3, 4, not applicable, prosthesis].",
@@ -127,44 +144,51 @@
         "Length": 2,
         "Labels": [0, 1, 2, 3, 4, "not applicable", "prosthesis"],
         "Description": "This task involves classifying the Kellgren-Lawrence grade of osteoarthritis for both the left and right sides as described in the radiology report. The grades range from 0 to 4, with additional categories for 'not applicable' and 'prosthesis'. The output should provide a classification for each side.\n\nKellgren-Lawrence scale:\n\n• 0: no radiographic core features of osteoarthritis, no joint gap narrowing, no bone abnormalities. Keywords: no coxarthrosis\n\n• 1: possible joint gap narrowing, possible osteophyte formation. Keywords: no obvious coxarthrosis\n\n• 2: obvious osteophyte formation, possible joint gap narrowing. Keywords: minimal coxarthrosis, incipient coxarthrosis, mild coxarthrosis, minor coxarthrosis\n\n• 3: moderate osteophyte formation, marked joint gap narrowing and some sclerosis, possible degenerative bone defects. Keywords: moderate coxarthrosis\n\n• 4: large definite osteophytes, definite joint gap narrowing and severe sclerosis, definite degenerative bone defects. Keywords: end-stage coxarthrosis, severe coxarthrosis, substantial coxarthrosis, strong coxarthrosis, obvious degeneration, obvious osteophyte formation\n\n• not applicable: there is not enough information in the report to give an assessment\n\n• prosthesis: the patient has a hip prosthesis. Keywords: THP, THR, total hip replacement, total hip prosthesis",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "multi_label_multi_class_classification_target"
     },
     "Task019_prostate_volume_reg": {
         "Task": "Estimate the volume of the prostate described in the radiology report in cubic centimeters.",
         "Type": "Regression",
         "Description": "This task involves estimating the volume of the prostate as described in the radiology report, given in cubic centimeters. When dimensions are provided (e.g., '3 x 4 x 5 mm'), the ellipsoid formula should be used to calculate the volume (π⋅l⋅w⋅h/6), with l, w, and h being the spatial dimensions in mm.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_regression_target"
     },
     "Task020_psa_reg": {
         "Task": "Estimate the PSA level based on the radiology report.",
         "Type": "Regression",
         "Description": "This task involves estimating the Prostate-Specific Antigen (PSA) level based on the information provided in the radiology report. If a range is given, the average should be calculated.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_regression_target"
     },
     "Task021_psad_reg": {
         "Task": "Predict the PSA density based on the PSA level and prostate volume described in the radiology report.",
         "Type": "Regression",
         "Description": "This task involves predicting the PSA density, which is either directly described in the radiology report or needs to be calculated based on the provided PSA level and prostate volume. The PSA density is related to the PSA and prostate volume as: PSA density = PSA / prostate volume.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_regression_target"
     },
     "Task022_pdac_size_reg": {
         "Task": "Estimate the size of the pancreatic ductal adenocarcinoma (PDAC) described in the radiology report in mm.",
         "Type": "Regression",
         "Description": "This task involves estimating the size of pancreatic ductal adenocarcinoma (PDAC) as described in the radiology report, with the size given in millimeters.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_regression_target"
     },
     "Task023_nodule_diameter_reg": {
         "Task": "Estimate the diameter of the largest pulmonary nodule described in the radiology report in mm.",
         "Type": "Regression",
         "Description": "This task involves estimating the diameter of the largest pulmonary nodule described in the radiology report, with the diameter given in millimeters. When multiple sizes are described for a single lesion (e.g., the short and long axis), the size for that lesion should be averaged.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "single_label_regression_target"
     },
     "Task024_recist_lesion_size_reg": {
         "Task": "Estimate the size of each of the up to 5 RECIST target lesions described in the radiology report in mm.",
         "Type": "Regression",
         "Length": 5,
         "Description": "This task involves estimating the size of each of the up to 5 RECIST target lesions described in the radiology report, with the size given in millimeters. For lymph nodes, the short axis should be reported. If the size is not mentioned, the output should be 'null'.",
-        "Input_Field": "text"
+        "Input_Field": "text",
+        "Label_Field": "multi_label_regression_target"
     },
     "Task025_anonymisation_ner": {
         "Task": "Identify (sequences of) tokens that are considered personally identifiable information.",
@@ -174,27 +198,31 @@
             ["<DATUM>", "<PERSOON>", "<RAPPORT_ID>", "<PLAATS>", "<PHINUMMER>", "<STUDIE_NAAM>", "<ACCREDATIE_NUMMER>", "<TIJD>", "<LEEFTIJD>", "null"]
         ],
         "Description": "This task involves identifying sequences of tokens in the text that are considered personally identifiable information (PII). The classes to predict include dates <DATUM>, person names <PERSOON>, report identifiers <RAPPORT_ID>, places <PLAATS>, personally identifying numbers <PHINUMMER>, clinical trial names <STUDIE_NAAM>, hospital accreditation numbers <ACCREDATIE_NUMMER>, times <TIJD>, and patient ages <LEEFTIJD>. Each token should be tagged as B (beginning), I (inside), or O (outside) based on its position within the sequence.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "named_entity_recognition_target"
     },
     "Task026_medical_terminology_ner": {
         "Task": "Identify (sequences of) tokens that are considered medical terminology.",
         "Type": "Single Label Named Entity Recognition",
         "Labels": [["B", "I", "O"], ["MENTION", "null"]],
         "Description": "This task involves identifying sequences of tokens in the text that are considered medical terminology. If it is the start of a sequence, the token should be tagged as B. If it is a continuation of a sequence, it should be tagged as I. If it is not part of any of the classes, it should be tagged as O.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "named_entity_recognition_target"
     },
     "Task027_prostate_biopsy_ner": {
         "Task": "For each numbered biopsy, predict which group of words describes the location of that biopsy and whether the lesion sampling was representative, not representative, or ambiguous.",
         "Type": "Multi Label Named Entity Recognition",
         "Labels": [["B", "I", "O"], ["Biopsy number"], ["Locatie naald", "representatief", "nier representatief", "ambigu"]],
         "Description": "This task involves analyzing prostate biopsy reports to identify and classify sequences of words that describe the location of each numbered biopsy and to determine whether the lesion sampling was representative, not representative, or ambiguous. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "multi_label_named_entity_recognition_target"
     },
     "Task028_skin_pathology_ner": {
         "Task": "Analyze each word in the report and split the diagnosis for each specified case, numbered from 1 to 20, including identifying basal cell carcinoma subtypes and the tissue acquisition method.",
         "Type": "Multi Label Named Entity Recognition",
         "Labels": [["B", "I", "O"], ["Case number"], ["Diagnosis", "Biopsy", "Excision"]],
         "Description": "This task involves analyzing each word in a skin pathology report to classify and split the diagnosis for each specified case, numbered from 1 to 20. The diagnoses include basal cell carcinoma, benign, or other pathologies, with a requirement to classify each subtype present for basal cell carcinoma cases. Additionally, the task requires determining the tissue acquisition method (biopsy or excision) for each case. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
-        "Input_Field": "text_parts"
+        "Input_Field": "text_parts",
+        "Label_Field": "multi_label_named_entity_recognition_target"
     }
 }
