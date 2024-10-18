@@ -158,12 +158,16 @@ class PredictionTask:
             {
                 "uid": uid, 
                 self.label_name.replace("_target", ""): label, 
-                "reasoning": reasoning
+                "reasoning": reasoning,
+                "retries": retries,
+                "status": status
             }
-            for uid, label, reasoning in zip(
+            for uid, label, reasoning, retries, status in zip(
                 self.test['uid'], 
                 [result['label'] for result in results], 
-                [result['reasoning'] for result in results]
+                [result['reasoning'] for result in results],
+                [result['retries'] for result in results],
+                [result['status'] for result in results]
             )
         ]
         
