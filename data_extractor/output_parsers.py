@@ -60,8 +60,22 @@ def load_parser(task_type: str, valid_items: Optional[List[Any]], list_length: O
             reasoning: str = Field(description="The thought process leading to the answer")
             label: str = Field(description="The input text with the named entity highlighted in the format: [START] entity [END]")
         return NamedEntityRecognitionOutput
-    elif task_type == "Multi Label Named Entity Recognition":
-        return MultiLabelNamedEntityRecognitionOutput
+    
+    ### WRITE YOUR CUSTOM PARSER HERE ###
+    elif task_type == "Custom_Name":
+        class OutputParser(BaseModel):
+            variable1: str = Field(description="Description of variable1")
+            variable2: int = Field(description="Description of variable2")
+            variable3: List[str] = Field(description="Description of variable3")
+            
+            @field_validator('variable1')
+            @classmethod
+            def custom_validator(cls, value):
+                if value not in ["option1", "option2"]:
+                    raise ValueError("variable1 must be either 'option1' or 'option2'")
+                return value
+        return OutputParser
+        
     else:
         raise ValueError(f"Unknown task type: {task_type}")
 
