@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor
 from data_extractor.prediction_task import PredictionTask
 from data_extractor.ollama_server import OllamaServerManager
 from dragon_eval import DragonEval
+from typing import List, Tuple
 
 DEBUG = True
 
@@ -14,7 +15,7 @@ class TaskRunner:
     Handles prediction task execution with multiprocessing support.
     """
 
-    def __init__(self, data_path, example_path, model_name, task_id, num_examples, n_runs, temperature, run_name):
+    def __init__(self, data_path: Path, example_path: Path, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: str) -> None:
         self.data_path = data_path
         self.example_path = example_path
         self.model_name = model_name
@@ -26,7 +27,7 @@ class TaskRunner:
         self.homepath = Path(__file__).resolve().parents[1]
         self.output_path_base = self.homepath / f"output/{model_name}/{run_name}"
 
-    def run_tasks(self):
+    def run_tasks(self) -> None:
         """
         Runs the prediction tasks using multiprocessing.
         """
@@ -41,7 +42,7 @@ class TaskRunner:
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken: {total_time}")
 
-    def _run_task(self, task_id):
+    def _run_task(self, task_id: str) -> bool:
         """
         Executes a single prediction task in parallel.
         """
@@ -72,13 +73,13 @@ class PredictionEvaluator:
     Evaluates the results of prediction tasks using DragonEval.
     """
 
-    def __init__(self, num_examples, task_ids, ground_truth_path, output_path_base):
+    def __init__(self, num_examples: int, task_ids: List[int], ground_truth_path: Path, output_path_base: Path) -> None:
         self.num_examples = num_examples
         self.task_ids = task_ids
         self.ground_truth_path = ground_truth_path
         self.output_path_base = output_path_base
 
-    def evaluate(self):
+    def evaluate(self) -> None:
         """
         Evaluates the prediction tasks.
         """
@@ -93,7 +94,7 @@ class PredictionEvaluator:
         except Exception as error:
             print(f"Evaluation error for {self.num_examples} examples: {error}")
 
-    def _get_evaluation_paths(self, num_examples):
+    def _get_evaluation_paths(self, num_examples: int) -> Tuple[Path, Path]:
         """
         Generates paths for evaluation files.
         """
@@ -102,7 +103,7 @@ class PredictionEvaluator:
         return predictions_path, output_file
 
 
-def parse_args_extract_data():
+def parse_args_extract_data() -> argparse.Namespace:
     """
     Parses command-line arguments.
     """
@@ -117,7 +118,7 @@ def parse_args_extract_data():
     parser.add_argument("--run_name", type=str, default="run", help="Name of the run.")
     return parser.parse_args()
 
-def parse_args_evaluate():
+def parse_args_evaluate() -> argparse.Namespace:
     """
     Parses command-line arguments.
     """
@@ -128,7 +129,7 @@ def parse_args_evaluate():
     return parser.parse_args()
 
 
-def extract_data():
+def extract_data() -> None:
     """
     Main function to initialize and run task execution and evaluation.
     """
@@ -150,7 +151,7 @@ def extract_data():
 
     task_runner.run_tasks()
     
-def evaluate():
+def evaluate() -> None:
     """
     Main function to evaluate the results of prediction tasks.
     """
