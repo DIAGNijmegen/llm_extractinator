@@ -6,6 +6,8 @@
         false
     ],
     "Description": "This task requires evaluating radiology reports to determine if they meet exclusion criteria. It is up to the evaluator to determine what these exclusion criteria are. The output should be a binary classification: 'True' if the report matches exclusion criteria, and 'False' if it does not.",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task004_skin_case_selection_clf.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task004_skin_case_selection_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_binary_classification_target"
 }

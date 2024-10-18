@@ -13,7 +13,7 @@ class PredictionTask:
     running predictions, and saving results.
     """
 
-    def __init__(self, task_id: str, model_name: str, data_path: Path, example_path: Path, output_path_base: Path, 
+    def __init__(self, /, task_id: str, model_name: str, output_path_base: Path, 
                 num_examples: int, n_runs: int, temperature: float) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
@@ -21,8 +21,6 @@ class PredictionTask:
         Args:
             task_id (str): Identifier for the task.
             model_name (str): The name of the model to be used for predictions.
-            data_path (Path): Base path where data is stored.
-            example_path (Path): Path where the generated examples are saved.
             output_path_base (Path): Base path for saving the output.
             num_examples (int): Number of examples to generate.
             n_runs (int): Number of runs for the prediction task.
@@ -30,8 +28,6 @@ class PredictionTask:
         """
         self.task_id = task_id
         self.model_name = model_name
-        self.data_path = data_path
-        self.example_path = example_path
         self.output_path_base = output_path_base
         self.num_examples = num_examples
         self.n_runs = n_runs

@@ -12,6 +12,8 @@
         "other"
     ],
     "Description": "This task involves determining the origin of the tissue described in the pathology report. The output should classify the tissue origin into one of the following categories: lung, lymph node, bronchus, liver, brain, pleural fluid, bone, or other.",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task013_pathology_tissue_origin_clf.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task013_pathology_tissue_origin_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_multi_class_classification_target"
 }

@@ -6,6 +6,8 @@
         false
     ],
     "Description": "This task involves analyzing radiology reports to determine whether the scan is a baseline (initial) scan or a follow-up scan. The result should be a binary classification: 'True' for a baseline scan and 'False' for a follow-up scan.",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task005_recist_timeline_clf.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task005_recist_timeline_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_binary_classification_target"
 }

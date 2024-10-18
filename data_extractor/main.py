@@ -15,9 +15,7 @@ class TaskRunner:
     Handles prediction task execution with multiprocessing support.
     """
 
-    def __init__(self, data_path: Path, example_path: Path, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: str) -> None:
-        self.data_path = data_path
-        self.example_path = example_path
+    def __init__(self, /, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: str) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
         self.num_examples = num_examples
@@ -50,8 +48,6 @@ class TaskRunner:
             task = PredictionTask(
                 task_id=task_id,
                 model_name=self.model_name,
-                data_path=self.data_path,
-                example_path=self.example_path,
                 output_path_base=self.output_path_base,
                 num_examples=self.num_examples,
                 n_runs=self.n_runs,
@@ -73,7 +69,7 @@ class PredictionEvaluator:
     Evaluates the results of prediction tasks using DragonEval.
     """
 
-    def __init__(self, num_examples: int, task_ids: List[int], ground_truth_path: Path, output_path_base: Path) -> None:
+    def __init__(self, /, num_examples: int, task_ids: List[int], ground_truth_path: Path, output_path_base: Path) -> None:
         self.num_examples = num_examples
         self.task_ids = task_ids
         self.ground_truth_path = ground_truth_path
@@ -108,8 +104,6 @@ def parse_args_extract_data() -> argparse.Namespace:
     Parses command-line arguments.
     """
     parser = argparse.ArgumentParser(description="Run prediction tasks for a given model.")
-    parser.add_argument("--data_path", type=Path, required=True, help="Path to the data directory.")
-    parser.add_argument("--example_path", type=Path, help="Path to data for example generation.")
     parser.add_argument("--task_id", type=int, required=True, help="Task ID to generate examples for.")
     parser.add_argument("--model_name", type=str, default="mistral-nemo", help="Name of the model for prediction tasks.")
     parser.add_argument("--num_examples", type=int, default=0, help="Number of examples to generate for each task.")
@@ -135,12 +129,7 @@ def extract_data() -> None:
     """
     args = parse_args_extract_data()
 
-    if not args.example_path and args.num_examples > 0:
-        raise ValueError("Example path is required for generating examples.")
-
     task_runner = TaskRunner(
-        data_path=args.data_path,
-        example_path=args.example_path,
         model_name=args.model_name,
         task_id=args.task_id,
         num_examples=args.num_examples,

@@ -7,6 +7,8 @@
         false
     ],
     "Description": "This task involves analyzing colon pathology reports to determine multiple aspects of each specimen. For each block, classify whether the specimen was obtained from a biopsy or polypectomy, and then classify whether it was rated for each of the following: hyperplastic polyps, low-grade dysplasia, high-grade dysplasia, cancer, serrated polyps, and non-informative. Each of these seven properties is binary, and multiple can be present per block.",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task015_colon_pathology_clf.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task015_colon_pathology_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "multi_label_binary_classification_target"
 }

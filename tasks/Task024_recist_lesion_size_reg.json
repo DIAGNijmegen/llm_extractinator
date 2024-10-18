@@ -3,6 +3,8 @@
     "Type": "Regression",
     "Length": 5,
     "Description": "This task involves estimating the size of each of the up to 5 RECIST target lesions described in the radiology report, with the size given in millimeters. For lymph nodes, the short axis should be reported. If the size is not mentioned, the output should be 'null'.",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task024_recist_lesion_size_reg.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task024_recist_lesion_size_reg-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "multi_label_regression_target"
 }

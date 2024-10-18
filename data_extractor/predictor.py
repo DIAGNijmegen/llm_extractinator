@@ -94,7 +94,9 @@ class Predictor:
         Returns:
             Dict[str, Any]: A dictionary containing the task information.
         """
-        task_path = Path(__file__).parent / "tasks.json"
+        task_folder = Path(__file__).parent.parent / "tasks"
+        # Search for the task file that contains the task_id
+        task_path = next(task_folder.glob(f"**/{self.task_name}.json"))
         with task_path.open("r") as f:
             return json.load(f)
 
