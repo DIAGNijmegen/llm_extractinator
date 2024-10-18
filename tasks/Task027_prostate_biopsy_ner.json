@@ -1,0 +1,23 @@
+{
+    "Task": "For each numbered biopsy, predict which group of words describes the location of that biopsy and whether the lesion sampling was representative, not representative, or ambiguous.",
+    "Type": "Multi Label Named Entity Recognition",
+    "Labels": [
+        [
+            "B",
+            "I",
+            "O"
+        ],
+        [
+            "Biopsy number"
+        ],
+        [
+            "Locatie naald",
+            "representatief",
+            "nier representatief",
+            "ambigu"
+        ]
+    ],
+    "Description": "This task involves analyzing prostate biopsy reports to identify and classify sequences of words that describe the location of each numbered biopsy and to determine whether the lesion sampling was representative, not representative, or ambiguous. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
+    "Input_Field": "text_parts",
+    "Label_Field": "multi_label_named_entity_recognition_target"
+}

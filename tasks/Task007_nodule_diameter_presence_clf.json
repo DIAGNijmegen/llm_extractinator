@@ -1,0 +1,11 @@
+{
+    "Task": "Determine if the pulmonary nodule described in the radiology report has a size measurement.",
+    "Type": "Classification",
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task involves analyzing radiology reports to check whether a pulmonary nodule mentioned in the report includes a size measurement. The result should be a binary classification: 'True' if a size is provided, and 'False' if it is not.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target"
+}

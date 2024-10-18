@@ -1,0 +1,17 @@
+{
+    "Task": "Determine whether the material described in the pathology report originated from the lung, lymph node, bronchus, liver, brain, pleural fluid, bone, or other tissue.",
+    "Type": "Classification",
+    "Labels": [
+        "lung",
+        "lymph node",
+        "bronchus",
+        "liver",
+        "brain",
+        "pleural fluid",
+        "bone",
+        "other"
+    ],
+    "Description": "This task involves determining the origin of the tissue described in the pathology report. The output should classify the tissue origin into one of the following categories: lung, lymph node, bronchus, liver, brain, pleural fluid, bone, or other.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_multi_class_classification_target"
+}

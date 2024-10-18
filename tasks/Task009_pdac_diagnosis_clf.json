@@ -1,0 +1,12 @@
+{
+    "Task": "Classify the diagnosis described in the radiology report as either pancreatic ductal adenocarcinoma (PDAC), other pancreatic disease, or a normal pancreas.",
+    "Type": "Classification",
+    "Labels": [
+        "PDAC",
+        "Other pancreatic disease",
+        "Normal pancreas"
+    ],
+    "Description": "This task involves classifying the diagnosis mentioned in the radiology report into one of three categories: pancreatic ductal adenocarcinoma (PDAC), other pancreatic disease, or a normal pancreas.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_multi_class_classification_target"
+}

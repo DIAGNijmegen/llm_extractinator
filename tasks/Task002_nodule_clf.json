@@ -1,0 +1,11 @@
+{
+    "Task": "Determine if a pulmonary nodule is described in the radiology report.",
+    "Type": "Classification",
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task requires analyzing the text of radiology reports to identify whether a pulmonary nodule is specifically mentioned. It is only relevant whether one is written literally in the text or not. You should not make inferences of the patient's health based on the report. The result should be a binary classification: 'True' if a nodule is mentioned, and 'False' if it is not.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target"
+}

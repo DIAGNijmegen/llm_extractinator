@@ -1,0 +1,11 @@
+{
+    "Task": "Determine the presence of adhesions based on the radiology report.",
+    "Type": "Classification",
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task involves analyzing radiology reports to identify whether adhesions are mentioned. The output should be a binary classification: 'True' if adhesions are described, and 'False' if they are not.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target"
+}

@@ -1,0 +1,7 @@
+{
+    "Task": "Estimate the volume of the prostate described in the radiology report in cubic centimeters.",
+    "Type": "Regression",
+    "Description": "This task involves estimating the volume of the prostate as described in the radiology report, given in cubic centimeters. When dimensions are provided (e.g., '3 x 4 x 5 mm'), the ellipsoid formula should be used to calculate the volume (\u03c0\u22c5l\u22c5w\u22c5h/6), with l, w, and h being the spatial dimensions in mm.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_regression_target"
+}

@@ -1,0 +1,12 @@
+{
+    "Task": "Determine whether the two given sentences show entailment, contradiction, or are neutral.",
+    "Type": "Classification",
+    "Labels": [
+        "contradiction",
+        "neutral",
+        "entailment"
+    ],
+    "Description": "This task involves analyzing pairs of sentences to determine their relationship. The output should classify the relationship as either contradiction, neutral, or entailment.",
+    "Input_Field": "text_parts",
+    "Label_Field": "single_label_multi_class_classification_target"
+}

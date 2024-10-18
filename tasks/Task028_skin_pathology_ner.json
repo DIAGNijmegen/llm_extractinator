@@ -1,0 +1,22 @@
+{
+    "Task": "Analyze each word in the report and split the diagnosis for each specified case, numbered from 1 to 20, including identifying basal cell carcinoma subtypes and the tissue acquisition method.",
+    "Type": "Multi Label Named Entity Recognition",
+    "Labels": [
+        [
+            "B",
+            "I",
+            "O"
+        ],
+        [
+            "Case number"
+        ],
+        [
+            "Diagnosis",
+            "Biopsy",
+            "Excision"
+        ]
+    ],
+    "Description": "This task involves analyzing each word in a skin pathology report to classify and split the diagnosis for each specified case, numbered from 1 to 20. The diagnoses include basal cell carcinoma, benign, or other pathologies, with a requirement to classify each subtype present for basal cell carcinoma cases. Additionally, the task requires determining the tissue acquisition method (biopsy or excision) for each case. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
+    "Input_Field": "text_parts",
+    "Label_Field": "multi_label_named_entity_recognition_target"
+}

@@ -1,0 +1,12 @@
+{
+    "Task": "For each block, predict whether the specimen was obtained from 1) biopsy or polypectomy, and whether the pathologist rated the specimen as 2) hyperplastic polyps, 3) low-grade dysplasia (lgd), 4) high-grade dysplasia (hgd), 5) cancer, 6) serrated polyps, or 7) non-informative (ni).",
+    "Type": "Classification",
+    "Length": 7,
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task involves analyzing colon pathology reports to determine multiple aspects of each specimen. For each block, classify whether the specimen was obtained from a biopsy or polypectomy, and then classify whether it was rated for each of the following: hyperplastic polyps, low-grade dysplasia, high-grade dysplasia, cancer, serrated polyps, and non-informative. Each of these seven properties is binary, and multiple can be present per block.",
+    "Input_Field": "text_parts",
+    "Label_Field": "multi_label_binary_classification_target"
+}

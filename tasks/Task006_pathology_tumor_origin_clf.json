@@ -1,0 +1,11 @@
+{
+    "Task": "Identify if the cancer described in the report originated in the lung (as opposed to being a metastasis from another organ).",
+    "Type": "Classification",
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task involves analyzing pathology reports to determine if the cancer originated in the lung or if it is a metastasis from another organ. The output should be a binary classification: 'True' if the tumor originated in the lung, and 'False' if it did not.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target"
+}

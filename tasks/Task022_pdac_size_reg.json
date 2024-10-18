@@ -1,0 +1,7 @@
+{
+    "Task": "Estimate the size of the pancreatic ductal adenocarcinoma (PDAC) described in the radiology report in mm.",
+    "Type": "Regression",
+    "Description": "This task involves estimating the size of pancreatic ductal adenocarcinoma (PDAC) as described in the radiology report, with the size given in millimeters.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_regression_target"
+}

@@ -1,0 +1,7 @@
+{
+    "Task": "Estimate the diameter of the largest pulmonary nodule described in the radiology report in mm.",
+    "Type": "Regression",
+    "Description": "This task involves estimating the diameter of the largest pulmonary nodule described in the radiology report, with the diameter given in millimeters. When multiple sizes are described for a single lesion (e.g., the short and long axis), the size for that lesion should be averaged.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_regression_target"
+}

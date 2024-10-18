@@ -1,0 +1,11 @@
+{
+    "Task": "Evaluate if the report matches any exclusion criteria.",
+    "Type": "Classification",
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task requires evaluating radiology reports to determine if they meet exclusion criteria. It is up to the evaluator to determine what these exclusion criteria are. The output should be a binary classification: 'True' if the report matches exclusion criteria, and 'False' if it does not.",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target"
+}

@@ -1,0 +1,12 @@
+{
+    "Task": "Determine whether the size is mentioned for the 5 RECIST target lesions in the radiology report.",
+    "Type": "Classification",
+    "Length": 5,
+    "Labels": [
+        true,
+        false
+    ],
+    "Description": "This task involves analyzing radiology reports to determine whether the size is mentioned for each of the 5 RECIST target lesions. The output should be a binary classification for each lesion: 'True' if the size is mentioned, and 'False' if it is not.",
+    "Input_Field": "text",
+    "Label_Field": "multi_label_binary_classification_target"
+}

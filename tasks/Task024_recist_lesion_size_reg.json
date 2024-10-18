@@ -1,0 +1,8 @@
+{
+    "Task": "Estimate the size of each of the up to 5 RECIST target lesions described in the radiology report in mm.",
+    "Type": "Regression",
+    "Length": 5,
+    "Description": "This task involves estimating the size of each of the up to 5 RECIST target lesions described in the radiology report, with the size given in millimeters. For lymph nodes, the short axis should be reported. If the size is not mentioned, the output should be 'null'.",
+    "Input_Field": "text",
+    "Label_Field": "multi_label_regression_target"
+}
