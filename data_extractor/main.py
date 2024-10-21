@@ -13,7 +13,6 @@ class TaskRunner:
     """
     Handles prediction task execution with multiprocessing support.
     """
-
     def __init__(self, /, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: Path) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
@@ -65,7 +64,6 @@ class PredictionEvaluator:
     """
     Evaluates the results of prediction tasks using DragonEval.
     """
-
     def __init__(self, /, task_ids: List[int], ground_truth_path: Path, output_path: Path, prediction_path: Path) -> None:
         self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
         self.ground_truth_path = ground_truth_path
@@ -77,6 +75,7 @@ class PredictionEvaluator:
         Evaluates the prediction tasks.
         """
         try:
+            
             DragonEval(
                 ground_truth_path=self.ground_truth_path,
                 predictions_path=self.prediction_path,
