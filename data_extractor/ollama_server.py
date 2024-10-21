@@ -1,5 +1,6 @@
 import subprocess
 import os
+import ollama
 
 class OllamaServerManager:
     def __init__(self, model_name, log_filename="ollama_server.log"):
@@ -20,10 +21,8 @@ class OllamaServerManager:
         Pull the specified model using the `ollama pull` command.
         """
         try:
-            pull_command = f"ollama pull {self.model_name}"
             print(f"Pulling model: {self.model_name}...")
-            pull_process = subprocess.Popen(pull_command, shell=True)
-            pull_process.wait()  # Wait for the pull command to complete
+            ollama.pull(self.model_name)
             print(f"Model {self.model_name} pulled successfully.")
         except Exception as e:
             print(f"Error pulling model {self.model_name}: {e}")
