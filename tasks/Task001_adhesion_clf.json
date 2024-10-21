@@ -11,7 +11,7 @@
             "type": "str",
             "description": "The thought process leading to the final answer."
         },
-        "label": {
+        "single_label_binary_classification": {
             "type": "bool",
             "description": "The final classification. True if adhesions are present, false if they are not."
         }
