@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from typing import Tuple, Dict
-from data_extractor.data_loader import DataLoader
+from typing import Dict
+from data_extractor.data_loader import DataLoader, TaskLoader
 from data_extractor.predictor import Predictor
 from data_extractor.utils import save_json
 from langchain_ollama import ChatOllama
@@ -49,9 +49,6 @@ class PredictionTask:
         self.predictor = Predictor(model=self.model, task_config=self.task_config, 
                                    examples_path=self.examples_path, num_examples=self.num_examples)
 
-        # Load task info
-        self.task_info = self.predictor.load_tasks()[self.task_name]
-
     def initialize_model(self) -> ChatOllama:
         """
         Initialize the model using the given model name and temperature.
@@ -67,17 +64,16 @@ class PredictionTask:
         )
 
     def _extract_task_info(self) -> None:
-        # Find the task file that contains the task_id
-        task_path = next(self.task_path.glob(f"**/{self.task_id}.json"))
-        with task_path.open("r") as f:
-            self.task_config = json.load(f)
-            self.task_config['Task_Name'] = task_path.stem
-                    
+        """
+        Extract task information from the task configuration file.
+        """
+        task_loader = TaskLoader(folder_path=self.task_path, task_id=self.task_id)
+        self.task_config = task_loader.find_and_load_task()
         self.train_path = self.task_config.get('Example_Path')
         self.test_path = self.task_config.get('Data_Path')
         self.label_field = self.task_config.get('Label_Field')
         self.input_field = self.task_config.get('Input_Field')
-        self.task_name = self.task_config.get('Task_Name')
+        self.task_name = task_loader.get_task_name()
 
     def _load_examples(self) -> Dict:
         """

@@ -2,13 +2,12 @@ import time
 from datetime import timedelta
 import argparse
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor
 from data_extractor.prediction_task import PredictionTask
 from data_extractor.ollama_server import OllamaServerManager
 from dragon_eval import DragonEval
 from typing import List
 
-DEBUG = False
+DEBUG = True
 
 class TaskRunner:
     """
@@ -33,20 +32,18 @@ class TaskRunner:
 
         # Start the Ollama Server
         with OllamaServerManager(self.model_name):
-            # Execute tasks in parallel using multiprocessing
-            with ProcessPoolExecutor() as executor:
-                results = list(executor.map(self._run_task, self.task_id))
+            self._run_task()
 
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken: {total_time}")
 
-    def _run_task(self, task_id: str) -> bool:
+    def _run_task(self) -> bool:
         """
         Executes a single prediction task in parallel.
         """
         try:
             task = PredictionTask(
-                task_id=task_id,
+                task_id=self.task_id,
                 model_name=self.model_name,
                 output_path_base=self.output_path_base,
                 num_examples=self.num_examples,
@@ -60,7 +57,7 @@ class TaskRunner:
                 import traceback
                 traceback.print_exc()
             else:
-                print(f"Error in task {task_id}: {error}")
+                print(f"Error in task {self.task_id}: {error}")
             return False
 
 
