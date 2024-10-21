@@ -13,7 +13,7 @@
     ],
     "Description": "This task involves classifying the attributes of pancreatic ductal adenocarcinoma (PDAC) as described in the radiology report. The attributes to be classified include attenuation (iso/hyper/hypo/not mentioned) and location (head/body/tail/not mentioned). The output should provide a classification for each of these attributes. The first entry in the list of labels corresponds to the attenuation, and the second entry corresponds to the location.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task017_pdac_attributes_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task017_pdac_attributes_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task017_pdac_attributes_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "multi_label_multi_class_classification_target"
 }

@@ -7,7 +7,7 @@
     ],
     "Description": "This task involves analyzing radiology reports to identify whether adhesions are mentioned. The output should be a binary classification: 'True' if adhesions are described, and 'False' if they are not.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task001_adhesion_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task001_adhesion_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task001_adhesion_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_binary_classification_target"
 }

@@ -22,7 +22,7 @@
     ],
     "Description": "This task involves identifying sequences of tokens in the text that are considered personally identifiable information (PII). The classes to predict include dates <DATUM>, person names <PERSOON>, report identifiers <RAPPORT_ID>, places <PLAATS>, personally identifying numbers <PHINUMMER>, clinical trial names <STUDIE_NAAM>, hospital accreditation numbers <ACCREDATIE_NUMMER>, times <TIJD>, and patient ages <LEEFTIJD>. Each token should be tagged as B (beginning), I (inside), or O (outside) based on its position within the sequence.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task025_anonymisation_ner.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task025_anonymisation_ner-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task025_anonymisation_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "named_entity_recognition_target"
 }

@@ -19,7 +19,7 @@
     ],
     "Description": "This task involves analyzing prostate biopsy reports to identify and classify sequences of words that describe the location of each numbered biopsy and to determine whether the lesion sampling was representative, not representative, or ambiguous. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task027_prostate_biopsy_ner.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task027_prostate_biopsy_ner-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task027_prostate_biopsy_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "multi_label_named_entity_recognition_target"
 }

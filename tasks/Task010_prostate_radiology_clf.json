@@ -10,7 +10,7 @@
     ],
     "Description": "This task involves analyzing the prostate radiology report to count the number of PI-RADS 3-5 lesions described. The output should be an ordinal classification with labels representing the number of lesions from 0 to 4.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task010_prostate_radiology_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task010_prostate_radiology_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task010_prostate_radiology_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_multi_class_classification_target"
 }

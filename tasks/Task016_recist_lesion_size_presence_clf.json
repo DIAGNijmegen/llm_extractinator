@@ -8,7 +8,7 @@
     ],
     "Description": "This task involves analyzing radiology reports to determine whether the size is mentioned for each of the 5 RECIST target lesions. The output should be a binary classification for each lesion: 'True' if the size is mentioned, and 'False' if it is not.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task016_recist_lesion_size_presence_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task016_recist_lesion_size_presence_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task016_recist_lesion_size_presence_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "multi_label_binary_classification_target"
 }

@@ -7,7 +7,7 @@
     ],
     "Description": "This task involves determining whether a radiology report mentions any abnormalities related to the kidneys. The output should be a binary classification: 'True' if a kidney abnormality is mentioned, and 'False' if it is not.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task003_kidney_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task003_kidney_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task003_kidney_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_binary_classification_target"
 }

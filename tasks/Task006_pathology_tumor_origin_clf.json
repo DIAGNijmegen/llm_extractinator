@@ -7,7 +7,7 @@
     ],
     "Description": "This task involves analyzing pathology reports to determine if the cancer originated in the lung or if it is a metastasis from another organ. The output should be a binary classification: 'True' if the tumor originated in the lung, and 'False' if it did not.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task006_pathology_tumor_origin_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task006_pathology_tumor_origin_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task006_pathology_tumor_origin_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_binary_classification_target"
 }

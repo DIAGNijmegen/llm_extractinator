@@ -8,7 +8,7 @@
     ],
     "Description": "This task involves analyzing pathology reports to classify the type of tissue described. The output should be a classification into one of three categories: Biopsy, Resection, or Excision.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task012_pathology_tissue_type_clf.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task012_pathology_tissue_type_clf-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task012_pathology_tissue_type_clf-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_multi_class_classification_target"
 }

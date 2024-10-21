@@ -3,7 +3,7 @@
     "Type": "Regression",
     "Description": "This task involves estimating the size of pancreatic ductal adenocarcinoma (PDAC) as described in the radiology report, with the size given in millimeters.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task022_pdac_size_reg.json",
-    "Example_Path": "/data/bodyct/experiments/luc_t10162/debug-input/Task022_pdac_size_reg-fold0/nlp-training-dataset.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task022_pdac_size_reg-fold0/nlp-training-dataset.json",
     "Input_Field": "text",
     "Label_Field": "single_label_regression_target"
 }
