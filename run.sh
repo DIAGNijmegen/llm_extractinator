@@ -4,7 +4,7 @@
 
 BASE_DIR="/data/bodyct/experiments/luc_t10162/GitHub/LLM_data_extractor"
 GROUND_TRUTH_PATH="/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set"
-MODEL_NAME="phi3.5"
+MODEL_NAME="mistral-nemo"
 NUM_EXAMPLES=0
 RUN_NAME="${MODEL_NAME}/${NUM_EXAMPLES}_examples"
 PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
