@@ -66,8 +66,7 @@ class PredictionEvaluator:
     Evaluates the results of prediction tasks using DragonEval.
     """
 
-    def __init__(self, /, num_examples: int, task_ids: List[int], ground_truth_path: Path, output_path: Path, prediction_path: Path) -> None:
-        self.num_examples = num_examples
+    def __init__(self, /, task_ids: List[int], ground_truth_path: Path, output_path: Path, prediction_path: Path) -> None:
         self.task_ids = task_ids
         self.ground_truth_path = ground_truth_path
         self.output_path = output_path
@@ -85,7 +84,7 @@ class PredictionEvaluator:
                 tasks=self.task_ids
             ).evaluate()
         except Exception as error:
-            print(f"Evaluation error for {self.num_examples} examples: {error}")
+            print(f"Evaluation error: {error}")
 
 def parse_args_extract_data() -> argparse.Namespace:
     """
@@ -136,7 +135,6 @@ def evaluate() -> None:
     args = parse_args_evaluate()
 
     evaluator = PredictionEvaluator(
-        num_examples=args.num_examples,
         task_ids=args.task_ids,
         ground_truth_path=args.ground_truth_path,
         output_path=args.output_path,
