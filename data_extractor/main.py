@@ -35,7 +35,7 @@ class TaskRunner:
             self._run_task()
 
         total_time = timedelta(seconds=time.time() - start_time)
-        print(f"Total time taken: {total_time}")
+        print(f"Total time taken for generating predictions: {total_time}")
 
     def _run_task(self) -> bool:
         """
@@ -67,7 +67,7 @@ class PredictionEvaluator:
     """
 
     def __init__(self, /, task_ids: List[int], ground_truth_path: Path, output_path: Path, prediction_path: Path) -> None:
-        self.task_ids = task_ids
+        self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
         self.ground_truth_path = ground_truth_path
         self.output_path = output_path
         self.prediction_path = prediction_path

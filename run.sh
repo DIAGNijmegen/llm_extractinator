@@ -1,10 +1,13 @@
 #!/bin/bash
 
-pip install -e .
+# pip install -e .
 
+BASE_DIR="/data/bodyct/experiments/luc_t10162/GitHub/LLM_data_extractor"
+GROUND_TRUTH_PATH="/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set"
 MODEL_NAME="phi3.5"
 NUM_EXAMPLES=0
 RUN_NAME="${MODEL_NAME}/${NUM_EXAMPLES}_examples"
+PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
 
 extract_data \
     --task_id 1 \
@@ -14,7 +17,7 @@ extract_data \
 
 evaluate \
     --task_ids 1 \
-    --prediction_path /output/$RUN_NAME \
-    --ground_truth_path /data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set \
-    --output_path /output/$RUN_NAME
+    --prediction_path $PREDICTION_PATH \
+    --ground_truth_path $GROUND_TRUTH_PATH \
+    --output_path $PREDICTION_PATH
 

@@ -2,8 +2,6 @@ As an expert radiologist, your objective is to accurately evaluate the provided 
 
 **Task:** {task}
 
-**Labels:** {labels}
-
 **Description:** {description}
 
 You are given a radiology report along with the correct label. Your task is to provide the reasoning behind this label. Keep your reasoning concise, with a maximum of two sentences.

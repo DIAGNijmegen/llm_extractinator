@@ -2,8 +2,6 @@ As an expert radiologist, your objective is to accurately evaluate the provided 
 
 **Task:** {task}
 
-**Labels:** {labels}
-
 **Description:** {description}
 
 Please carefully review the radiology report and think step by step.

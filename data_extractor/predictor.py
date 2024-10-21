@@ -1,7 +1,6 @@
-import json
 import random
 from pathlib import Path
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, get_origin, Literal, Union, get_args
 import pandas as pd
 from tqdm.auto import tqdm
 from uuid import UUID
@@ -13,6 +12,7 @@ from langchain_core.prompts import (
     PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate,
     AIMessagePromptTemplate, FewShotChatMessagePromptTemplate
 )
+from pydantic import BaseModel
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult
@@ -83,7 +83,6 @@ class Predictor:
         """
         self.task = self.task_config.get('Task')
         self.type = self.task_config.get('Type')
-        self.labels = self.task_config.get('Labels')
         self.length = self.task_config.get('Length')
         self.description = self.task_config.get('Description')
         self.input_field = self.task_config.get('Input_Field')
@@ -91,6 +90,7 @@ class Predictor:
         self.test_path = self.task_config.get('Data_Path')
         self.label_field = self.task_config.get('Label_Field')
         self.task_name = self.task_config.get('Task_Name')
+        self.parser_format = self.task_config.get('Parser_Format')
 
 
     def generate_examples(self, train_data: pd.DataFrame) -> List[Dict[str, Any]]:
@@ -113,7 +113,6 @@ class Predictor:
             prompt=PromptTemplate(
                 template = self._load_template("example_generation/system_prompt").format(
                     task=self.task, 
-                    labels=self.labels, 
                     description=self.description
                 ) + '\n**Format instructions:**\n{format_instructions}',
                 input_variables=[],
@@ -208,8 +207,9 @@ class Predictor:
         Args:
             examples (Optional[List[Dict[str, Any]]]): The examples to use for the prompt.
         """
-        self.parser_model = load_parser(task_type=self.type, valid_items=self.labels, list_length=self.length)
+        self.parser_model = load_parser(task_type=self.type, parser_format=self.parser_format)
         self.parser = JsonOutputParser(pydantic_object=self.parser_model)
+        self.parser_model_fields = self.parser_model.model_fields
         self.format_instructions = self.parser.get_format_instructions()
 
         if examples:
@@ -233,8 +233,7 @@ class Predictor:
         final_system_prompt = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template = self._load_template("data_extraction/system_prompt").format(
-                    task=self.task, 
-                    labels=self.labels, 
+                    task=self.task,
                     description=self.description
                 ) + '\n**Format instructions:**\n{format_instructions}',
                 input_variables=[],
@@ -277,8 +276,7 @@ class Predictor:
         final_system_prompt = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template = self._load_template("data_extraction/system_prompt").format(
-                    task=self.task, 
-                    labels=self.labels, 
+                    task=self.task,
                     description=self.description
                 ) + '\n**Format instructions:**\n{format_instructions}',
                 input_variables=[],
@@ -322,11 +320,55 @@ class Predictor:
         Returns:
             List[Dict[str, Any]]: The list of results with all items validated or attempted to be fixed.
         """
-        def handle_failure(key: str) -> Any:
-            """Handle failure by assigning default values for missing fields."""
-            if key == 'reasoning':
-                return ''
-            return random.choices(self.labels, k=self.length) if self.length else random.choice(self.labels)
+        def handle_failure(annotation):
+            # 1. Check if the annotation is a Literal
+            if get_origin(annotation) is Literal:
+                # Randomly select one of the Literal's possible values
+                options = get_args(annotation)
+                return random.choice(options)
+            
+            # 2. Handle basic types with default values
+            elif annotation == str:
+                return ""  # Empty string for str
+            elif annotation == int:
+                return 0  # Zero for int
+            elif annotation == float:
+                return 0.0  # Zero for float
+            elif annotation == bool:
+                return False  # False for bool
+            elif get_origin(annotation) is list:
+                return []  # Empty list for list
+            elif get_origin(annotation) is dict:
+                return {}  # Empty dict for dict
+            
+            # 3. Handle Optional types
+            elif get_origin(annotation) is Optional:
+                # Use the default handling for the inner type of Optional
+                inner_type = get_args(annotation)[0]
+                return handle_failure(inner_type)
+            
+            # 4. Handle Union types
+            elif get_origin(annotation) is Union:
+                # Try the first type in the Union as a default
+                possible_types = get_args(annotation)
+                return handle_failure(possible_types[0])
+            
+            # 5. Handle nested Pydantic models
+            elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
+                # Create an instance with default values using handle_failure recursively
+                nested_instance = {}
+                for field_name, field in annotation.__annotations__.items():
+                    nested_instance[field_name] = handle_failure(field)
+                return annotation(**nested_instance)
+
+            # 6. Handle Any type
+            elif annotation == Any:
+                return None  # Arbitrarily return None for Any
+
+            # 7. Fallback case
+            else:
+                return None  # Return None for unsupported or unknown types
+
 
         # Ensure 'original_index' and 'status' are initialized for all results
         for i, result in enumerate(results):
@@ -353,7 +395,7 @@ class Predictor:
 
             # Prepare the batch for fixing and maintain index mapping
             invalid_results = [results[i] for i in invalid_indices]
-            index_mapping = {i: results[i]['original_index'] for i in invalid_indices}  # Map original index
+            index_mapping = {i: results[i]['original_index'] for i in invalid_indices}
             fixing_inputs = [{"completion": str(result)} for result in invalid_results]
             print(f"Retry {attempt + 1}: Attempting to fix {len(invalid_indices)} invalid results...")
 
@@ -384,8 +426,8 @@ class Predictor:
         for i in invalid_indices:
             if results[i].get('status') != 'success':
                 print(f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values.")
-                results[i]['label'] = handle_failure('label')
-                results[i]['reasoning'] = handle_failure('reasoning')
+                for key in self.parser_model_fields:
+                    results[i][key] = handle_failure(self.parser_model_fields[key].annotation)
                 results[i]['retries'] = max_attempts
                 results[i]['status'] = 'failed'
 
