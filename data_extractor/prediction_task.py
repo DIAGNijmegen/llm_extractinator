@@ -40,7 +40,6 @@ class PredictionTask:
         self._extract_task_info()
 
         # Setup output paths
-        self.output_path_base = self.output_path_base / f"{self.num_examples}_examples"
         self.examples_path = self.homepath / f"examples/{self.task_name}_examples.json"
 
         # Initialize data and model
