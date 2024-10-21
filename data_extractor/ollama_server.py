@@ -8,7 +8,7 @@ class OllamaServerManager:
         Initialize the server manager with the given model name.
         """
         self.model_name = model_name
-        self.log_directory = os.path.join(os.path.dirname(__file__), '../output', self.model_name)
+        self.log_directory = os.path.join(os.path.dirname(__file__), '../output')
         self.log_file_path = os.path.join(self.log_directory, log_filename)
         self.serve_process = None
 
