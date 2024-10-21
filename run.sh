@@ -8,6 +8,7 @@ MODEL_NAME="mistral-nemo"
 NUM_EXAMPLES=0
 RUN_NAME="${MODEL_NAME}/${NUM_EXAMPLES}_examples"
 PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
+OUTPUT_PATH="${PREDICTION_PATH}/metrics.json"
 
 extract_data \
     --task_id 1 \
