@@ -1,0 +1,66 @@
+{
+    "Task": "Name of the task",
+    "Type": "Classification",
+    "Description": "Detailed description of the task",
+    "Data_Path": "/path/to/data.json",
+    "Example_Path": "/path/to/example.json",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target",
+    "Parser_Format": {
+        "id": {
+            "type": "int",
+            "description": "The unique identifier for the user"
+        },
+        "name": {
+            "type": "str",
+            "description": "The name of the user",
+            "literals": [
+                "Alice",
+                "Bob",
+                "Charlie"
+            ]
+        },
+        "age": {
+            "type": "int",
+            "description": "The age of the user"
+        },
+        "is_active": {
+            "type": "bool",
+            "description": "Indicates whether the user is active",
+            "optional": true
+        },
+        "address": {
+            "type": "nested",
+            "description": "The address of the user",
+            "properties": {
+                "street": {
+                    "type": "str",
+                    "description": "The street name"
+                },
+                "city": {
+                    "type": "str",
+                    "description": "The city"
+                },
+                "zipcode": {
+                    "type": "str",
+                    "description": "The postal code",
+                    "optional": true
+                },
+                "number": {
+                    "type": "int",
+                    "description": "The house number",
+                    "optional": true
+                }
+            }
+        },
+        "role": {
+            "type": "str",
+            "description": "The role of the user",
+            "literals": [
+                "admin",
+                "user",
+                "guest"
+            ]
+        }
+    }
+}
