@@ -23,10 +23,10 @@ def create_field(field_info: Dict[str, Any]) -> Any:
     description = field_info.get("description", None)
     
     # Handle nested object (dictionary) types
-    if field_info["type"] == "nested":
+    if field_info["type"] == "dict":
         nested_model = create_pydantic_model_from_json(
             field_info["properties"],
-            model_name="NestedModel"
+            model_name="DictionaryModel"
         )
         field_type = nested_model
     else:

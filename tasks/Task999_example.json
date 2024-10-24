@@ -30,7 +30,7 @@
             "optional": true
         },
         "address": {
-            "type": "nested",
+            "type": "dict",
             "description": "The address of the user",
             "properties": {
                 "street": {
