@@ -2,6 +2,7 @@ from typing import Optional
 from pathlib import Path
 import json
 import time
+from pydantic import BaseModel
 
 def preprocess_text(text) -> str:
     # Strip leading and trailing whitespace and remove disclaimer if present
@@ -13,6 +14,8 @@ def preprocess_text(text) -> str:
 
 def save_json(data, outpath: Path, filename: Optional[str] = None, retries: int = 3, delay: float = 1.0):
     path = outpath / filename if filename else outpath
+    if isinstance(data, Basemodel):
+        data = data.model_dump()
     
     attempt = 0
     while attempt < retries:
