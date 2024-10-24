@@ -11,7 +11,7 @@ PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
 OUTPUT_PATH="${PREDICTION_PATH}/metrics.json"
 
 extract_data \
-    --task_id 14 \
+    --task_id 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 \
     --model_name $MODEL_NAME \
     --num_examples $NUM_EXAMPLES \
     --run_name $RUN_NAME
