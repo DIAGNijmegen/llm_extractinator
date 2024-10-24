@@ -1,5 +1,5 @@
 {
-    "Task": "Determine if a pulmonary nodule is described in the radiology report.",
+    "Task": "Pulmonary nodule presence",
     "Type": "Classification",
     "Description": "This task requires analyzing the text of radiology reports to identify whether a pulmonary nodule is specifically mentioned. It is only relevant whether one is written literally in the text or not. You should not make inferences of the patient's health based on the report. The result should be a binary classification: 'True' if a nodule is mentioned, and 'False' if it is not.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task002_nodule_clf.json",
@@ -13,7 +13,7 @@
         },
         "label": {
             "type": "bool",
-            "description": "The final classification. True if adhesions are present, false if they are not."
+            "description": "The final classification. True if a nodule is present, false if it is not."
         }
     }
 }
