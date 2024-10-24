@@ -13,15 +13,15 @@ class TaskRunner:
     """
     Handles prediction task execution with multiprocessing support.
     """
-    def __init__(self, /, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: Path) -> None:
+    def __init__(self, /, model_name: str, task_id: int, num_examples: int, n_runs: int, temperature: float, run_name: str, output_folder: Path) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
         self.run_name = run_name
-        self.homepath = Path(__file__).resolve().parents[1]
-        self.output_path_base = self.homepath / "output" / run_name
+        self.output_folder = output_folder
+        self.output_path_base = self.output_folder / run_name
 
     def run_tasks(self) -> None:
         """
@@ -96,6 +96,7 @@ def parse_args_extract_data() -> argparse.Namespace:
     parser.add_argument("--n_runs", type=int, default=5, help="Number of runs.")
     parser.add_argument("--temperature", type=float, default=0.3, help="Temperature for generation.")
     parser.add_argument("--run_name", type=Path, default="run", help="Name of the run.")
+    parser.add_argument("--output_folder", type=Path, default=f"{Path(__file__).resolve().parents[1]}/output", help="Path for output files.")
     return parser.parse_args()
 
 def parse_args_evaluate() -> argparse.Namespace:
@@ -106,7 +107,7 @@ def parse_args_evaluate() -> argparse.Namespace:
     parser.add_argument("--task_ids", nargs="+", type=int, required=True, help="Task IDs to evaluate.")
     parser.add_argument("--prediction_path", type=Path, required=True, help="Path to prediction data.")
     parser.add_argument("--ground_truth_path", type=Path, required=True, help="Path to ground truth data.")
-    parser.add_argument("--output_path", type=Path, required=True, help="Path for output file.")
+    parser.add_argument("--output_folder", type=Path, required=True, help="Path for output file.")
     return parser.parse_args()
 
 
@@ -122,7 +123,8 @@ def extract_data() -> None:
         num_examples=args.num_examples,
         n_runs=args.n_runs,
         temperature=args.temperature,
-        run_name=args.run_name
+        run_name=args.run_name,
+        output_folder=args.output_folder
     )
 
     task_runner.run_tasks()
