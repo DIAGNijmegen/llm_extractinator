@@ -14,7 +14,7 @@ def preprocess_text(text) -> str:
 
 def save_json(data, outpath: Path, filename: Optional[str] = None, retries: int = 3, delay: float = 1.0):
     path = outpath / filename if filename else outpath
-    if isinstance(data, Basemodel):
+    if isinstance(data, BaseModel):
         data = data.model_dump()
     
     attempt = 0
