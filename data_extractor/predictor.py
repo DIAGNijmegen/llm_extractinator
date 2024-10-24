@@ -460,7 +460,7 @@ class Predictor:
         fixing_chain = self.fixing_prompt | self.model | JsonOutputParser()
 
         # Preprocess test data
-        test_data_processed = [{"text": preprocess_text(report)} for report in test_data[self.input_field]]
+        test_data_processed = [{"text": preprocess_text(str(report))} for report in test_data[self.input_field]]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
