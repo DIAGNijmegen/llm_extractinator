@@ -139,9 +139,9 @@ def process_file(filepath: Path, task_id: str) -> None:
                     example.pop("lesion_4"),
                     example.pop("lesion_5"),
                 ]
-            for lesion in example["multi_label_regression"]:
+            for i, lesion in enumerate(example["multi_label_regression"]):
                 if lesion == 0:
-                    lesion = None
+                    example["multi_label_regression"][i] = None
 
         except KeyError:
             print(f"Task {task_id} does not contain the correct keys.")
