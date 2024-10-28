@@ -10,15 +10,22 @@ RUN_NAME="${MODEL_NAME}/${NUM_EXAMPLES}_examples"
 PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
 OUTPUT_PATH="${PREDICTION_PATH}/metrics.json"
 
-extract_data \
-    --task_id 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 \
-    --model_name $MODEL_NAME \
-    --num_examples $NUM_EXAMPLES \
-    --run_name $RUN_NAME
+# for task_id in {1..24}
+# do
+#     extract_data \
+#         --task_id $task_id \
+#         --model_name $MODEL_NAME \
+#         --num_examples $NUM_EXAMPLES \
+#         --run_name $RUN_NAME
+# done
+
+post_process \
+    --output_path $PREDICTION_PATH \
+    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 
 evaluate \
-    --task_ids 14 \
+    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 \
     --prediction_path $PREDICTION_PATH \
     --ground_truth_path $GROUND_TRUTH_PATH \
-    --output_path $PREDICTION_PATH
+    --output_path $OUTPUT_PATH
 
