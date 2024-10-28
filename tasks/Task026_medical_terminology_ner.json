@@ -1,20 +1,19 @@
 {
-    "Task": "Identify (sequences of) tokens that are considered medical terminology.",
+    "Task": "Medical terminology recognition",
     "Type": "Single Label Named Entity Recognition",
-    "Labels": [
-        [
-            "B",
-            "I",
-            "O"
-        ],
-        [
-            "MENTION",
-            "null"
-        ]
-    ],
-    "Description": "This task involves identifying sequences of tokens in the text that are considered medical terminology. If it is the start of a sequence, the token should be tagged as B. If it is a continuation of a sequence, it should be tagged as I. If it is not part of any of the classes, it should be tagged as O.",
+    "Description": "This task involves identifying sequences of tokens in the text that are considered medical terminology. The text should be returned in full with the <START> and <END> tags surrounding the identified entities.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task026_medical_terminology_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task026_medical_terminology_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
-    "Label_Field": "named_entity_recognition_target"
+    "Label_Field": "named_entity_recognition_target",
+    "Parser_Format": {
+        "reasoning": {
+            "type": "str",
+            "description": "The thought process leading to the final answer."
+        },
+        "tagged_text": {
+            "type": "str",
+            "description": "The text with the medical terminologies surrounded by <START> and <END> tags."
+        }
+    }
 }

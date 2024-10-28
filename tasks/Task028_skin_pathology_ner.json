@@ -1,24 +1,19 @@
 {
-    "Task": "Analyze each word in the report and split the diagnosis for each specified case, numbered from 1 to 20, including identifying basal cell carcinoma subtypes and the tissue acquisition method.",
+    "Task": "Skin histopathology diagnosis",
     "Type": "Multi Label Named Entity Recognition",
-    "Labels": [
-        [
-            "B",
-            "I",
-            "O"
-        ],
-        [
-            "Case number"
-        ],
-        [
-            "Diagnosis",
-            "Biopsy",
-            "Excision"
-        ]
-    ],
-    "Description": "This task involves analyzing each word in a skin pathology report to classify and split the diagnosis for each specified case, numbered from 1 to 20. The diagnoses include basal cell carcinoma, benign, or other pathologies, with a requirement to classify each subtype present for basal cell carcinoma cases. Additionally, the task requires determining the tissue acquisition method (biopsy or excision) for each case. Tokens should be tagged as B (beginning), I (inside), or O (outside) based on their role in the sequence.",
+    "Description": "This task involves analyzing each word in a skin pathology report to classify and split the diagnosis for each specified case, numbered from 1 upto 20. The diagnoses include basal cell carcinoma, benign, or other pathologies, with a requirement to classify each subtype present for basal cell carcinoma cases. Additionally, the task requires determining the tissue acquisition method (biopsy or excision) for each case. The full text should be returned with tags surrounding the identified entities. Use <START BIOPSY 1> and <END BIOPSY 1> for the biopsy acquisition method, <START EXCISION 1> and <END EXCISION 1> for the excision acquisition method, <START BCC 1> and <END BCC 1> for basal cell carcinoma, <START BENIGN 1> and <END BENIGN 1> for benign pathologies, <START OTHER 1> and <END OTHER 1> for other pathologies. For the subtypes, use <START INFILTRATIVE 1> and <END INFILTRATIVE 1> for infiltrative basal cell carcinoma, <START NODULAR 1> and <END NODULAR 1> for nodular basal cell carcinoma, <START SUPERFICIAL 1> and <END SUPERFICIAL 1> for superficial basal cell carcinoma. If two or more tags apply to the same word, use for example <START BIOPSY 1+2> and <END BIOPSY 1+2>.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task028_skin_pathology_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task028_skin_pathology_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
-    "Label_Field": "multi_label_named_entity_recognition_target"
+    "Label_Field": "multi_label_named_entity_recognition_target",
+    "Parser_Format": {
+        "reasoning": {
+            "type": "str",
+            "description": "The thought process leading to the final answer."
+        },
+        "tagged_text": {
+            "type": "str",
+            "description": "The text with the diagnoses and tissue acquisition methods surrounded by the appropriate tags."
+        }
+    }
 }
