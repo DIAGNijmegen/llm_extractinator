@@ -21,7 +21,7 @@ class PredictionTask:
         task_id: str,
         model_name: str,
         output_path_base: Path,
-        task_path: Path,
+        task_dir: Path,
         num_examples: int,
         n_runs: int,
         temperature: float,
@@ -48,7 +48,7 @@ class PredictionTask:
         self.data_dir = data_dir
 
         # Extract task information such as config, train and test paths
-        self.task_path = task_path
+        self.task_dir = task_dir
         self._extract_task_info()
 
         # Setup output paths
@@ -86,7 +86,7 @@ class PredictionTask:
         """
         Extract task information from the task configuration file.
         """
-        task_loader = TaskLoader(folder_path=self.task_path, task_id=self.task_id)
+        task_loader = TaskLoader(folder_path=self.task_dir, task_id=self.task_id)
         self.task_config = task_loader.find_and_load_task()
         self.train_path = self.data_dir / self.task_config.get("Example_Path")
         self.test_path = self.data_dir / self.task_config.get("Data_Path")
