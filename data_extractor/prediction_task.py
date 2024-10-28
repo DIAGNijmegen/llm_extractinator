@@ -13,11 +13,20 @@ class PredictionTask:
     running predictions, and saving results.
     """
 
-    def __init__(self, /, task_id: str, model_name: str, output_path_base: Path, 
-                num_examples: int, n_runs: int, temperature: float) -> None:
+    def __init__(
+        self,
+        /,
+        task_id: str,
+        model_name: str,
+        output_path_base: Path,
+        task_path: Path,
+        num_examples: int,
+        n_runs: int,
+        temperature: float,
+    ) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
-        
+
         Args:
             task_id (str): Identifier for the task.
             model_name (str): The name of the model to be used for predictions.
@@ -33,26 +42,31 @@ class PredictionTask:
         self.n_runs = n_runs
         self.temperature = temperature
 
-        self.homepath = Path(__file__).resolve().parents[1]
-        
         # Extract task information such as config, train and test paths
-        self.task_path = self.homepath / "tasks"
+        self.task_path = task_path
         self._extract_task_info()
 
         # Setup output paths
+        self.homepath = Path(__file__).resolve().parents[1]
         self.examples_path = self.homepath / f"examples/{self.task_name}_examples.json"
 
         # Initialize data and model
-        self.data_loader = DataLoader(train_path=self.train_path, test_path=self.test_path)
+        self.data_loader = DataLoader(
+            train_path=self.train_path, test_path=self.test_path
+        )
         self.train, self.test = self.data_loader.load_data()
         self.model = self.initialize_model()
-        self.predictor = Predictor(model=self.model, task_config=self.task_config, 
-                                   examples_path=self.examples_path, num_examples=self.num_examples)
+        self.predictor = Predictor(
+            model=self.model,
+            task_config=self.task_config,
+            examples_path=self.examples_path,
+            num_examples=self.num_examples,
+        )
 
     def initialize_model(self) -> ChatOllama:
         """
         Initialize the model using the given model name and temperature.
-        
+
         Returns:
             ChatOllama: The initialized model object.
         """
@@ -69,21 +83,21 @@ class PredictionTask:
         """
         task_loader = TaskLoader(folder_path=self.task_path, task_id=self.task_id)
         self.task_config = task_loader.find_and_load_task()
-        self.train_path = self.task_config.get('Example_Path')
-        self.test_path = self.task_config.get('Data_Path')
-        self.label_field = self.task_config.get('Label_Field')
-        self.input_field = self.task_config.get('Input_Field')
+        self.train_path = self.task_config.get("Example_Path")
+        self.test_path = self.task_config.get("Data_Path")
+        self.label_field = self.task_config.get("Label_Field")
+        self.input_field = self.task_config.get("Input_Field")
         self.task_name = task_loader.get_task_name()
 
     def _load_examples(self) -> Dict:
         """
         Load examples from a JSON file if it exists, otherwise generate new examples.
-        
+
         Returns:
             Dict: Loaded or generated examples.
         """
         if self.examples_path.exists():
-            with self.examples_path.open('r') as f:
+            with self.examples_path.open("r") as f:
                 return json.load(f)
         else:
             # Generate new examples if the file doesn't exist
@@ -115,24 +129,24 @@ class PredictionTask:
         output_path.mkdir(parents=True, exist_ok=True)
 
         prediction_file = output_path / "nlp-predictions-dataset.json"
-        
+
         # Skip if predictions already exist
         if prediction_file.exists():
-            print(f"Prediction {run_idx + 1} of {self.n_runs} already exists. Skipping...")
+            print(
+                f"Prediction {run_idx + 1} of {self.n_runs} already exists. Skipping..."
+            )
             return
 
         print(f"Running prediction {run_idx + 1} of {self.n_runs}...")
 
         # Get prediction results
         results = self.predictor.predict(self.test)
-        
+
         predictions = [
-            {
-                "uid": uid,
-                **result
-            }
-            for uid, result in zip(self.test['uid'], results)
+            {"uid": uid, **result} for uid, result in zip(self.test["uid"], results)
         ]
-        
+
         # Save the predictions to a JSON file
-        save_json(predictions, outpath=output_path, filename="nlp-predictions-dataset.json")
+        save_json(
+            predictions, outpath=output_path, filename="nlp-predictions-dataset.json"
+        )

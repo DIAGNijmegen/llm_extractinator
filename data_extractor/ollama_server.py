@@ -1,20 +1,21 @@
 import subprocess
 import os
 import ollama
+from pathlib import Path
+
 
 class OllamaServerManager:
-    def __init__(self, model_name, log_filename="ollama_server.log"):
+    def __init__(self, model_name, log_directory, log_filename="ollama_server.log"):
         """
         Initialize the server manager with the given model name.
         """
         self.model_name = model_name
-        self.log_directory = os.path.join(os.path.dirname(__file__), '../output')
-        self.log_file_path = os.path.join(self.log_directory, log_filename)
+        self.log_directory = log_directory
+        self.log_file_path = self.log_directory / log_filename
         self.serve_process = None
 
         # Ensure the output directory exists
         os.makedirs(self.log_directory, exist_ok=True)
-        
 
     def pull_model(self):
         """
@@ -32,15 +33,15 @@ class OllamaServerManager:
         Start the server for the specified model using the `ollama serve` command.
         """
         log_file_handle = open(self.log_file_path, "w")
-        
+
         try:
             serve_command = f"ollama serve"
             print(f"Starting server...")
             self.serve_process = subprocess.Popen(
-                serve_command, 
+                serve_command,
                 shell=True,
                 stdout=log_file_handle,
-                stderr=subprocess.STDOUT
+                stderr=subprocess.STDOUT,
             )
             print("Ollama server is running...")
         except Exception as e:
