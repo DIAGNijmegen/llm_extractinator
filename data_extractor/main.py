@@ -1,11 +1,13 @@
+import argparse
 import time
 from datetime import timedelta
-import argparse
 from pathlib import Path
-from data_extractor.prediction_task import PredictionTask
-from data_extractor.ollama_server import OllamaServerManager
-from dragon_eval import DragonEval
 from typing import List
+
+from dragon_eval import DragonEval
+
+from data_extractor.ollama_server import OllamaServerManager
+from data_extractor.prediction_task import PredictionTask
 
 DEBUG = True
 
@@ -24,9 +26,10 @@ class TaskRunner:
         n_runs: int,
         temperature: float,
         run_name: str,
-        output_folder: Path,
-        task_path: Path,
-        log_directory: Path,
+        output_dir: Path,
+        task_dir: Path,
+        log_dir: Path,
+        data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
@@ -34,10 +37,11 @@ class TaskRunner:
         self.n_runs = n_runs
         self.temperature = temperature
         self.run_name = run_name
-        self.output_folder = output_folder
-        self.output_path_base = self.output_folder / run_name
-        self.task_path = task_path
-        self.log_directory = log_directory
+        self.output_dir = output_dir
+        self.output_path_base = self.output_dir / run_name
+        self.task_dir = task_dir
+        self.log_dir = log_dir
+        self.data_dir = data_dir
 
     def run_tasks(self) -> None:
         """
@@ -47,7 +51,7 @@ class TaskRunner:
 
         # Start the Ollama Server
         with OllamaServerManager(
-            model_name=self.model_name, log_directory=self.log_directory
+            model_name=self.model_name, log_dir=self.log_dir
         ):
             self._run_task()
 
@@ -66,7 +70,8 @@ class TaskRunner:
                 num_examples=self.num_examples,
                 n_runs=self.n_runs,
                 temperature=self.temperature,
-                task_path=self.task_path,
+                task_dir=self.task_dir,
+                data_dir=self.data_dir,
             )
             task.run()
             return True
@@ -141,22 +146,28 @@ def parse_args_extract_data() -> argparse.Namespace:
     )
     parser.add_argument("--run_name", type=Path, default="run", help="Name of the run.")
     parser.add_argument(
-        "--output_folder",
+        "--output_dir",
         type=Path,
         default=f"{Path(__file__).resolve().parents[1]}/output",
         help="Path for output files.",
     )
     parser.add_argument(
-        "--task_path",
+        "--task_dir",
         type=Path,
         default=f"{Path(__file__).resolve().parents[1]}/tasks",
         help="Path for task files.",
     )
     parser.add_argument(
-        "--log_directory",
+        "--log_dir",
         type=Path,
-        default=f"{Path(__file__).resolve().parents[1]} / output",
+        default=f"{Path(__file__).resolve().parents[1]}/output",
         help="Path to the directory for the log file for the server.",
+    )
+    parser.add_argument(
+        "--data_dir",
+        type=Path,
+        default=f"{Path(__file__).resolve().parents[1]}/data",
+        help="Path to the data directory.",
     )
     return parser.parse_args()
 
@@ -197,9 +208,10 @@ def extract_data() -> None:
         n_runs=args.n_runs,
         temperature=args.temperature,
         run_name=args.run_name,
-        output_folder=args.output_folder,
-        task_path=args.task_path,
-        log_directory=args.log_directory,
+        output_dir=args.output_dir,
+        task_dir=args.task_dir,
+        log_dir=args.log_dir,
+        data_dir=args.data_dir,
     )
 
     task_runner.run_tasks()
