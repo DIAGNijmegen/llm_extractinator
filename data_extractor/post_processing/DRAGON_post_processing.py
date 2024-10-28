@@ -108,7 +108,7 @@ def process_file(filepath: Path, task_id: str) -> None:
         print_processing_message(task_id)
         try:
             for example in data:
-                example["multi_label_binary_classification"] = [
+                example["multi_label_multi_class_classification"] = [
                     example.pop("attenuation"),
                     example.pop("location"),
                 ]
