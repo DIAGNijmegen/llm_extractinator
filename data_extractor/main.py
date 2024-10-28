@@ -1,11 +1,13 @@
+import argparse
 import time
 from datetime import timedelta
-import argparse
 from pathlib import Path
-from data_extractor.prediction_task import PredictionTask
-from data_extractor.ollama_server import OllamaServerManager
-from dragon_eval import DragonEval
 from typing import List
+
+from dragon_eval import DragonEval
+
+from data_extractor.ollama_server import OllamaServerManager
+from data_extractor.prediction_task import PredictionTask
 
 DEBUG = True
 
@@ -27,6 +29,7 @@ class TaskRunner:
         output_folder: Path,
         task_path: Path,
         log_directory: Path,
+        data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
@@ -38,6 +41,7 @@ class TaskRunner:
         self.output_path_base = self.output_folder / run_name
         self.task_path = task_path
         self.log_directory = log_directory
+        self.data_dir = data_dir
 
     def run_tasks(self) -> None:
         """
@@ -67,6 +71,7 @@ class TaskRunner:
                 n_runs=self.n_runs,
                 temperature=self.temperature,
                 task_path=self.task_path,
+                data_dir=self.data_dir,
             )
             task.run()
             return True
@@ -155,8 +160,14 @@ def parse_args_extract_data() -> argparse.Namespace:
     parser.add_argument(
         "--log_directory",
         type=Path,
-        default=f"{Path(__file__).resolve().parents[1]} / output",
+        default=f"{Path(__file__).resolve().parents[1]}/output",
         help="Path to the directory for the log file for the server.",
+    )
+    parser.add_argument(
+        "--data_dir",
+        type=Path,
+        default=f"{Path(__file__).resolve().parents[1]}/data",
+        help="Path to the data directory.",
     )
     return parser.parse_args()
 
@@ -200,6 +211,7 @@ def extract_data() -> None:
         output_folder=args.output_folder,
         task_path=args.task_path,
         log_directory=args.log_directory,
+        data_dir=args.data_dir,
     )
 
     task_runner.run_tasks()

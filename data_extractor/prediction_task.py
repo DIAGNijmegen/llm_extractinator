@@ -1,10 +1,12 @@
 import json
 from pathlib import Path
 from typing import Dict
+
+from langchain_ollama import ChatOllama
+
 from data_extractor.data_loader import DataLoader, TaskLoader
 from data_extractor.predictor import Predictor
 from data_extractor.utils import save_json
-from langchain_ollama import ChatOllama
 
 
 class PredictionTask:
@@ -23,6 +25,7 @@ class PredictionTask:
         num_examples: int,
         n_runs: int,
         temperature: float,
+        data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
@@ -34,6 +37,7 @@ class PredictionTask:
             num_examples (int): Number of examples to generate.
             n_runs (int): Number of runs for the prediction task.
             temperature (float): Temperature setting for the model.
+            data_dir (Path, optional): Path to the data directory. Defaults to the data directory in the project.
         """
         self.task_id = task_id
         self.model_name = model_name
@@ -41,6 +45,7 @@ class PredictionTask:
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
+        self.data_dir = data_dir
 
         # Extract task information such as config, train and test paths
         self.task_path = task_path
@@ -83,8 +88,8 @@ class PredictionTask:
         """
         task_loader = TaskLoader(folder_path=self.task_path, task_id=self.task_id)
         self.task_config = task_loader.find_and_load_task()
-        self.train_path = self.task_config.get("Example_Path")
-        self.test_path = self.task_config.get("Data_Path")
+        self.train_path = self.data_dir / self.task_config.get("Example_Path")
+        self.test_path = self.data_dir / self.task_config.get("Data_Path")
         self.label_field = self.task_config.get("Label_Field")
         self.input_field = self.task_config.get("Input_Field")
         self.task_name = task_loader.get_task_name()
