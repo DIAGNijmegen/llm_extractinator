@@ -1,21 +1,22 @@
-import subprocess
 import os
-import ollama
+import subprocess
 from pathlib import Path
+
+import ollama
 
 
 class OllamaServerManager:
-    def __init__(self, model_name, log_directory, log_filename="ollama_server.log"):
+    def __init__(self, model_name, log_dir, log_filename="ollama_server.log"):
         """
         Initialize the server manager with the given model name.
         """
         self.model_name = model_name
-        self.log_directory = log_directory
-        self.log_file_path = self.log_directory / log_filename
+        self.log_dir = log_dir
+        self.log_file_path = self.log_dir / log_filename
         self.serve_process = None
 
         # Ensure the output directory exists
-        os.makedirs(self.log_directory, exist_ok=True)
+        os.makedirs(self.log_dir, exist_ok=True)
 
     def pull_model(self):
         """
