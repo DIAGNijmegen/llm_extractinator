@@ -27,10 +27,12 @@ def process_file(filepath: Path, task_id: str) -> None:
     with open(filepath, "r") as file:
         data = json.load(file)
 
-    save_json(
-        data=data,
-        filepath=filepath.with_name(f"{filepath.stem}_original_predictions.json"),
-    )
+    backup_filename = filepath.with_name(f"{filepath.stem}_original_predictions.json")
+    if not backup_filename.exists():
+        save_json(
+            data=data,
+            filepath=backup_filename,
+        )
 
     binary_class_ids = [1, 2, 3, 4, 5, 6, 7, 8]
     binary_class_ids = [f"{int(class_id):03}" for class_id in binary_class_ids]
@@ -139,10 +141,6 @@ def process_file(filepath: Path, task_id: str) -> None:
                     example.pop("lesion_4"),
                     example.pop("lesion_5"),
                 ]
-            for i, lesion in enumerate(example["multi_label_regression"]):
-                if lesion == 0:
-                    example["multi_label_regression"][i] = None
-
         except KeyError:
             print(f"Task {task_id} does not contain the correct keys.")
             pass
