@@ -37,7 +37,7 @@
         },
         "non_informative": {
             "type": "bool",
-            "description": "True if the pathologist rated the specimen as non-informative, false otherwise."
+            "description": "True if the pathologist rated the specimen as non of the other categories, false otherwise."
         }
     }
 }

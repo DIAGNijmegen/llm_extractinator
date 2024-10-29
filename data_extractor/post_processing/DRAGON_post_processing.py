@@ -84,8 +84,8 @@ def process_file(filepath: Path, task_id: str) -> None:
                     example.pop("low_grade_dysplasia"),
                     example.pop("high_grade_dysplasia"),
                     example.pop("cancer"),
-                    example.pop("serrated_polyps"),
                     example.pop("non_informative"),
+                    example.pop("serrated_polyps"),
                 ]
         except KeyError:
             print(f"Task {task_id} does not contain the correct keys.")
