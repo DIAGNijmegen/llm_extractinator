@@ -29,6 +29,7 @@ class TaskRunner:
         output_dir: Path,
         task_dir: Path,
         log_dir: Path,
+        num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         self.model_name = model_name
@@ -42,6 +43,7 @@ class TaskRunner:
         self.task_dir = task_dir
         self.log_dir = log_dir
         self.data_dir = data_dir
+        self.num_predict = num_predict
 
     def run_tasks(self) -> None:
         """
@@ -50,9 +52,7 @@ class TaskRunner:
         start_time = time.time()
 
         # Start the Ollama Server
-        with OllamaServerManager(
-            model_name=self.model_name, log_dir=self.log_dir
-        ):
+        with OllamaServerManager(model_name=self.model_name, log_dir=self.log_dir):
             self._run_task()
 
         total_time = timedelta(seconds=time.time() - start_time)
@@ -71,6 +71,7 @@ class TaskRunner:
                 n_runs=self.n_runs,
                 temperature=self.temperature,
                 task_dir=self.task_dir,
+                num_predict=self.num_predict,
                 data_dir=self.data_dir,
             )
             task.run()
@@ -144,6 +145,12 @@ def parse_args_extract_data() -> argparse.Namespace:
     parser.add_argument(
         "--temperature", type=float, default=0.3, help="Temperature for generation."
     )
+    parser.add_argument(
+        "--num_predict",
+        type=int,
+        default=1024,
+        help="Maximum number of tokens to predict.",
+    )
     parser.add_argument("--run_name", type=Path, default="run", help="Name of the run.")
     parser.add_argument(
         "--output_dir",
@@ -208,6 +215,7 @@ def extract_data() -> None:
         n_runs=args.n_runs,
         temperature=args.temperature,
         run_name=args.run_name,
+        num_predict=args.num_predict,
         output_dir=args.output_dir,
         task_dir=args.task_dir,
         log_dir=args.log_dir,

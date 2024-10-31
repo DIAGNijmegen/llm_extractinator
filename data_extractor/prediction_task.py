@@ -25,6 +25,7 @@ class PredictionTask:
         num_examples: int,
         n_runs: int,
         temperature: float,
+        num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         """
@@ -37,6 +38,7 @@ class PredictionTask:
             num_examples (int): Number of examples to generate.
             n_runs (int): Number of runs for the prediction task.
             temperature (float): Temperature setting for the model.
+            num_predict (int): Maximum number of tokens to generate per prediction.
             data_dir (Path, optional): Path to the data directory. Defaults to the data directory in the project.
         """
         self.task_id = task_id
@@ -46,6 +48,7 @@ class PredictionTask:
         self.n_runs = n_runs
         self.temperature = temperature
         self.data_dir = data_dir
+        self.num_predict = num_predict
 
         # Extract task information such as config, train and test paths
         self.task_dir = task_dir
@@ -78,7 +81,7 @@ class PredictionTask:
         return ChatOllama(
             model=self.model_name,
             temperature=self.temperature,
-            num_predict=1024,
+            num_predict=self.num_predict,
             format="json",
         )
 
