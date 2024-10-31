@@ -1,7 +1,7 @@
-from pathlib import Path
-from typing import List
 import argparse
 import json
+from pathlib import Path
+from typing import List
 
 
 def save_json(data: dict, filepath: Path) -> None:
