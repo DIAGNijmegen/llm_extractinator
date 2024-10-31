@@ -19,12 +19,22 @@ do
         --run_name $RUN_NAME
 done
 
+for task_id in {25..28}
+do
+    extract_data \
+        --task_id $task_id \
+        --model_name $MODEL_NAME \
+        --num_examples $NUM_EXAMPLES \
+        --run_name $RUN_NAME \
+        --num_predict 4096
+done
+
 post_process \
     --output_path $PREDICTION_PATH \
-    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28
 
 evaluate \
-    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 \
+    --task_ids 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28\
     --prediction_path $PREDICTION_PATH \
     --ground_truth_path $GROUND_TRUTH_PATH \
     --output_path $OUTPUT_PATH

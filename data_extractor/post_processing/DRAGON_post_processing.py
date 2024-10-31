@@ -80,10 +80,10 @@ def process_file(filepath: Path, task_id: str) -> None:
             for example in data:
                 example["multi_label_binary_classification"] = [
                     example.pop("biopsy"),
+                    example.pop("cancer"),
+                    example.pop("high_grade_dysplasia"),
                     example.pop("hyperplastic_polyps"),
                     example.pop("low_grade_dysplasia"),
-                    example.pop("high_grade_dysplasia"),
-                    example.pop("cancer"),
                     example.pop("non_informative"),
                     example.pop("serrated_polyps"),
                 ]
