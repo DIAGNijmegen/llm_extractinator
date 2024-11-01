@@ -150,7 +150,7 @@ def parse_args_extract_data() -> argparse.Namespace:
     )
     parser.add_argument(
         "--max_context_len",
-        type=Optional[int],
+        type=int,
         default=None,
         help="Maximum context length.",
     )
