@@ -2,7 +2,7 @@ import argparse
 import time
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from dragon_eval import DragonEval
 
@@ -25,7 +25,7 @@ class TaskRunner:
         num_examples: int,
         n_runs: int,
         temperature: float,
-        max_context_len: Optional[int],
+        max_context_len: int,
         run_name: str,
         output_dir: Path,
         task_dir: Path,
@@ -151,7 +151,7 @@ def parse_args_extract_data() -> argparse.Namespace:
     parser.add_argument(
         "--max_context_len",
         type=int,
-        default=None,
+        default=8192,
         help="Maximum context length.",
     )
     parser.add_argument(
