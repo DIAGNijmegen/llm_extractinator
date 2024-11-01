@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from langchain_ollama import ChatOllama
 
@@ -25,6 +25,7 @@ class PredictionTask:
         num_examples: int,
         n_runs: int,
         temperature: float,
+        max_context_len: Optional[int],
         num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
@@ -47,6 +48,7 @@ class PredictionTask:
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
+        self.max_context_len = max_context_len
         self.data_dir = data_dir
         self.num_predict = num_predict
 
@@ -82,6 +84,7 @@ class PredictionTask:
             model=self.model_name,
             temperature=self.temperature,
             num_predict=self.num_predict,
+            num_ctx=self.max_context_len,
             format="json",
         )
 

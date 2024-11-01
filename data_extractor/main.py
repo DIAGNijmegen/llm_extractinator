@@ -2,7 +2,7 @@ import argparse
 import time
 from datetime import timedelta
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from dragon_eval import DragonEval
 
@@ -25,6 +25,7 @@ class TaskRunner:
         num_examples: int,
         n_runs: int,
         temperature: float,
+        max_context_len: Optional[int],
         run_name: str,
         output_dir: Path,
         task_dir: Path,
@@ -37,6 +38,7 @@ class TaskRunner:
         self.num_examples = num_examples
         self.n_runs = n_runs
         self.temperature = temperature
+        self.max_context_len = max_context_len
         self.run_name = run_name
         self.output_dir = output_dir
         self.output_path_base = self.output_dir / run_name
@@ -70,6 +72,7 @@ class TaskRunner:
                 num_examples=self.num_examples,
                 n_runs=self.n_runs,
                 temperature=self.temperature,
+                max_context_len=self.max_context_len,
                 task_dir=self.task_dir,
                 num_predict=self.num_predict,
                 data_dir=self.data_dir,
@@ -146,6 +149,12 @@ def parse_args_extract_data() -> argparse.Namespace:
         "--temperature", type=float, default=0.3, help="Temperature for generation."
     )
     parser.add_argument(
+        "--max_context_len",
+        type=Optional[int],
+        default=None,
+        help="Maximum context length.",
+    )
+    parser.add_argument(
         "--num_predict",
         type=int,
         default=1024,
@@ -214,6 +223,7 @@ def extract_data() -> None:
         num_examples=args.num_examples,
         n_runs=args.n_runs,
         temperature=args.temperature,
+        max_context_len=args.max_context_len,
         run_name=args.run_name,
         num_predict=args.num_predict,
         output_dir=args.output_dir,
