@@ -107,13 +107,12 @@ class PredictionTask:
         Returns:
             Dict: Loaded or generated examples.
         """
-        if self.examples_path.exists():
-            with self.examples_path.open("r") as f:
-                return json.load(f)
-        else:
-            # Generate new examples if the file doesn't exist
+        if not self.examples_path.exists():
             self.examples_path.parent.mkdir(parents=True, exist_ok=True)
-            return self.predictor.generate_examples(self.train)
+            self.predictor.generate_examples(self.train)
+
+        with self.examples_path.open("r") as f:
+            return json.load(f)
 
     def run(self) -> None:
         """
@@ -123,7 +122,9 @@ class PredictionTask:
         examples = self._load_examples() if self.num_examples > 0 else None
 
         # Prepare the predictor with the loaded examples
-        self.predictor.prepare_prompt_ollama(examples=examples)
+        self.predictor.prepare_prompt_ollama(
+            model_name=self.model_name, examples=examples
+        )
 
         # Run predictions across multiple runs
         for run_idx in range(self.n_runs):
