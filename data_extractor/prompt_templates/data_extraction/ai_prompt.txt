@@ -1,1 +1,1 @@
-{{"reasoning": "{reasoning}", "label": "{label}"}}
+{{"reasoning": "{reasoning}", "label": {label}}}

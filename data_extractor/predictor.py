@@ -22,7 +22,7 @@ from langchain_core.prompts import (
     PromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
@@ -93,11 +93,6 @@ class Predictor:
         self.num_examples = num_examples
         self.examples_path = examples_path
 
-        self.embedding_model_name = "paraphrase-multilingual-MiniLM-L12-v2"
-        self.embedding_model = HuggingFaceEmbeddings(
-            model_name=self.embedding_model_name
-        )
-
         self._extract_task_info()
 
     def _extract_task_info(self) -> None:
@@ -127,9 +122,7 @@ class Predictor:
         """
         print("Generating examples...")
 
-        parser_model = load_parser(
-            task_type="Example Generation", valid_items=None, list_length=None
-        )
+        parser_model = load_parser(task_type="Example Generation", parser_format=None)
         self.example_parser = JsonOutputParser(pydantic_object=parser_model)
         example_format_instructions = self.example_parser.get_format_instructions()
 
@@ -170,13 +163,16 @@ class Predictor:
 
         # Combine results with original data to form examples
         examples = [
-            {"text": row["text"], "label": row["label"], "reasoning": reasoning}
+            {
+                "text": str(row["text"]),
+                "label": str(row["label"]),
+                "reasoning": reasoning,
+            }
             for reasoning, row in zip(reasonings, train_data_processed)
         ]
 
         # Save examples to file
         save_json(examples, outpath=self.examples_path)
-        return examples
 
     def _create_system_prompt(
         self, template_base: str, format_instructions: str
@@ -235,7 +231,7 @@ class Predictor:
             return f.read()
 
     def prepare_prompt_ollama(
-        self, examples: Optional[List[Dict[str, Any]]] = None
+        self, model_name: str, examples: Optional[List[Dict[str, Any]]] = None
     ) -> None:
         """
         Prepare the system and human prompts for few-shot learning based on provided examples.
@@ -251,6 +247,7 @@ class Predictor:
         self.format_instructions = self.parser.get_format_instructions()
 
         if examples:
+            self.embedding_model = OllamaEmbeddings(model=model_name)
             self.example_selector = MaxMarginalRelevanceExampleSelector.from_examples(
                 examples, self.embedding_model, Chroma, k=self.num_examples
             )
