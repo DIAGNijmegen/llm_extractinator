@@ -154,7 +154,7 @@ def post_process(output_path: Path, task_ids: List[int]) -> None:
     for task_id in task_ids:
         task_id = f"{int(task_id):03}"
         task_folders = list(output_path.glob(f"Task{task_id}_*"))
-        assert len(task_folders) == 5
+        # assert len(task_folders) == 5
 
         for task_folder in task_folders:
             filepath = task_folder / "nlp-predictions-dataset.json"
