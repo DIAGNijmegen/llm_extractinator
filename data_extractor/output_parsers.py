@@ -27,14 +27,37 @@ def create_field(field_info: Dict[str, Any]) -> Any:
             field_info["properties"], model_name="DictionaryModel"
         )
         field_type = nested_model
+    elif field_info["type"] == "list":
+        # Handle list types
+        item_type_info = field_info.get("items")
+        if not item_type_info:
+            raise ValueError("'items' must be defined for list type fields.")
+        
+        if "type" not in item_type_info:
+            raise KeyError("'type' key is missing in 'items' for list field.")
+        
+        # If items are dictionaries, create a nested model for them
+        if item_type_info["type"] == "dict":
+            nested_model = create_pydantic_model_from_json(
+                item_type_info["properties"], model_name="DictionaryModel"
+            )
+            item_type = nested_model
+        else:
+            # Otherwise, handle items as basic types or literals
+            item_type, _ = create_field(item_type_info)
+        
+        field_type = List[item_type]
+    elif field_info["type"] in type_mapping:
+        # Handle basic types using type_mapping
+        field_type = type_mapping[field_info["type"]]
     else:
-        # Get the basic type from the type mapping
-        field_type = type_mapping.get(field_info["type"], Any)
+        # Raise an error for unknown types
+        raise ValueError(f"Unsupported field type: {field_info['type']}")
 
-        # Handle literals if specified
-        literals = field_info.get("literals")
-        if literals:
-            field_type = Literal[tuple(literals)]
+    # Handle literals if specified
+    literals = field_info.get("literals")
+    if literals:
+        field_type = Literal[tuple(literals)]
 
     # If the field is optional, wrap the type with Optional
     if is_optional:
@@ -45,7 +68,6 @@ def create_field(field_info: Dict[str, Any]) -> Any:
         field_type,
         Field(default=None if is_optional else ..., description=description),
     )
-
 
 def create_pydantic_model_from_json(
     data: Dict[str, Any], model_name: str = "OutputParser"
