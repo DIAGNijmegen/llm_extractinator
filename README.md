@@ -1,8 +1,13 @@
-# LLM_data_extractor
 
-A tool for extracting data from text using LLMs with ollama
+# LLM Data Extractor
 
-## Setup environment
+A tool for extracting data from text using LLMs with Ollama.
+
+---
+
+## Setup Environment
+
+To set up the environment, run the following commands:
 
 ```bash
 conda create --name=data_extractor python=3.12
@@ -11,15 +16,93 @@ conda activate data_extractor
 pip install -e .
 ```
 
-## Setting up Task.json
+---
 
-Create a JSON file in the tasks folder called TaskXXX_taskname.json where XXX is a 3 digit number. In the folder should be the following information:
+## Setting Up Task Configuration
 
-- Task: name of the task
-- Type: type of task
-- Description: detailed description of the task
-- Data_Path: path to the data to perform the task on
-- Example_Path: path to data used to create examples (only necessary if examples > 0 when running the model)
-- Input_Field: the column name in which to find the text data
-- Label_Field: the column name in which to find the ground truth label (only necessary if examples > 0 when running the model)
-- Parser_Format: the JSON format that you want the output to be in. See Task999_example.json for an example
+Create a JSON file in the `tasks` folder for each task, following the naming convention:
+
+```
+TaskXXX_taskname.json
+```
+
+Where `XXX` is a 3-digit number, and `taskname` is a brief descriptor of the task.
+
+The JSON file should include the following fields:
+
+- **Task**: The name of the task.
+- **Type**: The type of task.
+- **Description**: A detailed description of the task.
+- **Data_Path**: The path to the data for performing the task.
+- **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
+- **Input_Field**: The column name containing the text data.
+- **Label_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
+- **Parser_Format**: The JSON format you want the output to be in. See `Task999_example.json` for an example.
+
+---
+
+## Input Flags for `extract_data`
+
+The following input flags can be used to configure the behavior of the `extract_data` script:
+
+| Flag                  | Type          | Default Value        | Description                                                                 |
+|-----------------------|---------------|----------------------|-----------------------------------------------------------------------------|
+| `--task_id`           | `int`         | **Required**         | Task ID to generate examples for.                                           |
+| `--model_name`        | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks.                              |
+| `--num_examples`      | `int`         | `0`                  | Number of examples to generate for each task.                               |
+| `--n_runs`            | `int`         | `5`                  | Number of runs to perform.                                                  |
+| `--temperature`       | `float`       | `0.3`                | Temperature for text generation.                                            |
+| `--max_context_len`   | `int`         | `8192`               | Maximum context length for input text.                                      |
+| `--num_predict`       | `int`         | `1024`               | Maximum number of tokens to predict.                                        |
+| `--run_name`          | `Path`        | `"run"`              | Name of the run for logging purposes.                                       |
+| `--output_dir`        | `Path`        | `<project_root>/output` | Path to the directory for output files.                                      |
+| `--task_dir`          | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
+| `--log_dir`           | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
+| `--data_dir`          | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
+
+---
+
+## Example `Task.json`
+
+Below is an example configuration file for a task:
+
+```json
+{
+    "Task": "Text Summarization",
+    "Type": "Summarization",
+    "Description": "Generate summaries for long-form text documents.",
+    "Data_Path": "data/documents.csv",
+    "Example_Path": "data/summaries_examples.csv",
+    "Input_Field": "text",
+    "Label_Field": "summary",
+    "Parser_Format": {
+        "summary": "string"
+    }
+}
+```
+
+---
+
+## Running the Extractor
+
+To run the data extraction process, use the following command:
+
+```bash
+python extract_data.py --task_id 001 --model_name "mistral-nemo" --num_examples 5
+```
+
+Customize the flags based on your task requirements.
+
+---
+
+## Output
+
+The output will be saved in the specified `--output_dir`. Ensure that the directory structure and paths specified in the `Task.json` file match your project's organization.
+
+For further details, check the logs in the directory specified by `--log_dir`.
+
+---
+
+## Enhancements and Contributions
+
+Feel free to enhance this project by improving configurations, adding more task types, or extending model compatibility. Open a pull request or file an issue for discussions!
