@@ -1,7 +1,7 @@
 {
     "Task": "Anonymization",
     "Type": "Single Label Named Entity Recognition",
-    "Description": "This task involves identifying sequences of tokens in the text that are considered personally identifiable information (PII). The classes to predict include dates <DATUM>, person names <PERSOON>, report identifiers <RAPPORT_ID>, places <PLAATS>, personally identifying numbers <PHINUMMER>, clinical trial names <STUDIE_NAAM>, hospital accreditation numbers <ACCREDATIE_NUMMER>, times <TIJD>, and patient ages <LEEFTIJD>. The text should be returned in full with the <START> and <END> tags surrounding the identified entities.",
+    "Description": "This task involves identifying sequences of tokens in the text that are considered personally identifiable information (PII). The classes to predict include dates <DATUM>, person names <PERSOON>, report identifiers <RAPPORT_ID>, places <PLAATS>, personally identifying numbers <PHINUMMER>, clinical trial names <STUDIE_NAAM>, hospital accreditation numbers <ACCREDATIE_NUMMER>, times <TIJD>, and patient ages <LEEFTIJD>. The text should be returned in full with the <START X> and <END X> tags surrounding the identified entities. For example, assistent Arends keek op 28-09 would become <START PERSOON> assistent Arends <END PERSOON> keek op <START DATUM> 28-09 <END DATUM>.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task025_anonymisation_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task025_anonymisation_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
