@@ -28,16 +28,19 @@ TaskXXX_taskname.json
 
 Where `XXX` is a 3-digit number, and `taskname` is a brief descriptor of the task.
 
-The JSON file should include the following fields:
+The JSON file should always include the following fields:
 
 - **Task**: The name of the task.
 - **Type**: The type of task.
 - **Description**: A detailed description of the task.
-- **Data_Path**: The path to the data for performing the task.
-- **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
+- **Data_Path**: The filename of the data file in the data folder.
 - **Input_Field**: The column name containing the text data.
-- **Label_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
 - **Parser_Format**: The JSON format you want the output to be in. See `Task999_example.json` for an example.
+
+The following fields are only mandatory if you want to have the model automatically generate examples:
+
+- **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
+- **Label_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
 
 ---
 
@@ -48,7 +51,7 @@ The following input flags can be used to configure the behavior of the `extract_
 | Flag                  | Type          | Default Value        | Description                                                                 |
 |-----------------------|---------------|----------------------|-----------------------------------------------------------------------------|
 | `--task_id`           | `int`         | **Required**         | Task ID to generate examples for.                                           |
-| `--model_name`        | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks.                              |
+| `--model_name`        | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks. See [https://ollama.com/search] for the options.                              |
 | `--num_examples`      | `int`         | `0`                  | Number of examples to generate for each task.                               |
 | `--n_runs`            | `int`         | `5`                  | Number of runs to perform.                                                  |
 | `--temperature`       | `float`       | `0.3`                | Temperature for text generation.                                            |
