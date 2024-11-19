@@ -108,6 +108,8 @@ class PredictionTask:
             Dict: Loaded or generated examples.
         """
         if not self.examples_path.exists():
+            if self.train is None:
+                raise ValueError("A path to the training data must be provided.")
             self.examples_path.parent.mkdir(parents=True, exist_ok=True)
             self.predictor.generate_examples(self.train)
 
