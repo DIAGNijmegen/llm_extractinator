@@ -94,7 +94,11 @@ class PredictionTask:
         """
         task_loader = TaskLoader(folder_path=self.task_dir, task_id=self.task_id)
         self.task_config = task_loader.find_and_load_task()
-        self.train_path = self.data_dir / self.task_config.get("Example_Path")
+        self.example_file = self.task_config.get("Example_Path")
+        if self.example_file is not None:
+            self.train_path = self.data_dir / self.task_config.get("Example_Path")
+        else:
+            self.train_path = None
         self.test_path = self.data_dir / self.task_config.get("Data_Path")
         self.label_field = self.task_config.get("Label_Field")
         self.input_field = self.task_config.get("Input_Field")
