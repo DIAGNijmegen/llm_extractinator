@@ -10,6 +10,8 @@ class DataLoader:
     def __init__(self, train_path, test_path) -> None:
         if train_path is not None:
             self.train_path = Path(train_path)
+        else:
+            self.train_path = None
         self.test_path = Path(test_path)
 
     def load_data(self) -> pd.DataFrame:
