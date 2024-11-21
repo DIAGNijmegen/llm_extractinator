@@ -32,10 +32,10 @@ def create_field(field_info: Dict[str, Any]) -> Any:
         item_type_info = field_info.get("items")
         if not item_type_info:
             raise ValueError("'items' must be defined for list type fields.")
-        
+
         if "type" not in item_type_info:
             raise KeyError("'type' key is missing in 'items' for list field.")
-        
+
         # If items are dictionaries, create a nested model for them
         if item_type_info["type"] == "dict":
             nested_model = create_pydantic_model_from_json(
@@ -45,7 +45,7 @@ def create_field(field_info: Dict[str, Any]) -> Any:
         else:
             # Otherwise, handle items as basic types or literals
             item_type, _ = create_field(item_type_info)
-        
+
         field_type = List[item_type]
     elif field_info["type"] in type_mapping:
         # Handle basic types using type_mapping
@@ -69,6 +69,7 @@ def create_field(field_info: Dict[str, Any]) -> Any:
         Field(default=None if is_optional else ..., description=description),
     )
 
+
 def create_pydantic_model_from_json(
     data: Dict[str, Any], model_name: str = "OutputParser"
 ) -> Type[BaseModel]:
@@ -90,5 +91,11 @@ def load_parser(
             )
 
         return ExampleGenerationOutput
+    elif task_type == "Translation":
+
+        class TranslationOutput(BaseModel):
+            translation: str = Field(description="The text translated to English")
+
+        return TranslationOutput
     else:
         return create_pydantic_model_from_json(data=parser_format)

@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict
 
+import pandas as pd
 from langchain_ollama import ChatOllama
 
 from data_extractor.data_loader import DataLoader, TaskLoader
@@ -28,6 +29,8 @@ class PredictionTask:
         max_context_len: int,
         num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
+        chunk_size: int | None = None,
+        translate: bool = False,
     ) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
@@ -51,6 +54,8 @@ class PredictionTask:
         self.max_context_len = max_context_len
         self.data_dir = data_dir
         self.num_predict = num_predict
+        self.chunk_size = chunk_size
+        self.translate = translate
 
         # Extract task information such as config, train and test paths
         self.task_dir = task_dir
@@ -59,6 +64,9 @@ class PredictionTask:
         # Setup output paths
         self.homepath = Path(__file__).resolve().parents[1]
         self.examples_path = self.homepath / f"examples/{self.task_name}_examples.json"
+        self.translation_path = (
+            self.homepath / f"translations/{self.task_name}_translations.json"
+        )
 
         # Initialize data and model
         self.data_loader = DataLoader(
@@ -118,12 +126,27 @@ class PredictionTask:
             self.predictor.generate_examples(self.train)
 
         with self.examples_path.open("r") as f:
-            return json.load(f)
+            self.test = json.load(f)
+
+    def _translate_task(self) -> None:
+        """
+        Translate the text of the dataset to English.
+        """
+        if not self.translation_path.exists():
+            print(f"Translating Task {self.task_id}...")
+            self.translation_path.parent.mkdir(parents=True, exist_ok=True)
+            self.predictor.generate_translations(self.test, self.translation_path)
+
+        with self.translation_path.open("r") as f:
+            self.test = pd.read_json(f)
 
     def run(self) -> None:
         """
         Run the prediction task by preparing the model, running predictions, and saving the results.
         """
+        if self.translate:
+            self._translate_task()
+
         # Load or generate examples for the task
         examples = self._load_examples() if self.num_examples > 0 else None
 
@@ -157,14 +180,53 @@ class PredictionTask:
 
         print(f"Running prediction {run_idx + 1} of {self.n_runs}...")
 
-        # Get prediction results
-        results = self.predictor.predict(self.test)
+        if self.chunk_size is not None:
+            for chunk_idx in range(0, len(self.test), self.chunk_size):
+                chunk_output_path = output_path / f"nlp-predictions-dataset-{chunk_idx}.json"
+                if chunk_output_path.exists():
+                    print(
+                        f"Chunk prediction {run_idx + 1} of {self.n_runs} already exists. Skipping..."
+                    )
+                    continue
 
-        predictions = [
-            {"uid": uid, **result} for uid, result in zip(self.test["uid"], results)
-        ]
+                samples = self.test.iloc[chunk_idx : chunk_idx + self.chunk_size]
+                chunk_results = self.predictor.predict(samples)
+                chunk_predictions = [
+                    {"uid": uid, **result}
+                    for uid, result in zip(samples["uid"], chunk_results)
+                ]
+                save_json(
+                    chunk_predictions,
+                    outpath=output_path,
+                    filename=chunk_output_path.name,
+                )
 
-        # Save the predictions to a JSON file
-        save_json(
-            predictions, outpath=output_path, filename="nlp-predictions-dataset.json"
-        )
+            # Merge the chunk predictions into a single file
+            chunk_files = list(output_path.glob("nlp-predictions-dataset-*.json"))
+            chunk_predictions = []
+            for chunk_file in chunk_files:
+                with chunk_file.open("r") as f:
+                    chunk_predictions.extend(json.load(f))
+
+            save_json(
+                chunk_predictions,
+                outpath=output_path,
+                filename="nlp-predictions-dataset.json",
+            )
+
+            # Remove the chunk files
+            for chunk_file in chunk_files:
+                chunk_file.unlink()
+
+        else:
+            # Get prediction results
+            results = self.predictor.predict(self.test)
+
+            predictions = [
+                {"uid": uid, **result} for uid, result in zip(self.test["uid"], results)
+            ]
+
+            # Save the predictions to a JSON file
+            save_json(
+                predictions, outpath=output_path, filename="nlp-predictions-dataset.json"
+            )
