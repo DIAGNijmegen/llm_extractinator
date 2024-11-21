@@ -32,6 +32,7 @@ class TaskRunner:
         log_dir: Path,
         num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
+        chunk_size: int | None = None,
     ) -> None:
         self.model_name = model_name
         self.task_id = f"{int(task_id):03}"
@@ -46,6 +47,7 @@ class TaskRunner:
         self.log_dir = log_dir
         self.data_dir = data_dir
         self.num_predict = num_predict
+        self.chunk_size = chunk_size
 
     def run_tasks(self) -> None:
         """
@@ -76,6 +78,7 @@ class TaskRunner:
                 task_dir=self.task_dir,
                 num_predict=self.num_predict,
                 data_dir=self.data_dir,
+                chunk_size=self.chunk_size,
             )
             task.run()
             return True
@@ -185,6 +188,12 @@ def parse_args_extract_data() -> argparse.Namespace:
         default=f"{Path(__file__).resolve().parents[1]}/data",
         help="Path to the data directory.",
     )
+    parser.add_argument(
+        "--chunk_size",
+        type=int,
+        default=None,
+        help="Number of examples to generate in a single chunk.",
+    )
     return parser.parse_args()
 
 
@@ -230,6 +239,7 @@ def extract_data() -> None:
         task_dir=args.task_dir,
         log_dir=args.log_dir,
         data_dir=args.data_dir,
+        chunk_size=args.chunk_size,
     )
 
     task_runner.run_tasks()
