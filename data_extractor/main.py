@@ -31,6 +31,7 @@ class TaskRunner:
         task_dir: Path,
         log_dir: Path,
         num_predict: int,
+        translate: bool,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
         chunk_size: int | None = None,
     ) -> None:
@@ -48,6 +49,7 @@ class TaskRunner:
         self.data_dir = data_dir
         self.num_predict = num_predict
         self.chunk_size = chunk_size
+        self.translate = translate
 
     def run_tasks(self) -> None:
         """
@@ -79,6 +81,7 @@ class TaskRunner:
                 num_predict=self.num_predict,
                 data_dir=self.data_dir,
                 chunk_size=self.chunk_size,
+                translate=self.translate,
             )
             task.run()
             return True
@@ -194,6 +197,11 @@ def parse_args_extract_data() -> argparse.Namespace:
         default=None,
         help="Number of examples to generate in a single chunk.",
     )
+    parser.add_argument(
+        "--translate",
+        action="store_true",
+        help="Translate the generated examples to English.",
+    )
     return parser.parse_args()
 
 
@@ -240,6 +248,7 @@ def extract_data() -> None:
         log_dir=args.log_dir,
         data_dir=args.data_dir,
         chunk_size=args.chunk_size,
+        translate=args.translate,
     )
 
     task_runner.run_tasks()
