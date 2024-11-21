@@ -31,6 +31,7 @@ class TaskRunner:
         task_dir: Path,
         log_dir: Path,
         num_predict: int,
+        translate: bool,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
     ) -> None:
         self.model_name = model_name
@@ -46,6 +47,7 @@ class TaskRunner:
         self.log_dir = log_dir
         self.data_dir = data_dir
         self.num_predict = num_predict
+        self.translate = translate
 
     def run_tasks(self) -> None:
         """
@@ -76,6 +78,7 @@ class TaskRunner:
                 task_dir=self.task_dir,
                 num_predict=self.num_predict,
                 data_dir=self.data_dir,
+                translate=self.translate,
             )
             task.run()
             return True
@@ -185,6 +188,11 @@ def parse_args_extract_data() -> argparse.Namespace:
         default=f"{Path(__file__).resolve().parents[1]}/data",
         help="Path to the data directory.",
     )
+    parser.add_argument(
+        "--translate",
+        action="store_true",
+        help="Translate the generated examples to English.",
+    )
     return parser.parse_args()
 
 
@@ -230,6 +238,7 @@ def extract_data() -> None:
         task_dir=args.task_dir,
         log_dir=args.log_dir,
         data_dir=args.data_dir,
+        translate=args.translate,
     )
 
     task_runner.run_tasks()

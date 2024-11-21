@@ -174,6 +174,62 @@ class Predictor:
         # Save examples to file
         save_json(examples, outpath=self.examples_path)
 
+    def generate_translations(self, data: pd.DataFrame, savepath: Path) -> pd.DataFrame:
+        """
+        Generate translations for the given data.
+
+        Args:
+            data (pd.DataFrame): The data to translate.
+
+        Returns:
+            pd.DataFrame: The translated data.
+        """
+        parser_model = load_parser(task_type="Translation", parser_format=None)
+        self.translation_parser = JsonOutputParser(pydantic_object=parser_model)
+        translation_format_instructions = (
+            self.translation_parser.get_format_instructions()
+        )
+
+        system_prompt = SystemMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template=self._load_template("translation/system_prompt")
+                + "\n**Format instructions:**\n{format_instructions}",
+                input_variables=[],
+                partial_variables={
+                    "format_instructions": translation_format_instructions
+                },
+            )
+        )
+        human_prompt = HumanMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template=self._load_template("translation/human_prompt"),
+                input_variables=["text"],
+            )
+        )
+        translation_prompt = ChatPromptTemplate.from_messages(
+            [system_prompt, human_prompt]
+        )
+
+        # Chain: prompt -> model -> output parser
+        chain = translation_prompt | self.model | self.translation_parser
+
+        # Preprocess data
+        data_processed = [
+            {"text": preprocess_text(row[self.input_field])}
+            for _, row in data.iterrows()
+        ]
+
+        # Generate translations
+        callbacks = BatchCallBack(len(data_processed))
+        results = chain.batch(data_processed, config={"callbacks": [callbacks]})
+        translations = [result["translation"] for result in results]
+
+        # Replace the original text in self.input_field with the translated text
+        data[self.input_field] = translations
+
+        # Save translations to file
+        data.to_json(savepath, orient="records", indent=4)
+
     def _create_system_prompt(
         self, template_base: str, format_instructions: str
     ) -> SystemMessagePromptTemplate:
