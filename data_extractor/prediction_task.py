@@ -124,7 +124,7 @@ class PredictionTask:
             self.predictor.generate_examples(self.train)
 
         with self.examples_path.open("r") as f:
-            self.test = pd.read_json(f)
+            self.test = json.load(f)
 
     def _translate_task(self) -> None:
         """
@@ -136,7 +136,7 @@ class PredictionTask:
             self.predictor.generate_translations(self.test, self.translation_path)
 
         with self.translation_path.open("r") as f:
-            self.test = json.load(f)
+            self.test = pd.read_json(f)
 
     def run(self) -> None:
         """
