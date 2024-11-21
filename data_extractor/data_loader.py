@@ -2,6 +2,7 @@ import json
 import os
 import re
 from pathlib import Path
+from typing import Tuple
 
 import pandas as pd
 
@@ -14,7 +15,7 @@ class DataLoader:
             self.train_path = None
         self.test_path = Path(test_path)
 
-    def load_data(self) -> pd.DataFrame:
+    def load_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         if self.train_path is not None:
             train = pd.read_json(self.train_path)
         else:
