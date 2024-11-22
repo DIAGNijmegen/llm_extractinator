@@ -95,6 +95,9 @@ class Predictor:
 
         self._extract_task_info()
 
+        self.ollama_prepare_fixing_prompt()
+        self.fixing_chain = self.fixing_prompt | self.model | JsonOutputParser()
+
     def _extract_task_info(self) -> None:
         """
         Extract task information from the task configuration.
@@ -222,6 +225,7 @@ class Predictor:
         # Generate translations
         callbacks = BatchCallBack(len(data_processed))
         results = chain.batch(data_processed, config={"callbacks": [callbacks]})
+        results = self.validate_and_fix_results(results)
         translations = [result["translation"] for result in results]
 
         # Replace the original text in self.input_field with the translated text
@@ -410,7 +414,6 @@ class Predictor:
     def validate_and_fix_results(
         self,
         results: List[Dict[str, Any]],
-        fixing_chain: ChatPromptTemplate,
         max_attempts: int = 3,
     ) -> List[Dict[str, Any]]:
         """
@@ -418,7 +421,6 @@ class Predictor:
 
         Args:
             results (List[Dict[str, Any]]): The list of results to be validated and potentially fixed.
-            fixing_chain (ChatPromptTemplate): The prompt chain used to attempt fixes.
             max_attempts (int, optional): Maximum number of attempts to fix each result. Defaults to 3.
 
         Returns:
@@ -508,7 +510,7 @@ class Predictor:
             try:
                 # Attempt to fix the batch
                 callbacks = BatchCallBack(len(invalid_indices))
-                fixed_results = fixing_chain.batch(
+                fixed_results = self.fixing_chain.batch(
                     fixing_inputs, config={"callbacks": [callbacks]}
                 )
                 callbacks.progress_bar.close()
@@ -569,11 +571,9 @@ class Predictor:
         Returns:
             List[Dict[str, Any]]: A list of prediction results.
         """
-        self.ollama_prepare_fixing_prompt()
 
         # Create a processing chain: prompt -> model -> output parser
         chain = self.prompt | self.model | self.parser
-        fixing_chain = self.fixing_prompt | self.model | JsonOutputParser()
 
         # Preprocess test data
         test_data_processed = [
@@ -584,4 +584,4 @@ class Predictor:
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
 
-        return self.validate_and_fix_results(results, fixing_chain)
+        return self.validate_and_fix_results(results)
