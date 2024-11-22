@@ -208,6 +208,15 @@ class PredictionTask:
                 with chunk_file.open("r") as f:
                     chunk_predictions.extend(json.load(f))
 
+            # Recover original order and verify that all predictions are present
+            chunk_predictions = {
+                prediction["uid"]: prediction for prediction in chunk_predictions
+            }
+            chunk_predictions = [
+                chunk_predictions[case["uid"]] for case in self.test
+            ]
+
+            # Save the predictions to a JSON file
             save_json(
                 chunk_predictions,
                 outpath=output_path,
