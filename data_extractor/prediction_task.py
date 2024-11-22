@@ -184,9 +184,7 @@ class PredictionTask:
             for chunk_idx in range(0, len(self.test), self.chunk_size):
                 chunk_output_path = output_path / f"nlp-predictions-dataset-{chunk_idx}.json"
                 if chunk_output_path.exists():
-                    print(
-                        f"Chunk prediction {run_idx + 1} of {self.n_runs} already exists. Skipping..."
-                    )
+                    print(f"Chunk prediction {chunk_idx} already exists. Skipping...")
                     continue
 
                 samples = self.test.iloc[chunk_idx : chunk_idx + self.chunk_size]
