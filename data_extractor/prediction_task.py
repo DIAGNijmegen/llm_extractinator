@@ -211,7 +211,7 @@ class PredictionTask:
                 prediction["uid"]: prediction for prediction in chunk_predictions
             }
             chunk_predictions = [
-                chunk_predictions[case["uid"]] for case in self.test
+                chunk_predictions[uid] for uid in self.test["uid"].values
             ]
 
             # Save the predictions to a JSON file
