@@ -95,9 +95,6 @@ class Predictor:
 
         self._extract_task_info()
 
-        self.ollama_prepare_fixing_prompt()
-        self.fixing_chain = self.fixing_prompt | self.model | JsonOutputParser()
-
     def _extract_task_info(self) -> None:
         """
         Extract task information from the task configuration.
@@ -127,7 +124,7 @@ class Predictor:
 
         parser_model = load_parser(task_type="Example Generation", parser_format=None)
         self.example_parser = JsonOutputParser(pydantic_object=parser_model)
-        example_format_instructions = self.example_parser.get_format_instructions()
+        self.example_format_instructions = self.example_parser.get_format_instructions()
 
         system_prompt = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
@@ -136,7 +133,9 @@ class Predictor:
                 )
                 + "\n**Format instructions:**\n{format_instructions}",
                 input_variables=[],
-                partial_variables={"format_instructions": example_format_instructions},
+                partial_variables={
+                    "format_instructions": self.example_format_instructions
+                },
             )
         )
         human_prompt = HumanMessagePromptTemplate(
@@ -189,7 +188,7 @@ class Predictor:
         """
         parser_model = load_parser(task_type="Translation", parser_format=None)
         self.translation_parser = JsonOutputParser(pydantic_object=parser_model)
-        translation_format_instructions = (
+        self.translation_format_instructions = (
             self.translation_parser.get_format_instructions()
         )
 
@@ -199,7 +198,7 @@ class Predictor:
                 + "\n**Format instructions:**\n{format_instructions}",
                 input_variables=[],
                 partial_variables={
-                    "format_instructions": translation_format_instructions
+                    "format_instructions": self.translation_format_instructions
                 },
             )
         )
@@ -225,7 +224,9 @@ class Predictor:
         # Generate translations
         callbacks = BatchCallBack(len(data_processed))
         results = chain.batch(data_processed, config={"callbacks": [callbacks]})
-        results = self.validate_and_fix_results(results)
+        results = self.validate_and_fix_results(
+            results, self.translation_format_instructions
+        )
         translations = [result["translation"] for result in results]
 
         # Replace the original text in self.input_field with the translated text
@@ -392,7 +393,7 @@ class Predictor:
             [final_system_prompt, final_human_prompt]
         )
 
-    def ollama_prepare_fixing_prompt(self) -> None:
+    def ollama_prepare_fixing_prompt(self, format_instructions) -> ChatPromptTemplate:
         """Prepare a prompt for fixing incorrectly formatted JSON output."""
         system_prompt = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
@@ -404,16 +405,17 @@ class Predictor:
             prompt=PromptTemplate(
                 template=self._load_template("output_fixing/human_prompt"),
                 input_variables=["completion"],
-                partial_variables={"format_instructions": self.format_instructions},
+                partial_variables={"format_instructions": format_instructions},
             )
         )
-        self.fixing_prompt = ChatPromptTemplate.from_messages(
-            [system_prompt, human_prompt]
-        )
+        fixing_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
+
+        return fixing_prompt
 
     def validate_and_fix_results(
         self,
         results: List[Dict[str, Any]],
+        format_instructions: str,
         max_attempts: int = 3,
     ) -> List[Dict[str, Any]]:
         """
@@ -476,6 +478,12 @@ class Predictor:
             else:
                 return None  # Return None for unsupported or unknown types
 
+        # Prepare a chain for fixing the results
+        fixing_prompt = self.ollama_prepare_fixing_prompt(
+            format_instructions=format_instructions
+        )
+        fixing_chain = fixing_prompt | self.model | JsonOutputParser()
+
         # Ensure 'original_index' and 'status' are initialized for all results
         for i, result in enumerate(results):
             result["original_index"] = i
@@ -510,7 +518,7 @@ class Predictor:
             try:
                 # Attempt to fix the batch
                 callbacks = BatchCallBack(len(invalid_indices))
-                fixed_results = self.fixing_chain.batch(
+                fixed_results = fixing_chain.batch(
                     fixing_inputs, config={"callbacks": [callbacks]}
                 )
                 callbacks.progress_bar.close()
@@ -584,4 +592,4 @@ class Predictor:
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
 
-        return self.validate_and_fix_results(results)
+        return self.validate_and_fix_results(results, self.format_instructions)

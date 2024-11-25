@@ -182,7 +182,9 @@ class PredictionTask:
 
         if self.chunk_size is not None:
             for chunk_idx in range(0, len(self.test), self.chunk_size):
-                chunk_output_path = output_path / f"nlp-predictions-dataset-{chunk_idx}.json"
+                chunk_output_path = (
+                    output_path / f"nlp-predictions-dataset-{chunk_idx}.json"
+                )
                 if chunk_output_path.exists():
                     print(f"Chunk prediction {chunk_idx} already exists. Skipping...")
                     continue
@@ -235,5 +237,7 @@ class PredictionTask:
 
             # Save the predictions to a JSON file
             save_json(
-                predictions, outpath=output_path, filename="nlp-predictions-dataset.json"
+                predictions,
+                outpath=output_path,
+                filename="nlp-predictions-dataset.json",
             )
