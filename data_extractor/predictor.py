@@ -224,9 +224,7 @@ class Predictor:
         # Generate translations
         callbacks = BatchCallBack(len(data_processed))
         results = chain.batch(data_processed, config={"callbacks": [callbacks]})
-        results = self.validate_and_fix_results(
-            results, self.translation_format_instructions
-        )
+        results = self.validate_and_fix_results(results, parser_model=parser_model)
         translations = [result["translation"] for result in results]
 
         # Replace the original text in self.input_field with the translated text
@@ -415,7 +413,7 @@ class Predictor:
     def validate_and_fix_results(
         self,
         results: List[Dict[str, Any]],
-        format_instructions: str,
+        parser_model: BaseModel,
         max_attempts: int = 3,
     ) -> List[Dict[str, Any]]:
         """
@@ -478,6 +476,11 @@ class Predictor:
             else:
                 return None  # Return None for unsupported or unknown types
 
+        # Initialize the output parser and format instructions
+        parser = JsonOutputParser(pydantic_object=parser_model)
+        parser_model_fields = parser_model.model_fields
+        format_instructions = parser.get_format_instructions()
+
         # Prepare a chain for fixing the results
         fixing_prompt = self.ollama_prepare_fixing_prompt(
             format_instructions=format_instructions
@@ -496,7 +499,7 @@ class Predictor:
             for i, result in enumerate(results):
                 try:
                     # Validate the result
-                    self.parser_model.model_validate(result)
+                    parser_model.model_validate(result)
                     result["retries"] = attempt
                     result["status"] = "success"
                 except ValidationError:
@@ -528,7 +531,7 @@ class Predictor:
                     original_index = index_mapping[idx]
                     try:
                         # Validate the fixed result
-                        self.parser_model.model_validate(fixed_result)
+                        parser_model.model_validate(fixed_result)
                         fixed_result["retries"] = attempt + 1
                         fixed_result["status"] = "success"
                         fixed_result["original_index"] = (
@@ -548,9 +551,9 @@ class Predictor:
                 print(
                     f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values."
                 )
-                for key in self.parser_model_fields:
+                for key in parser_model_fields:
                     results[i][key] = handle_failure(
-                        self.parser_model_fields[key].annotation
+                        parser_model_fields[key].annotation
                     )
                 results[i]["retries"] = max_attempts
                 results[i]["status"] = "failed"
@@ -592,4 +595,4 @@ class Predictor:
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
         callbacks.progress_bar.close()
 
-        return self.validate_and_fix_results(results, self.format_instructions)
+        return self.validate_and_fix_results(results, parser_model=self.parser_model)
