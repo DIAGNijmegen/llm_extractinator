@@ -95,7 +95,7 @@ Below is an example configuration file for a task:
 To run the data extraction process, use the following command:
 
 ```bash
-python extract_data.py --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
+extract_data --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
 ```
 
 Customize the flags based on your task requirements.
