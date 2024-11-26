@@ -8,10 +8,11 @@ from pydantic import BaseModel
 
 def preprocess_text(text) -> str:
     # Strip leading and trailing whitespace and remove disclaimer if present
-    disclaimer = "##############################\nDISCLAIMER: \nTHIS REPORT HAS BEEN ANONYMIZED BY REPLACING PATIENT HEALTH INFORMATION WITH RANDOM SURROGATES.\nANY RESEMBLANCE TO REAL PERSONS, LIVING OR DEAD, IS PURELY COINCIDENTAL.\n##############################\n\n"
-    text = text.strip()
+    disclaimer = "##############################\nDISCLAIMER: \nTHIS REPORT HAS BEEN ANONYMIZED BY REPLACING PATIENT HEALTH INFORMATION WITH RANDOM SURROGATES.\nANY RESEMBLANCE TO REAL PERSONS, LIVING OR DEAD, IS PURELY COINCIDENTAL.\n##############################"
+    text = text.rstrip()
     if text.startswith(disclaimer):
         text = text[len(disclaimer) :]
+    text = text.rstrip()
     return text
 
 
