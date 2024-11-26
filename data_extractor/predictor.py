@@ -152,7 +152,7 @@ class Predictor:
         # Preprocess training data
         train_data_processed = [
             {
-                "text": preprocess_text(row[self.input_field]),
+                "text": preprocess_text(str(row[self.input_field])),
                 "label": row[self.label_field],
             }
             for _, row in train_data.iterrows()
@@ -217,7 +217,7 @@ class Predictor:
 
         # Preprocess data
         data_processed = [
-            {"text": preprocess_text(row[self.input_field])}
+            {"text": preprocess_text(str(row[self.input_field]))}
             for _, row in data.iterrows()
         ]
 
