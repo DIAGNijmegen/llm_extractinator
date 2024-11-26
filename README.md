@@ -66,6 +66,7 @@ The following input flags can be used to configure the behavior of the `extract_
 | `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
 
 
+
 ---
 
 ## Example `Task.json`
