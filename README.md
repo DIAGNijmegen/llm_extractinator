@@ -48,20 +48,24 @@ The following fields are only mandatory if you want to have the model automatica
 
 The following input flags can be used to configure the behavior of the `extract_data` script:
 
-| Flag                  | Type          | Default Value        | Description                                                                 |
-|-----------------------|---------------|----------------------|-----------------------------------------------------------------------------|
-| `--task_id`           | `int`         | **Required**         | Task ID to generate examples for.                                           |
-| `--model_name`        | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks. See [https://ollama.com/search] for the options.                              |
-| `--num_examples`      | `int`         | `0`                  | Number of examples to generate for each task.                               |
-| `--n_runs`            | `int`         | `5`                  | Number of runs to perform.                                                  |
-| `--temperature`       | `float`       | `0.3`                | Temperature for text generation.                                            |
-| `--max_context_len`   | `int`         | `8192`               | Maximum context length for input text.                                      |
-| `--num_predict`       | `int`         | `1024`               | Maximum number of tokens to predict.                                        |
-| `--run_name`          | `Path`        | `"run"`              | Name of the run for logging purposes.                                       |
-| `--output_dir`        | `Path`        | `<project_root>/output` | Path to the directory for output files.                                      |
-| `--task_dir`          | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
-| `--log_dir`           | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
-| `--data_dir`          | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
+| Flag                      | Type          | Default Value        | Description                                                                 |
+|---------------------------|---------------|----------------------|-----------------------------------------------------------------------------|
+| `--task_id`               | `int`         | **Required**         | Task ID to generate examples for.                                           |
+| `--model_name`            | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks. See [https://ollama.com/search](https://ollama.com/search) for the options.                              |
+| `--num_examples`          | `int`         | `0`                  | Number of examples to generate for each task.                               |
+| `--n_runs`                | `int`         | `5`                  | Number of runs to perform.                                                  |
+| `--temperature`           | `float`       | `0.3`                | Temperature for text generation.                                            |
+| `--max_context_len`       | `int`         | `8192`               | Maximum context length for input text.                                      |
+| `--num_predict`           | `int`         | `1024`               | Maximum number of tokens to predict.                                        |
+| `--run_name`              | `Path`        | `"run"`              | Name of the run for logging purposes.                                       |
+| `--output_dir`            | `Path`        | `<project_root>/output` | Path to the directory for output files.                                      |
+| `--task_dir`              | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
+| `--log_dir`               | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
+| `--data_dir`              | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
+| `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
+| `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
+
+
 
 ---
 
@@ -91,7 +95,7 @@ Below is an example configuration file for a task:
 To run the data extraction process, use the following command:
 
 ```bash
-python extract_data.py --task_id 001 --model_name "mistral-nemo" --num_examples 5
+extract_data --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
 ```
 
 Customize the flags based on your task requirements.
