@@ -5,6 +5,14 @@ A tool for extracting data from text using LLMs with Ollama.
 
 ---
 
+## Overview
+
+This project enables the efficient extraction of structured data from unstructured text using large language models (LLMs). It provides a flexible configuration system and supports a variety of tasks.
+
+For a high-level overview of the tool and its workflow, refer to the [Overview PDF](images/overview.pdf).
+
+---
+
 ## Setup Environment
 
 To set up the environment, run the following commands:
@@ -22,7 +30,7 @@ pip install -e .
 
 Create a JSON file in the `tasks` folder for each task, following the naming convention:
 
-```
+```json
 TaskXXX_taskname.json
 ```
 
@@ -64,8 +72,6 @@ The following input flags can be used to configure the behavior of the `extract_
 | `--data_dir`              | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
 | `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
 | `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
-
-
 
 ---
 
