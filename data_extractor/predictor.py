@@ -551,14 +551,15 @@ class Predictor:
                 print(
                     f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values."
                 )
+
+                # Remove output parser meta keys
+                results[i].pop("properties", None)
+                results[i].pop("required", None)
+
                 for key in parser_model_fields:
-                    if key not in [
-                        "properties",
-                        "required",
-                    ]:  # Exclude parser metadata keys
-                        results[i][key] = handle_failure(
-                            parser_model_fields[key].annotation
-                        )
+                    results[i][key] = handle_failure(
+                        parser_model_fields[key].annotation
+                    )
                 results[i]["retries"] = max_attempts
                 results[i]["status"] = "failed"
 
