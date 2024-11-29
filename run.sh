@@ -2,7 +2,7 @@
 
 pip install -e .
 
-for MODEL_NAME in "mistral-nemo" "llama3.1" "llama3.1:70b" "gemma2" "phi3" "llama3.2" "qwen2" "mixtral"
+for MODEL_NAME in "mistral-nemo" "llama3.1" "gemma2" "phi3" "llama3.2" "qwen2" "mixtral"
 do
 for task_id in 2 18
 do
@@ -39,8 +39,7 @@ extract_data \
     --num_examples $NUM_EXAMPLES \
     --run_name $RUN_NAME \
     --max_context_len 15000 \
-    --num_predict 8192 \
-    --translate
+    --num_predict 8192
 done
 
 post_process \
