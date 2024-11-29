@@ -226,7 +226,7 @@ class PredictionTask:
             results = self.predictor.predict(self.test)
 
             predictions = [
-                {**sample.to_dict(), **result}
+                {**sample._asdict(), **result}
                 for sample, result in zip(self.test.itertuples(index=False), results)
             ]
 
