@@ -86,14 +86,13 @@ def create_pydantic_model_from_json(
         # Add custom validators for boolean fields
         if field_info["type"] == "bool":
 
+            @field_validator(key)
             def strict_bool_validator(cls, value):
                 if not isinstance(value, bool):
                     raise TypeError(f"Field '{key}' must be a boolean.")
                 return value
 
-            validators[f"validate_{key}"] = field_validator(key, pre=True, always=True)(
-                strict_bool_validator
-            )
+            validators[f"validate_{key}"] = strict_bool_validator
 
     # Create the model dynamically
     model = create_model(model_name, **fields)
