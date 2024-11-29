@@ -47,6 +47,9 @@ def create_field(field_info: Dict[str, Any]) -> Any:
             item_type, _ = create_field(item_type_info)
 
         field_type = List[item_type]
+    elif field_info["type"] == "bool":
+        # Handle boolean type with strict validation
+        field_type = bool
     elif field_info["type"] in type_mapping:
         # Handle basic types using type_mapping
         field_type = type_mapping[field_info["type"]]
@@ -74,10 +77,32 @@ def create_pydantic_model_from_json(
     data: Dict[str, Any], model_name: str = "OutputParser"
 ) -> Type[BaseModel]:
     fields = {}
-    for key, field_info in data.items():
-        fields[key] = create_field(field_info)
+    validators = {}
 
-    return create_model(model_name, **fields)
+    for key, field_info in data.items():
+        field_type, pydantic_field = create_field(field_info)
+        fields[key] = (field_type, pydantic_field)
+
+        # Add custom validators for boolean fields
+        if field_info["type"] == "bool":
+
+            def strict_bool_validator(cls, value):
+                if not isinstance(value, bool):
+                    raise TypeError(f"Field '{key}' must be a boolean.")
+                return value
+
+            validators[f"validate_{key}"] = field_validator(key, pre=True, always=True)(
+                strict_bool_validator
+            )
+
+    # Create the model dynamically
+    model = create_model(model_name, **fields)
+
+    # Add the validators dynamically
+    for validator_name, validator_func in validators.items():
+        setattr(model, validator_name, validator_func)
+
+    return model
 
 
 def load_parser(
