@@ -9,7 +9,9 @@ A tool for extracting data from text using LLMs with Ollama.
 
 This project enables the efficient extraction of structured data from unstructured text using large language models (LLMs). It provides a flexible configuration system and supports a variety of tasks.
 
-For a high-level overview of the tool and its workflow, refer to the [Overview PDF](images/overview.pdf).
+### Tool Workflow
+
+![Overview of the LLM Data Extractor](images/overview.png)
 
 ---
 
@@ -30,7 +32,7 @@ pip install -e .
 
 Create a JSON file in the `tasks` folder for each task, following the naming convention:
 
-```json
+```bash
 TaskXXX_taskname.json
 ```
 
