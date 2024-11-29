@@ -192,8 +192,10 @@ class PredictionTask:
                 samples = self.test.iloc[chunk_idx : chunk_idx + self.chunk_size]
                 chunk_results = self.predictor.predict(samples)
                 chunk_predictions = [
-                    {"uid": uid, **result}
-                    for uid, result in zip(samples["uid"], chunk_results)
+                    {**sample._asdict(), **result}
+                    for sample, result in zip(
+                        samples.itertuples(index=False), chunk_results
+                    )
                 ]
                 save_json(
                     chunk_predictions,
@@ -207,14 +209,6 @@ class PredictionTask:
             for chunk_file in chunk_files:
                 with chunk_file.open("r") as f:
                     chunk_predictions.extend(json.load(f))
-
-            # Recover original order and verify that all predictions are present
-            chunk_predictions = {
-                prediction["uid"]: prediction for prediction in chunk_predictions
-            }
-            chunk_predictions = [
-                chunk_predictions[uid] for uid in self.test["uid"].values
-            ]
 
             # Save the predictions to a JSON file
             save_json(
@@ -232,7 +226,8 @@ class PredictionTask:
             results = self.predictor.predict(self.test)
 
             predictions = [
-                {"uid": uid, **result} for uid, result in zip(self.test["uid"], results)
+                {**sample.to_dict(), **result}
+                for sample, result in zip(self.test.itertuples(index=False), results)
             ]
 
             # Save the predictions to a JSON file
