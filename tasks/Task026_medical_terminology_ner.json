@@ -1,19 +1,19 @@
 {
     "Task": "Medical terminology recognition",
     "Type": "Single Label Named Entity Recognition",
-    "Description": "This task involves identifying sequences of tokens in the text that are considered medical terminology. The text should be returned in full with the <START> and <END> tags surrounding the identified entities.",
+    "Description": "Your task is to identify sequences of tokens in the given text that represent medical terminology. For each identified term, provide its exact text as it appears in the input. The output should be a list of medical terminology entities in the form of a single list of strings, where each string represents one identified medical term. Ensure accuracy by only identifying terms that are clearly medical in nature, avoiding any ambiguity or overlap with non-medical language. Example Output Format: `[\"hypertension\", \"diabetes mellitus\", \"cardiovascular disease\"]`. By adhering to these instructions, you will deliver a structured and accurate identification of medical terminology entities found in the text.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task026_medical_terminology_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task026_medical_terminology_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "named_entity_recognition_target",
     "Parser_Format": {
-        "reasoning": {
-            "type": "str",
-            "description": "The thought process leading to the final answer."
-        },
-        "tagged_text": {
-            "type": "str",
-            "description": "The text with the medical terminologies surrounded by <START> and <END> tags."
+        "medical terminology entities": {
+            "type": "list",
+            "description": "A list of medical terminology entities identified in the text, where each entry represents the words of the given entity.",
+            "items": {
+                "type": "str",
+                "description": "The words of the identified entity."
+            }
         }
     }
 }

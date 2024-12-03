@@ -1,19 +1,42 @@
 {
     "Task": "Prostate biopsy sampling",
     "Type": "Multi Label Named Entity Recognition",
-    "Description": "This task involves analyzing prostate biopsy reports to identify and classify sequences of words that describe the location of each numbered biopsy and to determine whether the lesion sampling was representative, not representative, or ambiguous. The full text should be returned with tags surrounding the identified entities. Use <START LOCATION 1> and <END LOCATION 1> for the first biopsy location, <START LOCATION 2> and <END LOCATION 2> for the second biopsy location, and so on. It can be the case that multiple numbered biopsies have to be tagged at the same time. In that case, use for example <START LOCATION 2+3> and <END LOCATION 2+3>. If the quality of the biopsy regards number 1, use <START REPRESENTATIVE 1> and <END REPRESENTATIVE 1> for representative sampling, <START NOT REPRESENTATIVE 1> and <END NOT REPRESENTATIVE 1> for non-representative sampling, and <START AMBIGUOUS 1> and <END AMBIGUOUS 1> for ambiguous sampling. The same goes for the other biopsy numbers.",
+    "Description": "Your task is to analyze prostate biopsy reports to identify and classify sequences of words that describe the location of each numbered biopsy and to determine whether the lesion sampling was REPRESENTATIVE, NOT REPRESENTATIVE, or AMBIGUOUS. The output should be a list of each biopsy, where for each biopsy, you include: 1) the biopsy number as an integer (converted from Roman numerals I, II, III, etc.), 2) the exact words that describe the biopsy location, 3) the quality of the biopsy sampling (REPRESENTATIVE, NOT REPRESENTATIVE, AMBIGUOUS), and 4) the exact words that describe the quality. Ensure all classifications are accurate and based solely on the information in the text. Example Output Format: [{{\"number\": 1, \"location\": \"left apex\", \"quality\": \"REPRESENTATIVE\", \"quality_description\": \"adequate tissue sample\"}}, {{\"number\": 2, \"location\": \"right base\", \"quality\": \"NOT REPRESENTATIVE\", \"quality_description\": \"insufficient tissue\"}}]. By adhering to these instructions, you will deliver a structured and detailed analysis of the biopsy report.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task027_prostate_biopsy_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task027_prostate_biopsy_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "multi_label_named_entity_recognition_target",
     "Parser_Format": {
-        "reasoning": {
-            "type": "str",
-            "description": "The thought process leading to the final answer."
-        },
-        "tagged_text": {
-            "type": "str",
-            "description": "The text with the locations of the biopsies and the sampling quality surrounded by the appropriate tags."
+        "biopsies": {
+            "type": "list",
+            "description": "A list of each biopsy analyzed from the text.",
+            "items": {
+                "type": "dict",
+                "description": "Details of each biopsy",
+                "properties": {
+                    "number": {
+                        "type": "int",
+                        "description": "The biopsy number as an integer, converted from Roman numerals"
+                    },
+                    "location": {
+                        "type": "str",
+                        "description": "The exact words that describe the biopsy location"
+                    },
+                    "quality": {
+                        "type": "str",
+                        "description": "The quality of the biopsy sampling",
+                        "literals": [
+                            "REPRESENTATIVE",
+                            "NOT REPRESENTATIVE",
+                            "AMBIGUOUS"
+                        ]
+                    },
+                    "quality_description": {
+                        "type": "str",
+                        "description": "The exact words that describe the quality of the biopsy sampling"
+                    }
+                }
+            }
         }
     }
 }

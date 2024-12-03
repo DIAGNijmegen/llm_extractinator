@@ -1,19 +1,40 @@
 {
     "Task": "Anonymization",
     "Type": "Single Label Named Entity Recognition",
-    "Description": "This task involves identifying sequences of tokens in the text that are considered personally identifiable information (PII). The classes to predict include dates <DATUM>, person names <PERSOON>, report identifiers <RAPPORT_ID>, places <PLAATS>, personally identifying numbers <PHINUMMER>, clinical trial names <STUDIE_NAAM>, hospital accreditation numbers <ACCREDATIE_NUMMER>, times <TIJD>, and patient ages <LEEFTIJD>. The text should be returned in full with the <START X> and <END X> tags surrounding the identified entities. For example, assistent Arends keek op 28-09 would become <START PERSOON> assistent Arends <END PERSOON> keek op <START DATUM> 28-09 <END DATUM>.",
+    "Description": "Your task is to identify sequences of tokens in the given text that qualify as Personally Identifiable Information (PII). Each identified sequence should be classified into one of the following predefined categories: Dates `<DATUM>`, Person Names `<PERSOON>`, Report Identifiers `<RAPPORT_ID>`, Places `<PLAATS>`, Personally Identifying Numbers `<PHINUMMER>`, Clinical Trial Names `<STUDIE_NAAM>`, Hospital Accreditation Numbers `<ACCREDATIE_NUMMER>`, Times `<TIJD>`, and Patient Ages `<LEEFTIJD>`. For each instance of PII identified in the text, provide a dictionary containing the type of PII (e.g., `<DATUM>`, `<PERSOON>`) and the text of the entity (the exact sequence of words or numbers that make up the PII). The output should be a list of dictionaries, where each dictionary corresponds to a single PII entity. Ensure accuracy in classifying each entity into the correct category. Use the provided categories exclusively—no additional or undefined types should be introduced. Preserve the original text of the identified PII in the output. Example Output Format: `[{{\"type\": \"<DATUM>\", \"text\": \"12 December 2022\"}}, {{\"type\": \"<PERSOON>\", \"text\": \"John Doe\"}}, {{\"type\": \"<PLAATS>\", \"text\": \"Amsterdam\"}}, {{\"type\": \"<PHINUMMER>\", \"text\": \"123-45-6789\"}}, {{\"type\": \"<TIJD>\", \"text\": \"14:30\"}}]`. By adhering to these instructions, you will deliver a structured and accurate identification of PII entities within the text.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task025_anonymisation_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task025_anonymisation_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "named_entity_recognition_target",
     "Parser_Format": {
-        "reasoning": {
-            "type": "str",
-            "description": "The thought process leading to the final answer."
-        },
-        "tagged_text": {
-            "type": "str",
-            "description": "The text with the identified entities that should be anonymized surrounded by <START> and <END> tags."
+        "PII": {
+            "type": "list",
+            "description": "A list of the personally identifiable information entities in the text.",
+            "items": {
+                "type": "dict",
+                "description": "Details of an entity",
+                "properties": {
+                    "text": {
+                        "type": "str",
+                        "description": "The words that make up the entity"
+                    },
+                    "type": {
+                        "type": "str",
+                        "description": "The type of the entity",
+                        "literals": [
+                            "<DATUM>",
+                            "<PERSOON>",
+                            "<RAPPORT_ID>",
+                            "<PLAATS>",
+                            "<PHINUMMER>",
+                            "<STUDIE_NAAM>",
+                            "<ACCREDATIE_NUMMER>",
+                            "<TIJD>",
+                            "<LEEFTIJD>"
+                        ]
+                    }
+                }
+            }
         }
     }
 }
