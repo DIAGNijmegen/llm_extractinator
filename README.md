@@ -3,6 +3,8 @@
 
 A tool for extracting data from text using LLMs with Ollama.
 
+> [!Important]
+> This tool is a prototype which is in active development and is still undergoing major changes. Please always check the results!
 ---
 
 ## Overview
