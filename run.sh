@@ -2,15 +2,15 @@
 
 pip install -e .
 
-for MODEL_NAME in "mistral-nemo" "llama3.1" "gemma2" "phi3" "llama3.2" "qwen2" "mixtral"
-do
-for task_id in 2 18
+# for MODEL_NAME in "mistral-nemo" "llama3.1" "gemma2" "phi3" "llama3.2" "qwen2" "mixtral"
+# do
+for task_id in 25 26 27 28
 do
 BASE_DIR="/data/bodyct/experiments/luc_t10162/GitHub/LLM_data_extractor"
 GROUND_TRUTH_PATH="/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set"
-# MODEL_NAME="mistral-nemo"
+MODEL_NAME="mistral-nemo"
 NUM_EXAMPLES=0
-RUN_NAME="all_models_test/${MODEL_NAME}/${NUM_EXAMPLES}_examples"
+RUN_NAME="NER_debug/${MODEL_NAME}/${NUM_EXAMPLES}_examples"
 PREDICTION_PATH="${BASE_DIR}/output/${RUN_NAME}"
 OUTPUT_PATH="${PREDICTION_PATH}/metrics.json"
 
@@ -39,19 +39,19 @@ extract_data \
     --num_examples $NUM_EXAMPLES \
     --run_name $RUN_NAME \
     --max_context_len 15000 \
-    --num_predict 8192
+    --num_predict 15000
 done
 
-post_process \
-    --output_path $PREDICTION_PATH \
-    --task_ids 2 18
+# post_process \
+#     --output_path $PREDICTION_PATH \
+#     --task_ids 25 26 27
 
-evaluate \
-    --task_ids 2 18 \
-    --prediction_path $PREDICTION_PATH \
-    --ground_truth_path $GROUND_TRUTH_PATH \
-    --output_path $OUTPUT_PATH
-done
+# evaluate \
+#     --task_ids 25 26 27 \
+#     --prediction_path $PREDICTION_PATH \
+#     --ground_truth_path $GROUND_TRUTH_PATH \
+#     --output_path $OUTPUT_PATH
+# done
 
 
 # for task_id in {25..28}
