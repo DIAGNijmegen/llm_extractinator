@@ -593,8 +593,7 @@ class Predictor:
 
         # Preprocess test data
         test_data_processed = [
-            {"text": preprocess_text(str(report))}
-            for report in test_data[self.input_field]
+            {"text": preprocess_text(report)} for report in test_data[self.input_field]
         ]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
