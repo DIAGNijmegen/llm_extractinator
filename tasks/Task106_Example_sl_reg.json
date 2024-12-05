@@ -1,0 +1,15 @@
+{
+    "Task": "Single-Label Regression for Medical Texts",
+    "Type": "Regression",
+    "Description": "The task involves predicting a single continuous value based on medical case descriptions. The output is a numerical regression target that corresponds to a measurement or a clinically relevant metric derived from the input text.",
+    "Data_Path": "/data/medical/single_label_regression/debug-test-set/Task106_case_regression.json",
+    "Example_Path": "/data/medical/single_label_regression/debug-input/Task106_case_regression-fold0/nlp-training-dataset.json",
+    "Input_Field": "text",
+    "Label_Field": "single_label_regression_target",
+    "Parser_Format": {
+        "measurement": {
+            "type": "float",
+            "description": "The predicted numerical value corresponding to the clinically relevant measurement (e.g., lesion size or related metric)."
+        }
+    }
+}

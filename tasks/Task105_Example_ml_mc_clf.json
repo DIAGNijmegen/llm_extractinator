@@ -1,0 +1,30 @@
+{
+    "Task": "Multi-Label Multi-Class Classification for Medical Texts",
+    "Type": "Classification",
+    "Description": "The task involves classifying detailed medical case descriptions into multi-label multi-class classification targets. Each input text is associated with multiple labels, representing a diagnosis and a corresponding treatment or medication recommendation.",
+    "Data_Path": "/data/medical/multi_label_classification/debug-test-set/Task105_case_classification.json",
+    "Example_Path": "/data/medical/multi_label_classification/debug-input/Task105_case_classification-fold0/nlp-training-dataset.json",
+    "Input_Field": "text",
+    "Label_Field": "multi_label_multi_class_classification_target",
+    "Parser_Format": {
+        "diagnosis": {
+            "type": "str",
+            "description": "A label indicating the diagnosed condition or finding (e.g., 'Arthritis', 'Common Cold', 'Unknown').",
+            "literals": [
+                "Arthritis",
+                "Common Cold",
+                "Unknown"
+            ]
+        },
+        "treatment": {
+            "type": "str",
+            "description": "A label indicating the recommended treatment or medication (e.g., 'beta blockers', 'antibiotics', 'pain killers', 'Unknown').",
+            "literals": [
+                "beta blockers",
+                "antibiotics",
+                "pain killers",
+                "Unknown"
+            ]
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "Task": "Named Entity Recognition for Medical Texts",
+    "Type": "Named Entity Recognition",
+    "Description": "The task involves identifying named entities in segmented medical text parts, classifying tokens into specific categories such as PREFIX, SYMPTOM, DIAGNOSIS, STRUCTURE, ROMAN_NUMERAL, and NOTE.",
+    "Data_Path": "/data/medical/ner/debug-test-set/Task108_case_recognition.json",
+    "Example_Path": "/data/medical/ner/debug-input/Task108_case_recognition-fold0/nlp-training-dataset.json",
+    "Input_Field": "text_parts",
+    "Label_Field": "named_entity_recognition_target",
+    "Entity_Classes": {
+        "B-PREFIX": "Indicates the beginning of a prefix or title in the text.",
+        "I-PREFIX": "Indicates a continuation of a prefix or title.",
+        "B-SYMPTOM": "Indicates the beginning of a symptom entity in the text.",
+        "I-SYMPTOM": "Indicates a continuation of a symptom entity.",
+        "B-DIAGNOSIS": "Indicates the beginning of a diagnosis entity in the text.",
+        "I-DIAGNOSIS": "Indicates a continuation of a diagnosis entity.",
+        "B-STRUCTURE": "Indicates the beginning of a structural entity such as a measurement or object.",
+        "I-STRUCTURE": "Indicates a continuation of a structural entity.",
+        "B-ROMAN_NUMERAL": "Indicates the beginning of a Roman numeral in the text.",
+        "B-NOTE": "Indicates the beginning of a note or recommendation.",
+        "I-NOTE": "Indicates a continuation of a note or recommendation."
+    },
+    "Parser_Format": {
+        "text_parts": {
+            "type": "list of strings",
+            "description": "Segmented parts of the input text, each word or token represented as a separate string."
+        },
+        "named_entity_recognition_target": {
+            "type": "list of strings",
+            "description": "Corresponding tags for each token, representing the NER classification."
+        }
+    }
+}

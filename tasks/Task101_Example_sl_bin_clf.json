@@ -1,0 +1,19 @@
+{
+    "Task": "Lesion and Structure Classification",
+    "Type": "Classification",
+    "Description": "The task consists of identifying whether the case warrants further testing, urgent follow-up, or specialized medical attention (True) versus routine management or no further immediate action (False).",
+    "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task101_lesion_clf.json",
+    "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task101_lesion_clf-fold0/nlp-training-dataset.json",
+    "Input_Field": "text",
+    "Label_Field": "single_label_binary_classification_target",
+    "Parser_Format": {
+        "reasoning": {
+            "type": "str",
+            "description": "The thought process leading to the final answer."
+        },
+        "label": {
+            "type": "bool",
+            "description": "The final classification. True if lesions or relevant structures are present, false otherwise."
+        }
+    }
+}
