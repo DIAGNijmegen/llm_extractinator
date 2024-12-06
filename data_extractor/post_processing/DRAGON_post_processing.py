@@ -49,6 +49,10 @@ def process_file(filepath: Path, task_id: str) -> None:
         print_processing_message(task_id)
         try:
             for example in data:
+                if example["label"] == "True":
+                    example["label"] = True
+                if example["label"] == "False":
+                    example["label"] = False
                 example["single_label_binary_classification"] = example.pop("label")
         except KeyError:
             print(f"Task {task_id} does not contain 'label' key.")
@@ -141,6 +145,14 @@ def process_file(filepath: Path, task_id: str) -> None:
                     example.pop("lesion_4"),
                     example.pop("lesion_5"),
                 ]
+        except KeyError:
+            print(f"Task {task_id} does not contain the correct keys.")
+            pass
+        save_json(data=data, filepath=filepath)
+    elif task_id == "025":
+        print_processing_message(task_id)
+        try:
+            
         except KeyError:
             print(f"Task {task_id} does not contain the correct keys.")
             pass
