@@ -1,40 +1,15 @@
 {
     "Task": "Anonymization",
     "Type": "Single Label Named Entity Recognition",
-    "Description": "Your task is to identify sequences of tokens in the given text that qualify as Personally Identifiable Information (PII). Each identified sequence should be classified into one of the following predefined categories: Dates `<DATUM>`, Person Names `<PERSOON>`, Report Identifiers `<RAPPORT_ID>`, Places `<PLAATS>`, Personally Identifying Numbers `<PHINUMMER>`, Clinical Trial Names `<STUDIE_NAAM>`, Hospital Accreditation Numbers `<ACCREDATIE_NUMMER>`, Times `<TIJD>`, and Patient Ages `<LEEFTIJD>`. For each instance of PII identified in the text, provide a dictionary containing the type of PII (e.g., `<DATUM>`, `<PERSOON>`) and the text of the entity (the exact sequence of words or numbers that make up the PII). The output should be a list of dictionaries, where each dictionary corresponds to a single PII entity. Ensure accuracy in classifying each entity into the correct category. Use the provided categories exclusively—no additional or undefined types should be introduced. Preserve the original text of the identified PII in the output. Example Output Format: `[{{\"type\": \"<DATUM>\", \"text\": \"12 December 2022\"}}, {{\"type\": \"<PERSOON>\", \"text\": \"John Doe\"}}, {{\"type\": \"<PLAATS>\", \"text\": \"Amsterdam\"}}, {{\"type\": \"<PHINUMMER>\", \"text\": \"123-45-6789\"}}, {{\"type\": \"<TIJD>\", \"text\": \"14:30\"}}]`. By adhering to these instructions, you will deliver a structured and accurate identification of PII entities within the text. It is possible for the text to contain no PII entities. In such cases, the output should be an empty list.",
+    "Description": "Identify and classify sequences of tokens in the given text that qualify as Personally Identifiable Information (PII). Replace each identified sequence with the corresponding predefined category tag. Use only the categories provided below—no additional or undefined types should be introduced. Predefined PII Categories: 1. Dates (<DATUM>): Includes specific calendar dates, such as 'March 5, 2023', '05/03/2023', or '2023-03-05'. 2. Person Names (<PERSOON>): Full names or identifiable portions of names (e.g., 'John Doe', 'Dr. Smith', or 'Mr. Johnson'). 3. Report Identifiers (<RAPPORT_ID>): Alphanumeric or symbolic identifiers assigned to reports (e.g., 'RPT-12345' or 'Report #6789'). 4. Places (<PLAATS>): Names of locations such as cities, countries, addresses, or landmarks (e.g., 'New York', '123 Elm Street', or 'Mount Everest'). 5. Personally Identifying Numbers (<PHINUMMER>): Numbers uniquely tied to an individual, including Social Security Numbers (SSNs), Tax Identification Numbers (TINs), passport numbers, or other similar identifiers (e.g., '123-45-6789', 'A1234567'). 6. Clinical Trial Names (<STUDIE_NAAM>): Official names of clinical trials or studies (e.g., 'Study XYZ-123', 'Phase III Trial of ABC'). 7. Hospital Accreditation Numbers (<ACCREDITATIE_NUMMER>): Unique codes or numbers issued to hospitals or healthcare institutions as part of accreditation (e.g., 'HOSP-98765'). 8. Times (<TIJD>): Specific times of day, including those with time zones (e.g., '3:45 PM', '15:45 UTC'). 9. Patient Ages (<LEEFTIJD>): Exact ages or references to ages that directly identify an individual (e.g., '42 years old', 'Age: 7'). Instructions: 1. Identification: Identify sequences of text that represent PII. Ensure accurate recognition based on context. 2. Classification: Replace each identified sequence with the appropriate category tag listed above (e.g., a date like 'March 5, 2023' should be replaced with <DATUM>). 3. Output Format: Return the text with the PII replaced by the respective tags. 4. Accuracy: Ensure that each entity is classified into the correct category. Avoid false positives or incorrect tagging. 5. No PII Detected: If no PII entities are present, return the original text unaltered. 6. Be Cautious: Avoid accidentally anonymizing numerical measurements, such as '5 mg', '180 cm', or '25 ml', as these are not PII. Additional Notes: Use the tags exactly as specified, maintaining case sensitivity. Focus on providing structured, accurate output. Do not infer or assume entities beyond what is explicitly stated in the text. By adhering to these instructions, deliver a precise and structured identification of PII entities within the provided text.",
     "Data_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set/Task025_anonymisation_ner.json",
     "Example_Path": "/data/bodyct/experiments/luc_t10162/DRAGON/debug-input/Task025_anonymisation_ner-fold0/nlp-training-dataset.json",
     "Input_Field": "text_parts",
     "Label_Field": "named_entity_recognition_target",
     "Parser_Format": {
-        "PII": {
-            "type": "list",
-            "description": "A list of the personally identifiable information entities in the text.",
-            "items": {
-                "type": "dict",
-                "description": "Details of an entity",
-                "properties": {
-                    "text": {
-                        "type": "str",
-                        "description": "The words that make up the entity"
-                    },
-                    "type": {
-                        "type": "str",
-                        "description": "The type of the entity",
-                        "literals": [
-                            "<DATUM>",
-                            "<PERSOON>",
-                            "<RAPPORT_ID>",
-                            "<PLAATS>",
-                            "<PHINUMMER>",
-                            "<STUDIE_NAAM>",
-                            "<ACCREDATIE_NUMMER>",
-                            "<TIJD>",
-                            "<LEEFTIJD>"
-                        ]
-                    }
-                }
-            }
+        "anonymized_text": {
+            "type": "str",
+            "description": "The text with the identified PII entities replaced by their respective tags."
         }
     }
 }
