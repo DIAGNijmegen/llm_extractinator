@@ -428,53 +428,35 @@ class Predictor:
         """
 
         def handle_failure(annotation):
-            # 1. Check if the annotation is a Literal
+            # Handle various types and return default values for failed cases
             if get_origin(annotation) is Literal:
-                # Randomly select one of the Literal's possible values
-                options = get_args(annotation)
-                return random.choice(options)
-
-            # 2. Handle basic types with default values
+                return random.choice(get_args(annotation))
             elif annotation == str:
-                return ""  # Empty string for str
+                return ""
             elif annotation == int:
-                return 0  # Zero for int
+                return 0
             elif annotation == float:
-                return 0.0  # Zero for float
+                return 0.0
             elif annotation == bool:
-                return False  # False for bool
+                return False
             elif get_origin(annotation) is list:
-                return []  # Empty list for list
+                return []
             elif get_origin(annotation) is dict:
-                return {}  # Empty dict for dict
-
-            # 3. Handle Optional types
+                return {}
             elif get_origin(annotation) is Optional:
-                # Use the default handling for the inner type of Optional
-                inner_type = get_args(annotation)[0]
-                return handle_failure(inner_type)
-
-            # 4. Handle Union types
+                return handle_failure(get_args(annotation)[0])
             elif get_origin(annotation) is Union:
-                # Try the first type in the Union as a default
-                possible_types = get_args(annotation)
-                return handle_failure(possible_types[0])
-
-            # 5. Handle nested Pydantic models
+                return handle_failure(get_args(annotation)[0])
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                # Create an instance with default values using handle_failure recursively
-                nested_instance = {}
-                for field_name, field in annotation.__annotations__.items():
-                    nested_instance[field_name] = handle_failure(field)
+                nested_instance = {
+                    field_name: handle_failure(field)
+                    for field_name, field in annotation.__annotations__.items()
+                }
                 return annotation(**nested_instance)
-
-            # 6. Handle Any type
             elif annotation == Any:
-                return None  # Arbitrarily return None for Any
-
-            # 7. Fallback case
+                return None
             else:
-                return None  # Return None for unsupported or unknown types
+                return None
 
         # Initialize the output parser and format instructions
         parser = JsonOutputParser(pydantic_object=parser_model)
@@ -487,10 +469,11 @@ class Predictor:
         )
         fixing_chain = fixing_prompt | self.model | JsonOutputParser()
 
-        # Ensure 'original_index' and 'status' are initialized for all results
+        # Initialize results with metadata for retries and statuses
         for i, result in enumerate(results):
             result["original_index"] = i
             result.setdefault("status", "pending")
+            result["retry_count"] = 0
 
         attempt = 0
         while attempt < max_attempts:
@@ -498,19 +481,16 @@ class Predictor:
             invalid_indices = []
             for i, result in enumerate(results):
                 try:
-                    # Validate the result
                     parser_model.model_validate(result)
-                    result["retries"] = attempt
                     result["status"] = "success"
                 except ValidationError:
-                    # Add to list of invalid results
                     invalid_indices.append(i)
 
-            # If no invalid results, exit loop
+            # If no invalid results, exit the loop
             if not invalid_indices:
                 break
 
-            # Prepare the batch for fixing and maintain index mapping
+            # Prepare the batch for fixing
             invalid_results = [results[i] for i in invalid_indices]
             index_mapping = {i: results[i]["original_index"] for i in invalid_indices}
             fixing_inputs = [{"completion": str(result)} for result in invalid_results]
@@ -526,19 +506,17 @@ class Predictor:
                 )
                 callbacks.progress_bar.close()
 
-                # Update the results with fixed outputs, using the index mapping
+                # Update the results with fixed outputs
                 for idx, fixed_result in zip(invalid_indices, fixed_results):
                     original_index = index_mapping[idx]
                     try:
-                        # Validate the fixed result
                         parser_model.model_validate(fixed_result)
-                        fixed_result["retries"] = attempt + 1
+                        fixed_result["retry_count"] = results[idx]["retry_count"] + 1
                         fixed_result["status"] = "success"
-                        fixed_result["original_index"] = (
-                            original_index  # Retain original index
-                        )
+                        fixed_result["original_index"] = original_index
                         results[idx] = fixed_result
                     except ValidationError:
+                        results[idx]["retry_count"] += 1
                         results[idx]["status"] = "failed"
             except Exception as e:
                 print(f"Batch fixing failed at attempt {attempt + 1}: {str(e)}")
@@ -551,27 +529,22 @@ class Predictor:
                 print(
                     f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values."
                 )
-
-                # Remove output parser meta keys
                 results[i].pop("properties", None)
                 results[i].pop("required", None)
-
                 for key in parser_model_fields:
                     results[i][key] = handle_failure(
                         parser_model_fields[key].annotation
                     )
-                results[i]["retries"] = max_attempts
+                results[i]["retry_count"] = max_attempts
                 results[i]["status"] = "failed"
 
-        # Sort results back to original order using 'original_index'
+        # Sort results back to original order
         try:
-            results.sort(
-                key=lambda x: x["original_index"]
-            )  # Sort based on the original index
+            results.sort(key=lambda x: x["original_index"])
         except KeyError as e:
             raise KeyError(f"KeyError during sorting: {str(e)}")
 
-        # Remove the 'original_index' key after sorting is complete
+        # Remove 'original_index' key after sorting
         for result in results:
             result.pop("original_index", None)
 
