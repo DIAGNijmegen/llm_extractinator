@@ -4,7 +4,7 @@ pip install -e .
 
 # for MODEL_NAME in "mistral-nemo" "llama3.1" "gemma2" "phi3" "llama3.2" "qwen2" "mixtral"
 # do
-for task_id in 25 26 27 28
+for task_id in 25
 do
 BASE_DIR="/data/bodyct/experiments/luc_t10162/GitHub/LLM_data_extractor"
 GROUND_TRUTH_PATH="/data/bodyct/experiments/luc_t10162/DRAGON/debug-test-set"
@@ -74,4 +74,3 @@ done
 #     --prediction_path $PREDICTION_PATH \
 #     --ground_truth_path $GROUND_TRUTH_PATH \
 #     --output_path $OUTPUT_PATH
-
