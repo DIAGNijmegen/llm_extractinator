@@ -162,8 +162,8 @@ cython_debug/
 #.idea/
 
 # Project specific
-data/
-examples/
-output/
-translations/
+data/*
+examples/*
+output/*
+translations/*
 .vscode/
