@@ -22,8 +22,8 @@ This project enables the efficient extraction of structured data from unstructur
 To set up the environment, run the following commands:
 
 ```bash
-conda create --name=data_extractor python=3.12
-conda activate data_extractor
+conda create --name=llm_extractinator python=3.12
+conda activate llm_extractinator
 
 pip install -e .
 ```
@@ -56,9 +56,9 @@ The following fields are only mandatory if you want to have the model automatica
 
 ---
 
-## Input Flags for `extract_data`
+## Input Flags for `extractinate`
 
-The following input flags can be used to configure the behavior of the `extract_data` script:
+The following input flags can be used to configure the behavior of the `extractinate` script:
 
 | Flag                      | Type          | Default Value        | Description                                                                 |
 |---------------------------|---------------|----------------------|-----------------------------------------------------------------------------|
@@ -105,7 +105,7 @@ Below is an example configuration file for a task:
 To run the data extraction process, use the following command:
 
 ```bash
-extract_data --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
+extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
 ```
 
 Customize the flags based on your task requirements.
