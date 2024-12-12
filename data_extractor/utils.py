@@ -6,20 +6,6 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-def preprocess_text(text) -> str:
-    # If text is a list, join the elements
-    if isinstance(text, list):
-        text = " ".join(text)
-
-    # Strip leading and trailing whitespace and remove disclaimer if present
-    disclaimer = "##############################\nDISCLAIMER: \nTHIS REPORT HAS BEEN ANONYMIZED BY REPLACING PATIENT HEALTH INFORMATION WITH RANDOM SURROGATES.\nANY RESEMBLANCE TO REAL PERSONS, LIVING OR DEAD, IS PURELY COINCIDENTAL.\n##############################"
-    text = text.rstrip()
-    if text.startswith(disclaimer):
-        text = text[len(disclaimer) :]
-    text = text.rstrip()
-    return text
-
-
 def save_json(
     data,
     outpath: Path,
