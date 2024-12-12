@@ -4,8 +4,6 @@ from datetime import timedelta
 from pathlib import Path
 from typing import List
 
-from dragon_eval import DragonEval
-
 from data_extractor.ollama_server import OllamaServerManager
 from data_extractor.prediction_task import PredictionTask
 
@@ -95,39 +93,6 @@ class TaskRunner:
             return False
 
 
-class PredictionEvaluator:
-    """
-    Evaluates the results of prediction tasks using DragonEval.
-    """
-
-    def __init__(
-        self,
-        /,
-        task_ids: List[int],
-        ground_truth_path: Path,
-        output_path: Path,
-        prediction_path: Path,
-    ) -> None:
-        self.task_ids = [f"{int(task_id):03}" for task_id in task_ids]
-        self.ground_truth_path = ground_truth_path
-        self.output_path = output_path
-        self.prediction_path = prediction_path
-
-    def evaluate(self) -> None:
-        """
-        Evaluates the prediction tasks.
-        """
-        try:
-            DragonEval(
-                ground_truth_path=self.ground_truth_path,
-                predictions_path=self.prediction_path,
-                output_file=self.output_path,
-                tasks=self.task_ids,
-            ).evaluate()
-        except Exception as error:
-            print(f"Evaluation error: {error}")
-
-
 def parse_args_extract_data() -> argparse.Namespace:
     """
     Parses command-line arguments.
@@ -205,29 +170,6 @@ def parse_args_extract_data() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_args_evaluate() -> argparse.Namespace:
-    """
-    Parses command-line arguments.
-    """
-    parser = argparse.ArgumentParser(description="Evaluate prediction tasks.")
-    parser.add_argument(
-        "--task_ids", nargs="+", type=int, required=True, help="Task IDs to evaluate."
-    )
-    parser.add_argument(
-        "--prediction_path", type=Path, required=True, help="Path to prediction data."
-    )
-    parser.add_argument(
-        "--ground_truth_path",
-        type=Path,
-        required=True,
-        help="Path to ground truth data.",
-    )
-    parser.add_argument(
-        "--output_path", type=Path, required=True, help="Path for output file."
-    )
-    return parser.parse_args()
-
-
 def extract_data() -> None:
     """
     Main function to initialize and run task execution and evaluation.
@@ -252,21 +194,6 @@ def extract_data() -> None:
     )
 
     task_runner.run_tasks()
-
-
-def evaluate() -> None:
-    """
-    Main function to evaluate the results of prediction tasks.
-    """
-    args = parse_args_evaluate()
-
-    evaluator = PredictionEvaluator(
-        task_ids=args.task_ids,
-        ground_truth_path=args.ground_truth_path,
-        output_path=args.output_path,
-        prediction_path=args.prediction_path,
-    )
-    evaluator.evaluate()
 
 
 if __name__ == "__main__":

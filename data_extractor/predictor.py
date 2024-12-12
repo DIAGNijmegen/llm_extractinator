@@ -27,7 +27,7 @@ from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
 from data_extractor.output_parsers import load_parser
-from data_extractor.utils import preprocess_text, save_json
+from data_extractor.utils import save_json
 
 # Disable debug mode for LangChain
 set_debug(False)
@@ -152,7 +152,7 @@ class Predictor:
         # Preprocess training data
         train_data_processed = [
             {
-                "text": preprocess_text(str(row[self.input_field])),
+                "text": row[self.input_field],
                 "label": row[self.label_field],
             }
             for _, row in train_data.iterrows()
@@ -216,10 +216,7 @@ class Predictor:
         chain = translation_prompt | self.model | self.translation_parser
 
         # Preprocess data
-        data_processed = [
-            {"text": preprocess_text(str(row[self.input_field]))}
-            for _, row in data.iterrows()
-        ]
+        data_processed = [{"text": row[self.input_field]} for _, row in data.iterrows()]
 
         # Generate translations
         callbacks = BatchCallBack(len(data_processed))
@@ -566,7 +563,7 @@ class Predictor:
 
         # Preprocess test data
         test_data_processed = [
-            {"text": preprocess_text(report)} for report in test_data[self.input_field]
+            {"text": report} for report in test_data[self.input_field]
         ]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})

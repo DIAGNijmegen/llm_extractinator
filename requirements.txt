@@ -1,7 +1,6 @@
 pandas
 tqdm
 pydantic
-dragon-eval
 langchain-core
 langchain-huggingface
 langchain-chroma
