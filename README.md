@@ -1,10 +1,12 @@
 
-# LLM Data Extractor
+# LLM Extractinator
 
-A tool for extracting data from text using LLMs with Ollama.
+![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg)
 
 > [!Important]
 > This tool is a prototype which is in active development and is still undergoing major changes. Please always check the results!
+
+
 ---
 
 ## Overview
