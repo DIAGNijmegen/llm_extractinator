@@ -1,7 +1,7 @@
 
 # LLM Extractinator
 
-![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg)
+![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg) 269aafb0a5044698f844fdb0453bc22cbde9ef9a
 
 > [!Important]
 > This tool is a prototype which is in active development and is still undergoing major changes. Please always check the results!
