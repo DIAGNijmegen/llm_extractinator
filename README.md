@@ -2,7 +2,6 @@
 # LLM Extractinator
 
 ![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg)
-<span style="font-size:smaller; color:gray;">Image: Dr. Doofenshmirtz from *Phineas and Ferb*, © Disney. Included for humor under fair use.</span>
 
 > [!Important]
 > This tool is a prototype which is in active development and is still undergoing major changes. Please always check the results!
