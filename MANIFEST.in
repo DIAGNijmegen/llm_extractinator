@@ -1,0 +1,14 @@
+# Include essential metadata files
+include README.md
+include LICENSE
+include setup.cfg
+include pyproject.toml
+
+# Include package data
+recursive-include llm_extractinator *.txt *.json *.md
+
+# Exclude unnecessary files
+exclude *.pyc
+exclude *.pyo
+exclude __pycache__/
+exclude .DS_Store
