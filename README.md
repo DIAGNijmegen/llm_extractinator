@@ -18,9 +18,7 @@ This project enables the efficient extraction of structured data from unstructur
 
 ---
 
-## 2. Installing the Package
-
-### Install Ollama
+## Installing Ollama
 
 For the package to work, Ollama needs to be installed on your machine.
 For linux, use the following command:
@@ -30,6 +28,8 @@ curl -fsSL https://ollama.com/install.sh | sh
 ```
 
 For Windows or macOS, install via [this link](https://ollama.com/download)
+
+## Installing the Package
 
 ### Option 1: Install from PyPI
 
