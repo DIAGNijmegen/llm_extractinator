@@ -5,9 +5,9 @@ from typing import Dict
 import pandas as pd
 from langchain_ollama import ChatOllama
 
-from data_extractor.data_loader import DataLoader, TaskLoader
-from data_extractor.predictor import Predictor
-from data_extractor.utils import save_json
+from llm_extractinator.data_loader import DataLoader, TaskLoader
+from llm_extractinator.predictor import Predictor
+from llm_extractinator.utils import save_json
 
 
 class PredictionTask:

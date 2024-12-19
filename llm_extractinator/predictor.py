@@ -26,8 +26,8 @@ from langchain_ollama import OllamaEmbeddings
 from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
-from data_extractor.output_parsers import load_parser
-from data_extractor.utils import save_json
+from llm_extractinator.output_parsers import load_parser
+from llm_extractinator.utils import save_json
 
 # Disable debug mode for LangChain
 set_debug(False)

@@ -4,8 +4,8 @@ from datetime import timedelta
 from pathlib import Path
 from typing import List
 
-from data_extractor.ollama_server import OllamaServerManager
-from data_extractor.prediction_task import PredictionTask
+from llm_extractinator.ollama_server import OllamaServerManager
+from llm_extractinator.prediction_task import PredictionTask
 
 DEBUG = True
 
@@ -93,7 +93,7 @@ class TaskRunner:
             return False
 
 
-def parse_args_extract_data() -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """
     Parses command-line arguments.
     """
@@ -170,11 +170,12 @@ def parse_args_extract_data() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def extract_data() -> None:
+def extractinate(args=None) -> None:
     """
     Main function to initialize and run task execution and evaluation.
     """
-    args = parse_args_extract_data()
+    if args is None:
+        args = parse_args()
 
     task_runner = TaskRunner(
         model_name=args.model_name,
@@ -197,4 +198,4 @@ def extract_data() -> None:
 
 
 if __name__ == "__main__":
-    extract_data()
+    extractinate()
