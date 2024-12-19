@@ -29,7 +29,7 @@ For linux, use the following command:
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-For Windows or macOS, install via [This Link]((https://ollama.com/download))
+For Windows or macOS, install via [this link]((https://ollama.com/download))
 
 ### Option 1: Install from PyPI
 
