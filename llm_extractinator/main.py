@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 from datetime import timedelta
 from pathlib import Path
@@ -191,12 +192,13 @@ def extractinate(
     Main function to initialize and run task execution and evaluation.
     Allows for flexible usage by providing default values for most arguments.
     """
-    # Set default paths relative to the script's location if not provided
-    base_dir = Path(__file__).resolve().parents[1]
-    output_dir = output_dir or base_dir / "output"
-    task_dir = task_dir or base_dir / "tasks"
-    log_dir = log_dir or output_dir
-    data_dir = data_dir or base_dir / "data"
+
+    cwd = Path(os.getcwd())  # Use the current working directory
+
+    output_dir = Path(output_dir) if output_dir else cwd / "output"
+    task_dir = Path(task_dir) if task_dir else cwd / "tasks"
+    log_dir = Path(log_dir) if log_dir else output_dir / "output"
+    data_dir = Path(data_dir) if data_dir else cwd / "data"
 
     # Initialize TaskRunner with the provided or default values
     task_runner = TaskRunner(
