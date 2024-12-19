@@ -6,7 +6,6 @@
 > [!Important]
 > This tool is a prototype which is in active development and is still undergoing major changes. Please always check the results!
 
-
 ---
 
 ## Overview
@@ -19,14 +18,21 @@ This project enables the efficient extraction of structured data from unstructur
 
 ---
 
-## Setup Environment
+## 2. Installing the Package
 
-To set up the environment, run the following commands:
+### Option 1: Install from PyPI
+
+The package is installable via PyPI using:
 
 ```bash
-conda create --name=llm_extractinator python=3.12
-conda activate llm_extractinator
+pip install llm_extractinator
+```
 
+### Option 2: Install using local clone
+
+For contributing to or developing the package, clone this repository and install it using:
+
+```bash
 pip install -e .
 ```
 
@@ -102,15 +108,36 @@ Below is an example configuration file for a task:
 
 ---
 
-## Running the Extractor
+# Running the Extractor
 
-To run the data extraction process, use the following command:
+To run the data extraction process, you can either use the command line or import the function in Python.
+
+## Option 1: Using the Command Line
+
+Use the following command:
 
 ```bash
 extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
 ```
 
 Customize the flags based on your task requirements.
+
+## Option 2: Using the Function in Python
+
+You can also call the extractor programmatically:
+
+```python
+from llm_extractinator import extractinate
+
+extractinate(
+    task_id=1,
+    model_name="mistral-nemo",
+    num_examples=0,
+    max_context_len=8192,
+    num_predict=8192,
+    translate=True
+)
+```
 
 ---
 
