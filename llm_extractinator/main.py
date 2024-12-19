@@ -170,14 +170,60 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def extractinate(args=None) -> None:
+def extractinate(
+    model_name="mistral-nemo",
+    task_id=0,
+    num_examples=0,
+    n_runs=5,
+    temperature=0.3,
+    max_context_len=8192,
+    run_name="run",
+    num_predict=1024,
+    output_dir=None,
+    task_dir=None,
+    log_dir=None,
+    data_dir=None,
+    chunk_size=None,
+    translate=False,
+    **kwargs,
+) -> None:
     """
     Main function to initialize and run task execution and evaluation.
+    Allows for flexible usage by providing default values for most arguments.
     """
-    if args is None:
-        args = parse_args()
+    # Set default paths relative to the script's location if not provided
+    base_dir = Path(__file__).resolve().parents[1]
+    output_dir = output_dir or base_dir / "output"
+    task_dir = task_dir or base_dir / "tasks"
+    log_dir = log_dir or output_dir
+    data_dir = data_dir or base_dir / "data"
 
+    # Initialize TaskRunner with the provided or default values
     task_runner = TaskRunner(
+        model_name=model_name,
+        task_id=task_id,
+        num_examples=num_examples,
+        n_runs=n_runs,
+        temperature=temperature,
+        max_context_len=max_context_len,
+        run_name=run_name,
+        num_predict=num_predict,
+        output_dir=output_dir,
+        task_dir=task_dir,
+        log_dir=log_dir,
+        data_dir=data_dir,
+        chunk_size=chunk_size,
+        translate=translate,
+        **kwargs,
+    )
+
+    task_runner.run_tasks()
+
+
+def main():
+    # When the script is executed directly, use command-line arguments
+    args = parse_args()
+    extractinate(
         model_name=args.model_name,
         task_id=args.task_id,
         num_examples=args.num_examples,
@@ -194,8 +240,6 @@ def extractinate(args=None) -> None:
         translate=args.translate,
     )
 
-    task_runner.run_tasks()
-
 
 if __name__ == "__main__":
-    extractinate()
+    main()
