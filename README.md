@@ -101,7 +101,10 @@ Below is an example configuration file for a task:
     "Input_Field": "text",
     "Label_Field": "summary",
     "Parser_Format": {
-        "summary": "string"
+        "summary": {
+            "type": "str",
+            "description": "The summary of the text document."
+        }
     }
 }
 ```
