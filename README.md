@@ -60,7 +60,7 @@ The JSON file should always include the following fields:
 The following fields are only mandatory if you want to have the model automatically generate examples:
 
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
-- **Label_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
+- **Example_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
 
 ---
 
@@ -97,9 +97,9 @@ Below is an example configuration file for a task:
     "Type": "Summarization",
     "Description": "Generate summaries for long-form text documents.",
     "Data_Path": "data/documents.csv",
-    "Example_Path": "data/summaries_examples.csv",
     "Input_Field": "text",
-    "Label_Field": "summary",
+    "Example_Path": "data/summaries_examples.csv",
+    "Example_Field": "summary",
     "Parser_Format": {
         "summary": {
             "type": "str",

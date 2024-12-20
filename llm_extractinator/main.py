@@ -32,6 +32,7 @@ class TaskRunner:
         num_predict: int,
         translate: bool,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
+        example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
         chunk_size: int | None = None,
     ) -> None:
         self.model_name = model_name
@@ -46,6 +47,7 @@ class TaskRunner:
         self.task_dir = task_dir
         self.log_dir = log_dir
         self.data_dir = data_dir
+        self.example_dir = example_dir
         self.num_predict = num_predict
         self.chunk_size = chunk_size
         self.translate = translate
@@ -79,6 +81,7 @@ class TaskRunner:
                 task_dir=self.task_dir,
                 num_predict=self.num_predict,
                 data_dir=self.data_dir,
+                example_dir=self.example_dir,
                 chunk_size=self.chunk_size,
                 translate=self.translate,
             )
@@ -158,6 +161,12 @@ def parse_args() -> argparse.Namespace:
         help="Path to the data directory.",
     )
     parser.add_argument(
+        "--example_dir",
+        type=Path,
+        default=f"{Path(__file__).resolve().parents[1]}/examples",
+        help="Path to the directory for the generated examples.",
+    )
+    parser.add_argument(
         "--chunk_size",
         type=int,
         default=None,
@@ -184,6 +193,7 @@ def extractinate(
     task_dir=None,
     log_dir=None,
     data_dir=None,
+    example_dir=None,
     chunk_size=None,
     translate=False,
     **kwargs,
@@ -199,6 +209,7 @@ def extractinate(
     task_dir = Path(task_dir) if task_dir else cwd / "tasks"
     log_dir = Path(log_dir) if log_dir else output_dir / "output"
     data_dir = Path(data_dir) if data_dir else cwd / "data"
+    example_dir = Path(example_dir) if example_dir else cwd / "examples"
 
     # Initialize TaskRunner with the provided or default values
     task_runner = TaskRunner(
@@ -214,6 +225,7 @@ def extractinate(
         task_dir=task_dir,
         log_dir=log_dir,
         data_dir=data_dir,
+        example_dir=example_dir,
         chunk_size=chunk_size,
         translate=translate,
         **kwargs,
@@ -238,6 +250,7 @@ def main():
         task_dir=args.task_dir,
         log_dir=args.log_dir,
         data_dir=args.data_dir,
+        example_dir=args.example_dir,
         chunk_size=args.chunk_size,
         translate=args.translate,
     )

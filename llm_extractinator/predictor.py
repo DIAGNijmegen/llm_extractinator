@@ -106,7 +106,7 @@ class Predictor:
         self.input_field = self.task_config.get("Input_Field")
         self.train_path = self.task_config.get("Example_Path")
         self.test_path = self.task_config.get("Data_Path")
-        self.label_field = self.task_config.get("Label_Field")
+        self.example_field = self.task_config.get("Example_Field")
         self.task_name = self.task_config.get("Task_Name")
         self.parser_format = self.task_config.get("Parser_Format")
 
@@ -153,7 +153,7 @@ class Predictor:
         train_data_processed = [
             {
                 "text": row[self.input_field],
-                "label": row[self.label_field],
+                "label": row[self.example_field],
             }
             for _, row in train_data.iterrows()
         ]

@@ -29,6 +29,7 @@ class PredictionTask:
         max_context_len: int,
         num_predict: int,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
+        example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
         chunk_size: int | None = None,
         translate: bool = False,
     ) -> None:
@@ -53,6 +54,7 @@ class PredictionTask:
         self.temperature = temperature
         self.max_context_len = max_context_len
         self.data_dir = data_dir
+        self.example_dir = example_dir
         self.num_predict = num_predict
         self.chunk_size = chunk_size
         self.translate = translate
@@ -63,7 +65,6 @@ class PredictionTask:
 
         # Setup output paths
         self.homepath = Path(__file__).resolve().parents[1]
-        self.examples_path = self.homepath / f"examples/{self.task_name}_examples.json"
         self.translation_path = (
             self.homepath / f"translations/{self.task_name}_translations.json"
         )
@@ -77,7 +78,7 @@ class PredictionTask:
         self.predictor = Predictor(
             model=self.model,
             task_config=self.task_config,
-            examples_path=self.examples_path,
+            examples_path=self.example_dir,
             num_examples=self.num_examples,
         )
 
@@ -104,11 +105,11 @@ class PredictionTask:
         self.task_config = task_loader.find_and_load_task()
         self.example_file = self.task_config.get("Example_Path")
         if self.example_file is not None:
-            self.train_path = self.data_dir / self.task_config.get("Example_Path")
+            self.train_path = self.example_dir / self.task_config.get("Example_Path")
         else:
             self.train_path = None
         self.test_path = self.data_dir / self.task_config.get("Data_Path")
-        self.label_field = self.task_config.get("Label_Field")
+        self.example_field = self.task_config.get("Example_Field")
         self.input_field = self.task_config.get("Input_Field")
         self.task_name = task_loader.get_task_name()
 
@@ -119,14 +120,20 @@ class PredictionTask:
         Returns:
             Dict: Loaded or generated examples.
         """
-        if not self.examples_path.exists():
-            if self.train is None:
-                raise ValueError("A path to the training data must be provided.")
-            self.examples_path.parent.mkdir(parents=True, exist_ok=True)
-            self.predictor.generate_examples(self.train)
+        if not self.example_dir.exists():
+            raise ValueError(
+                "A path to the examples must be provided if num_examples > 0."
+            )
 
-        with self.examples_path.open("r") as f:
-            self.test = json.load(f)
+            # if self.train is None:
+            #     raise ValueError("A path to the training data must be provided.")
+            # self.examples_path.parent.mkdir(parents=True, exist_ok=True)
+            # self.predictor.generate_examples(self.train)
+
+        # with self.examples_path.open("r") as f:
+        #     self.test = json.load(f)
+
+        return self.train[self.example_field].to_dict()
 
     def _translate_task(self) -> None:
         """

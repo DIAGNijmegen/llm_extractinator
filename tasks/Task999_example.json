@@ -3,9 +3,9 @@
     "Type": "Classification",
     "Description": "Detailed description of the task",
     "Data_Path": "/path/to/data.json",
-    "Example_Path": "/path/to/example.json",
     "Input_Field": "text",
-    "Label_Field": "single_label_binary_classification_target",
+    "Example_Path": "/path/to/example.json",
+    "Example_Field": "single_label_binary_classification_target",
     "Parser_Format": {
         "id": {
             "type": "int",
