@@ -18,7 +18,18 @@ This project enables the efficient extraction of structured data from unstructur
 
 ---
 
-## 2. Installing the Package
+## Installing Ollama
+
+For the package to work, Ollama needs to be installed on your machine.
+For linux, use the following command:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+For Windows or macOS, install via [this link](https://ollama.com/download)
+
+## Installing the Package
 
 ### Option 1: Install from PyPI
 
@@ -61,6 +72,9 @@ The following fields are only mandatory if you want to have the model automatica
 
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
 - **Example_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
+
+> [!Important]
+> Example generation is for the moment only functional for binary classification tasks! Full functionality to be added later.
 
 ---
 
