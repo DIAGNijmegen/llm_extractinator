@@ -73,6 +73,9 @@ The following fields are only mandatory if you want to have the model automatica
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
 - **Label_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
 
+> [!Important]
+> Example generation is for the moment only functional for binary classification tasks! Full functionality to be added later.
+
 ---
 
 ## Input Flags for `extractinate`
