@@ -5,7 +5,6 @@
     "Data_Path": "/path/to/data.json",
     "Input_Field": "text",
     "Example_Path": "/path/to/example.json",
-    "Example_Field": "single_label_binary_classification_target",
     "Parser_Format": {
         "id": {
             "type": "int",
