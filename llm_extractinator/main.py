@@ -5,10 +5,10 @@ from datetime import timedelta
 from pathlib import Path
 from typing import List
 
+from langchain.globals import set_verbose
+
 from llm_extractinator.ollama_server import OllamaServerManager
 from llm_extractinator.prediction_task import PredictionTask
-
-DEBUG = True
 
 
 class TaskRunner:
@@ -31,6 +31,7 @@ class TaskRunner:
         log_dir: Path,
         num_predict: int,
         translate: bool,
+        verbose: bool = False,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
         example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
         chunk_size: int | None = None,
@@ -51,12 +52,15 @@ class TaskRunner:
         self.num_predict = num_predict
         self.chunk_size = chunk_size
         self.translate = translate
+        self.verbose = verbose
 
     def run_tasks(self) -> None:
         """
         Runs the prediction tasks using multiprocessing.
         """
         start_time = time.time()
+
+        set_verbose(self.verbose)
 
         # Start the Ollama Server
         with OllamaServerManager(model_name=self.model_name, log_dir=self.log_dir):
@@ -88,12 +92,9 @@ class TaskRunner:
             task.run()
             return True
         except Exception as error:
-            if DEBUG:
-                import traceback
+            import traceback
 
-                traceback.print_exc()
-            else:
-                print(f"Error in task {self.task_id}: {error}")
+            traceback.print_exc()
             return False
 
 
@@ -177,6 +178,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Translate the generated examples to English.",
     )
+    parser.add_argument("--verbose", action="store_true", help="Print verbose output.")
     return parser.parse_args()
 
 
@@ -196,6 +198,7 @@ def extractinate(
     example_dir=None,
     chunk_size=None,
     translate=False,
+    verbose=False,
     **kwargs,
 ) -> None:
     """
@@ -228,6 +231,7 @@ def extractinate(
         example_dir=example_dir,
         chunk_size=chunk_size,
         translate=translate,
+        verbose=verbose,
         **kwargs,
     )
 
@@ -253,6 +257,7 @@ def main():
         example_dir=args.example_dir,
         chunk_size=args.chunk_size,
         translate=args.translate,
+        verbose=args.verbose,
     )
 
 

@@ -1,2 +1,3 @@
-docker build . --tag doduo1.umcn.nl/lucbuiltjes/llm_extractinator:latest
-docker push doduo1.umcn.nl/lucbuiltjes/llm_extractinator:latest
+python -m build
+python -m twine upload dist/*
+rm -rf build dist *.egg-info
