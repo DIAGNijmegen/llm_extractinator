@@ -23,7 +23,7 @@ from langchain_core.prompts import (
     PromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
@@ -139,7 +139,7 @@ class Predictor:
         human_prompt = HumanMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=self._load_template("translation/human_prompt"),
-                input_variables=["text"],
+                input_variables=["input"],
             )
         )
         translation_prompt = ChatPromptTemplate.from_messages(
@@ -150,7 +150,9 @@ class Predictor:
         chain = translation_prompt | self.model | self.translation_parser
 
         # Preprocess data
-        data_processed = [{"text": row[self.input_field]} for _, row in data.iterrows()]
+        data_processed = [
+            {"input": row[self.input_field]} for _, row in data.iterrows()
+        ]
 
         # Generate translations
         callbacks = BatchCallBack(len(data_processed))
@@ -269,7 +271,7 @@ class Predictor:
         final_human_prompt = HumanMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=self._load_template("data_extraction/human_prompt"),
-                input_variables=["text"],
+                input_variables=["input"],
             )
         )
         example_human_prompt = HumanMessagePromptTemplate(
@@ -290,7 +292,7 @@ class Predictor:
         final_few_shot_prompt = FewShotChatMessagePromptTemplate(
             example_prompt=example_prompt,
             example_selector=self.example_selector,
-            input_variables=["text"],
+            input_variables=["input"],
         )
         return ChatPromptTemplate.from_messages(
             [final_system_prompt, final_few_shot_prompt, final_human_prompt]
@@ -316,7 +318,7 @@ class Predictor:
         final_human_prompt = HumanMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=self._load_template("data_extraction/human_prompt"),
-                input_variables=["text"],
+                input_variables=["input"],
             )
         )
         return ChatPromptTemplate.from_messages(
@@ -498,7 +500,7 @@ class Predictor:
 
         # Preprocess test data
         test_data_processed = [
-            {"text": report} for report in test_data[self.input_field]
+            {"input": report} for report in test_data[self.input_field]
         ]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})

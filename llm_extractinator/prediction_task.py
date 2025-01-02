@@ -114,24 +114,11 @@ class PredictionTask:
 
     def _load_examples(self) -> Dict:
         """
-        Load examples from a JSON file if it exists, otherwise generate new examples.
+        Loads the examples for the task from the training data.
 
         Returns:
-            Dict: Loaded or generated examples.
+            Dict: Loaded examples.
         """
-        # if not self.example_dir.exists():
-        #     raise ValueError(
-        #         "A path to the examples must be provided if num_examples > 0."
-        #     )
-
-        # if self.train is None:
-        #     raise ValueError("A path to the training data must be provided.")
-        # self.examples_path.parent.mkdir(parents=True, exist_ok=True)
-        # self.predictor.generate_examples(self.train)
-
-        # with self.examples_path.open("r") as f:
-        #     self.test = json.load(f)
-
         return self.train[["input", "output"]].to_dict(orient="records")
 
     def _translate_task(self) -> None:
