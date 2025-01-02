@@ -49,6 +49,18 @@ pip install -e .
 
 ---
 
+## Data Structure
+
+The data structure for the input data should be as follows:
+
+- The data should be in a CSV or a JSON file.
+- The text data should be in a column specified by the `Input_Field` in the task configuration. The default is `text`.
+- The name of the data file should be specified in the `Data_Path` field in the task configuration. The default location is the `data` folder, but this can be changed using the `--data_dir` flag when running the model.
+
+When running the model with examples (`num_examples > 0`), the examples should be provided in a separate CSV or JSON file. The path to this file should be specified in the `Example_Path` field in the task configuration. The default location is the `data` folder, but this can be changed using the `--example_dir` flag when running the model.
+
+---
+
 ## Setting Up Task Configuration
 
 Create a JSON file in the `tasks` folder for each task, following the naming convention:
@@ -68,14 +80,12 @@ The JSON file should always include the following fields:
 - **Input_Field**: The column name containing the text data.
 - **Parser_Format**: The JSON format you want the output to be in. See `Task999_example.json` for an example.
 
-The following fields are only mandatory if you want to have the model automatically generate examples:
+The following field is only mandatory if you want to have the model to use examples in its prompt:
 
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
-- **Example_Field**: The column name containing the ground truth labels (only required if `num_examples > 0`).
 
-> [!Important]
-> Example generation is for the moment only functional for binary classification tasks! Full functionality to be added later.
-
+---
+## Data Structure
 ---
 
 ## Input Flags for `extractinate`
@@ -96,6 +106,7 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--task_dir`              | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
 | `--log_dir`               | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
 | `--data_dir`              | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
+| `--example_dir`           | `Path`        | `<project_root>/data` | Path to the directory containing example data.                               |
 | `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
 | `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
 
@@ -113,7 +124,6 @@ Below is an example configuration file for a task:
     "Data_Path": "data/documents.csv",
     "Input_Field": "text",
     "Example_Path": "data/summaries_examples.csv",
-    "Example_Field": "summary",
     "Parser_Format": {
         "summary": {
             "type": "str",
