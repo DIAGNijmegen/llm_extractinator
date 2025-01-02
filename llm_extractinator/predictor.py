@@ -23,7 +23,7 @@ from langchain_core.prompts import (
     PromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain_ollama import OllamaEmbeddings
+from langchain_ollama import OllamaEmbeddings, ChatOllama
 from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
@@ -75,7 +75,7 @@ class Predictor:
 
     def __init__(
         self,
-        model: VLLM,
+        model: ChatOllama,
         task_config: Dict[str, Any],
         examples_path: Path,
         num_examples: int,
@@ -84,7 +84,7 @@ class Predictor:
         Initialize the Predictor with the provided model, task configuration, and paths.
 
         Args:
-            model (VLLM): The language model to use for predictions.
+            model
             task_config (Dict): Configuration for the task, including task name, input, and label details.
             examples_path (Path): Path where the generated examples are saved.
             num_examples (int): Number of examples to select for few-shot learning.
@@ -107,75 +107,8 @@ class Predictor:
         self.input_field = self.task_config.get("Input_Field")
         self.train_path = self.task_config.get("Example_Path")
         self.test_path = self.task_config.get("Data_Path")
-        self.example_field = self.task_config.get("Example_Field")
         self.task_name = self.task_config.get("Task_Name")
         self.parser_format = self.task_config.get("Parser_Format")
-
-    def generate_examples(self, train_data: pd.DataFrame) -> List[Dict[str, Any]]:
-        """
-        Generate examples from the training data.
-
-        Args:
-            train_data (pd.DataFrame): The training data containing text and labels.
-
-        Returns:
-            List[Dict[str, Any]]: A list of generated examples with text, label, and reasoning.
-        """
-        print("Generating examples...")
-
-        parser_model = load_parser(task_type="Example Generation", parser_format=None)
-        self.example_parser = JsonOutputParser(pydantic_object=parser_model)
-        self.example_format_instructions = self.example_parser.get_format_instructions()
-
-        system_prompt = SystemMessagePromptTemplate(
-            prompt=PromptTemplate(
-                template=self._load_template("example_generation/system_prompt").format(
-                    task=self.task, description=self.description
-                )
-                + "\n**Format instructions:**\n{format_instructions}",
-                input_variables=[],
-                partial_variables={
-                    "format_instructions": self.example_format_instructions
-                },
-            )
-        )
-        human_prompt = HumanMessagePromptTemplate(
-            prompt=PromptTemplate(
-                template=self._load_template("example_generation/human_prompt"),
-                input_variables=["text", "label"],
-            )
-        )
-        example_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
-
-        # Chain: prompt -> model -> output parser
-        chain = example_prompt | self.model | self.example_parser
-
-        # Preprocess training data
-        train_data_processed = [
-            {
-                "text": row[self.input_field],
-                "label": row[self.example_field],
-            }
-            for _, row in train_data.iterrows()
-        ]
-
-        # Generate results
-        callbacks = BatchCallBack(len(train_data_processed))
-        results = chain.batch(train_data_processed, config={"callbacks": [callbacks]})
-        reasonings = [result["reasoning"] for result in results]
-
-        # Combine results with original data to form examples
-        examples = [
-            {
-                "text": str(row["text"]),
-                "label": str(row["label"]),
-                "reasoning": reasoning,
-            }
-            for reasoning, row in zip(reasonings, train_data_processed)
-        ]
-
-        # Save examples to file
-        save_json(examples, outpath=self.examples_path)
 
     def generate_translations(self, data: pd.DataFrame, savepath: Path) -> pd.DataFrame:
         """
