@@ -109,7 +109,6 @@ class PredictionTask:
         else:
             self.train_path = None
         self.test_path = self.data_dir / self.task_config.get("Data_Path")
-        self.example_field = self.task_config.get("Example_Field")
         self.input_field = self.task_config.get("Input_Field")
         self.task_name = task_loader.get_task_name()
 
