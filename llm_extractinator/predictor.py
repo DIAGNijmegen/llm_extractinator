@@ -304,8 +304,8 @@ class Predictor:
         self.format_instructions = self.parser.get_format_instructions()
 
         if examples:
-            ollama.pull("nomic-embed-text")
-            self.embedding_model = OllamaEmbeddings(model="nomic-embed-text")
+            ollama.pull(model_name)
+            self.embedding_model = OllamaEmbeddings(model=model_name)
             self.example_selector = MaxMarginalRelevanceExampleSelector.from_examples(
                 examples, self.embedding_model, Chroma, k=self.num_examples
             )
@@ -342,13 +342,13 @@ class Predictor:
         example_human_prompt = HumanMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=self._load_template("data_extraction/human_prompt"),
-                input_variables=["text"],
+                input_variables=["input"],
             )
         )
         example_ai_prompt = AIMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=self._load_template("data_extraction/ai_prompt"),
-                input_variables=["reasoning", "label"],
+                input_variables=["output"],
             )
         )
         example_prompt = ChatPromptTemplate.from_messages(
