@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union, get_args, get_origin
 from uuid import UUID
 
+import ollama
 import pandas as pd
 from langchain.globals import set_debug
 from langchain_chroma import Chroma
@@ -303,7 +304,8 @@ class Predictor:
         self.format_instructions = self.parser.get_format_instructions()
 
         if examples:
-            self.embedding_model = OllamaEmbeddings(model=model_name)
+            ollama.pull("nomic-embed-text")
+            self.embedding_model = OllamaEmbeddings(model="nomic-embed-text")
             self.example_selector = MaxMarginalRelevanceExampleSelector.from_examples(
                 examples, self.embedding_model, Chroma, k=self.num_examples
             )
