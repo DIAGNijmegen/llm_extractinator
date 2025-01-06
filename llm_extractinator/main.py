@@ -5,7 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import List
 
-from langchain.globals import set_verbose
+from langchain.globals import set_debug
 
 from llm_extractinator.ollama_server import OllamaServerManager
 from llm_extractinator.prediction_task import PredictionTask
@@ -60,7 +60,7 @@ class TaskRunner:
         """
         start_time = time.time()
 
-        set_verbose(self.verbose)
+        set_debug(self.verbose)
 
         # Start the Ollama Server
         with OllamaServerManager(model_name=self.model_name, log_dir=self.log_dir):
