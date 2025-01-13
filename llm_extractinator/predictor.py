@@ -7,7 +7,6 @@ import ollama
 import pandas as pd
 from langchain.globals import set_debug
 from langchain_chroma import Chroma
-from langchain_community.llms import VLLM
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.example_selectors import (
     BaseExampleSelector,
