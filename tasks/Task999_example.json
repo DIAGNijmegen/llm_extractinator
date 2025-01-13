@@ -60,6 +60,30 @@
                 "user",
                 "guest"
             ]
+        },
+        "tags": {
+            "type": "list",
+            "description": "A list of tags associated with the user",
+            "items": {
+                "type": "str"
+            }
+        },
+        "contacts": {
+            "type": "list",
+            "description": "A list of contacts for the user",
+            "items": {
+                "type": "dict",
+                "properties": {
+                    "type": {
+                        "type": "str",
+                        "description": "The type of contact, e.g., 'email' or 'phone'"
+                    },
+                    "value": {
+                        "type": "str",
+                        "description": "The contact value, e.g., an email address or phone number"
+                    }
+                }
+            }
         }
     }
 }
