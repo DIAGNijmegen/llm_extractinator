@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 from pathlib import Path
 
 import ollama
@@ -26,6 +27,7 @@ class OllamaServerManager:
             print(f"Pulling model: {self.model_name}...")
             ollama.pull(self.model_name)
             print(f"Model {self.model_name} pulled successfully.")
+            time.sleep(5)
         except Exception as e:
             print(f"Error pulling model {self.model_name}: {e}")
 
@@ -45,6 +47,7 @@ class OllamaServerManager:
                 stderr=subprocess.STDOUT,
             )
             print("Ollama server is running...")
+            time.sleep(5)
         except Exception as e:
             print(f"Error starting Ollama server: {e}")
             log_file_handle.close()
