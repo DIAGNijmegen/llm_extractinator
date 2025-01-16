@@ -109,6 +109,7 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--example_dir`           | `Path`        | `<project_root>/examples` | Path to the directory containing example data.                               |
 | `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
 | `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
+| `--overwrite`             | `bool`        | `False`              | Overwrite existing files instead of skipping them.                          |
 
 ---
 
