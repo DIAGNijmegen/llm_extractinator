@@ -32,6 +32,7 @@ class TaskRunner:
         num_predict: int,
         translate: bool,
         verbose: bool = False,
+        overwrite: bool = False,
         data_dir: Path = Path(__file__).resolve().parents[1] / "data",
         example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
         chunk_size: int | None = None,
@@ -53,6 +54,7 @@ class TaskRunner:
         self.chunk_size = chunk_size
         self.translate = translate
         self.verbose = verbose
+        self.overwrite = overwrite
 
     def run_tasks(self) -> None:
         """
@@ -88,6 +90,7 @@ class TaskRunner:
                 example_dir=self.example_dir,
                 chunk_size=self.chunk_size,
                 translate=self.translate,
+                overwrite=self.overwrite,
             )
             task.run()
             return True
@@ -179,6 +182,9 @@ def parse_args() -> argparse.Namespace:
         help="Translate the generated examples to English.",
     )
     parser.add_argument("--verbose", action="store_true", help="Print verbose output.")
+    parser.add_argument(
+        "--overwrite", action="store_true", help="Overwrite existing files."
+    )
     return parser.parse_args()
 
 
@@ -199,6 +205,7 @@ def extractinate(
     chunk_size=None,
     translate=False,
     verbose=False,
+    overwrite=False,
     **kwargs,
 ) -> None:
     """
@@ -232,6 +239,7 @@ def extractinate(
         chunk_size=chunk_size,
         translate=translate,
         verbose=verbose,
+        overwrite=overwrite,
         **kwargs,
     )
 
@@ -258,6 +266,7 @@ def main():
         chunk_size=args.chunk_size,
         translate=args.translate,
         verbose=args.verbose,
+        overwrite=args.overwrite,
     )
 
 

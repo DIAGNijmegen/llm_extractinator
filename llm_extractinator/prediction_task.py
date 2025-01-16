@@ -32,19 +32,26 @@ class PredictionTask:
         example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
         chunk_size: int | None = None,
         translate: bool = False,
+        overwrite: bool = False,
     ) -> None:
         """
         Initialize the PredictionTask with the provided parameters.
 
         Args:
-            task_id (str): Identifier for the task.
-            model_name (str): The name of the model to be used for predictions.
-            output_path_base (Path): Base path for saving the output.
-            num_examples (int): Number of examples to generate.
-            n_runs (int): Number of runs for the prediction task.
-            temperature (float): Temperature setting for the model.
-            num_predict (int): Maximum number of tokens to generate per prediction.
-            data_dir (Path, optional): Path to the data directory. Defaults to the data directory in the project.
+            task_id (str): The ID of the task to run.
+            model_name (str): The name of the model to use for predictions.
+            output_path_base (Path): The base output path for saving predictions.
+            task_dir (Path): The directory containing the task configuration files.
+            num_examples (int): The number of examples to use for the task.
+            n_runs (int): The number of runs to perform for the task.
+            temperature (float): The temperature to use for sampling from the model.
+            max_context_len (int): The maximum context length for the model.
+            num_predict (int): The number of predictions to generate for each example.
+            data_dir (Path, optional): The directory containing the task data files. Defaults to "data".
+            example_dir (Path, optional): The directory containing the example files. Defaults to "examples".
+            chunk_size (int | None, optional): The chunk size for processing the test data. Defaults to None.
+            translate (bool, optional): Whether to translate the test data to English. Defaults to False.
+            overwrite (bool, optional): Whether to overwrite existing predictions. Defaults to False.
         """
         self.task_id = task_id
         self.model_name = model_name
@@ -58,6 +65,7 @@ class PredictionTask:
         self.num_predict = num_predict
         self.chunk_size = chunk_size
         self.translate = translate
+        self.overwrite = overwrite
 
         # Extract task information such as config, train and test paths
         self.task_dir = task_dir
@@ -165,7 +173,7 @@ class PredictionTask:
         prediction_file = output_path / "nlp-predictions-dataset.json"
 
         # Skip if predictions already exist
-        if prediction_file.exists():
+        if prediction_file.exists() and not self.overwrite:
             print(
                 f"Prediction {run_idx + 1} of {self.n_runs} already exists. Skipping..."
             )
