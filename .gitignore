@@ -166,3 +166,4 @@ examples/*
 output/*
 translations/*
 .vscode/
+testoutput/*

@@ -1,0 +1,22 @@
+{
+    "Task": "Testtask",
+    "Type": "Classification",
+    "Description": "Extract the value of a and b from the input text. a will be an integer and b will be a string literal of either the name Alice, Bob or Charlie.",
+    "Data_Path": "testdata.json",
+    "Input_Field": "text",
+    "Parser_Format": {
+        "a": {
+            "type": "int",
+            "description": "The value of a"
+        },
+        "b": {
+            "type": "str",
+            "description": "The value of b",
+            "literals": [
+                "Alice",
+                "Bob",
+                "Charlie"
+            ]
+        }
+    }
+}

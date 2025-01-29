@@ -1,0 +1,37 @@
+[
+    {
+        "text": "The value of a is 42 and the value of b is Alice.",
+        "expected_output": {
+            "a": 42,
+            "b": "Alice"
+        }
+    },
+    {
+        "text": "b is Bob and a equals 23.",
+        "expected_output": {
+            "a": 23,
+            "b": "Bob"
+        }
+    },
+    {
+        "text": "Charlie is the value for b while a is 7.",
+        "expected_output": {
+            "a": 7,
+            "b": "Charlie"
+        }
+    },
+    {
+        "text": "Here we have a as 99 and b as Alice.",
+        "expected_output": {
+            "a": 99,
+            "b": "Alice"
+        }
+    },
+    {
+        "text": "Bob is assigned to b, whereas a has a value of 56.",
+        "expected_output": {
+            "a": 56,
+            "b": "Bob"
+        }
+    }
+]
