@@ -16,59 +16,37 @@ class PredictionTask:
     running predictions, and saving results.
     """
 
-    def __init__(
-        self,
-        /,
-        task_id: str,
-        model_name: str,
-        output_path_base: Path,
-        task_dir: Path,
-        num_examples: int,
-        n_runs: int,
-        temperature: float,
-        max_context_len: int,
-        num_predict: int,
-        data_dir: Path = Path(__file__).resolve().parents[1] / "data",
-        example_dir: Path = Path(__file__).resolve().parents[1] / "examples",
-        chunk_size: int | None = None,
-        translate: bool = False,
-        overwrite: bool = False,
-    ) -> None:
+    REQUIRED_PARAMS = {
+        "task_id",
+        "model_name",
+        "output_dir",
+        "task_dir",
+        "num_examples",
+        "n_runs",
+        "run_name",
+        "temperature",
+        "max_context_len",
+        "num_predict",
+        "data_dir",
+        "example_dir",
+        "chunk_size",
+        "translate",
+        "overwrite",
+        "seed",
+    }
+
+    def __init__(self, **kwargs) -> None:
         """
-        Initialize the PredictionTask with the provided parameters.
+        Initialize the PredictionTask dynamically by extracting only required parameters.
 
         Args:
-            task_id (str): The ID of the task to run.
-            model_name (str): The name of the model to use for predictions.
-            output_path_base (Path): The base output path for saving predictions.
-            task_dir (Path): The directory containing the task configuration files.
-            num_examples (int): The number of examples to use for the task.
-            n_runs (int): The number of runs to perform for the task.
-            temperature (float): The temperature to use for sampling from the model.
-            max_context_len (int): The maximum context length for the model.
-            num_predict (int): The number of predictions to generate for each example.
-            data_dir (Path, optional): The directory containing the task data files. Defaults to "data".
-            example_dir (Path, optional): The directory containing the example files. Defaults to "examples".
-            chunk_size (int | None, optional): The chunk size for processing the test data. Defaults to None.
-            translate (bool, optional): Whether to translate the test data to English. Defaults to False.
-            overwrite (bool, optional): Whether to overwrite existing predictions. Defaults to False.
+            kwargs: Dictionary of parameters.
         """
-        self.task_id = task_id
-        self.model_name = model_name
-        self.output_path_base = output_path_base
-        self.num_examples = num_examples
-        self.n_runs = n_runs
-        self.temperature = temperature
-        self.max_context_len = max_context_len
-        self.data_dir = data_dir
-        self.example_dir = example_dir
-        self.num_predict = num_predict
-        self.chunk_size = chunk_size
-        self.translate = translate
-        self.overwrite = overwrite
+        # Set required parameters dynamically
+        for key in self.REQUIRED_PARAMS:
+            setattr(self, key, kwargs.get(key, None))
 
         # Extract task information such as config, train and test paths
-        self.task_dir = task_dir
         self._extract_task_info()
 
         # Setup output paths
@@ -76,6 +54,7 @@ class PredictionTask:
         self.translation_path = (
             self.homepath / f"translations/{self.task_name}_translations.json"
         )
+        self.output_path_base = self.output_dir / Path(self.run_name)
 
         # Initialize data and model
         self.data_loader = DataLoader(
@@ -88,6 +67,25 @@ class PredictionTask:
             task_config=self.task_config,
             examples_path=self.example_dir,
             num_examples=self.num_examples,
+        )
+
+    def initialize_model(self) -> ChatOllama:
+        """
+        Initialize the model using the given model name and temperature.
+
+        Returns:
+            ChatOllama: The initialized model object.
+        """
+        return ChatOllama(
+            model=self.model_name,
+            temperature=self.temperature,
+            num_predict=self.num_predict,
+            num_ctx=self.max_context_len,
+            format="json",
+            verbose=self.verbose,
+            seed=self.seed,
+            top_k=self.top_k,
+            top_p=self.top_p,
         )
 
     def initialize_model(self) -> ChatOllama:

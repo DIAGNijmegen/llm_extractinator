@@ -1,4 +1,3 @@
-
 # LLM Extractinator
 
 ![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg)
@@ -21,7 +20,7 @@ This project enables the efficient extraction of structured data from unstructur
 ## Installing Ollama
 
 For the package to work, Ollama needs to be installed on your machine.
-For linux, use the following command:
+For Linux, use the following command:
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -80,12 +79,10 @@ The JSON file should always include the following fields:
 - **Input_Field**: The column name containing the text data.
 - **Parser_Format**: The JSON format you want the output to be in. See `Task999_example.json` for an example.
 
-The following field is only mandatory if you want to have the model to use examples in its prompt:
+The following field is only mandatory if you want to have the model use examples in its prompt:
 
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
 
----
-## Data Structure
 ---
 
 ## Input Flags for `extractinate`
@@ -109,7 +106,11 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--example_dir`           | `Path`        | `<project_root>/examples` | Path to the directory containing example data.                               |
 | `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
 | `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
+| `--verbose`               | `bool`        | `False`              | Enable verbose logging.                                                     |
 | `--overwrite`             | `bool`        | `False`              | Overwrite existing files instead of skipping them.                          |
+| `--seed`                  | `int`         | `None`               | Random seed for reproducibility.                                            |
+| `--top_k`                 | `int`         | `None`               | Limits the sampling to the top K tokens.                                    |
+| `--top_p`                 | `float`       | `None`               | Nucleus sampling probability threshold.                                     |
 
 ---
 
@@ -138,21 +139,15 @@ Below is an example configuration file for a task:
 
 # Running the Extractor
 
-To run the data extraction process, you can either use the command line or import the function in Python.
+To run the data extraction process, use either the command line or import the function in Python.
 
 ## Option 1: Using the Command Line
-
-Use the following command:
 
 ```bash
 extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
 ```
 
-Customize the flags based on your task requirements.
-
 ## Option 2: Using the Function in Python
-
-You can also call the extractor programmatically:
 
 ```python
 from llm_extractinator import extractinate
@@ -169,14 +164,6 @@ extractinate(
 
 ---
 
-## Output
-
-The output will be saved in the specified `--output_dir`. Ensure that the directory structure and paths specified in the `Task.json` file match your project's organization.
-
-For further details, check the logs in the directory specified by `--log_dir`.
-
----
-
 ## Enhancements and Contributions
 
-Feel free to enhance this project by improving configurations, adding more task types, or extending model compatibility. Open a pull request or file an issue for discussions!
+Feel free to contribute by improving configurations, adding more task types, or extending model compatibility. Open a pull request or file an issue for discussions!
