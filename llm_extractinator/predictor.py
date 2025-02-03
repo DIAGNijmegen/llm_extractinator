@@ -1,4 +1,6 @@
+import json
 import random
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union, get_args, get_origin
 from uuid import UUID
@@ -78,6 +80,7 @@ class Predictor:
         task_config: Dict[str, Any],
         examples_path: Path,
         num_examples: int,
+        format: str = "json",
     ) -> None:
         """
         Initialize the Predictor with the provided model, task configuration, and paths.
@@ -360,8 +363,19 @@ class Predictor:
             List[Dict[str, Any]]: The list of results with all items validated or attempted to be fixed.
         """
 
+        def extract_json_from_text(text: str) -> Optional[dict]:
+            """Extract JSON from text if self.format is not 'json'."""
+            json_pattern = re.compile(r"\{.*?\}", re.DOTALL)
+            match = json_pattern.search(text)
+            if match:
+                try:
+                    return json.loads(match.group())
+                except json.JSONDecodeError:
+                    return None
+            return None
+
         def handle_failure(annotation):
-            # Handle various types and return default values for failed cases
+            """Handle various types and return default values for failed cases."""
             if get_origin(annotation) is Literal:
                 return random.choice(get_args(annotation))
             elif annotation == str:
@@ -407,6 +421,17 @@ class Predictor:
             result["original_index"] = i
             result.setdefault("status", "pending")
             result["retry_count"] = 0
+
+            # If format is not json, attempt to extract json from the output
+            if self.format != "json" and isinstance(result, dict):
+                for key, value in result.items():
+                    if isinstance(value, str):  # Only process string values
+                        extracted_json = extract_json_from_text(value)
+                        if extracted_json:
+                            result.update(
+                                extracted_json
+                            )  # Merge extracted JSON into result
+                            break  # Stop after first successful extraction
 
         attempt = 0
         while attempt < max_attempts:

@@ -1,13 +1,16 @@
 import argparse
 import os
 import random
+import subprocess
 import time
+import traceback
 from dataclasses import asdict, dataclass
 from datetime import timedelta
 from pathlib import Path
 from typing import Optional, Union, get_origin
 
 import numpy as np
+import ollama
 from langchain.globals import set_debug
 
 from llm_extractinator.ollama_server import OllamaServerManager
@@ -66,11 +69,15 @@ class TaskRunner:
         set_debug(self.config.verbose)
 
         # Start the Ollama Server
-        with OllamaServerManager(
-            model_name=self.config.model_name, log_dir=self.config.log_dir
-        ):
-            self._run_task()
+        # with OllamaServerManager(
+        #     model_name=self.config.model_name, log_dir=self.config.log_dir
+        # ):
+        print(f"Pulling model: {self.config.model_name}...")
+        ollama.pull(self.config.model_name)
+        self._run_task()
 
+        print("Stopping Ollama Server...")
+        subprocess.run(["ollama", "stop", self.config.model_name])
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken for generating predictions: {total_time}")
 
@@ -81,8 +88,6 @@ class TaskRunner:
             task.run()
             return True
         except Exception as error:
-            import traceback
-
             traceback.print_exc()
             return False
 

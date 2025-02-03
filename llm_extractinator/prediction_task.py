@@ -31,6 +31,7 @@ class PredictionTask:
         "seed",
         "top_k",
         "top_p",
+        "reasoning_model",
     }
 
     def __init__(self, **kwargs) -> None:
@@ -80,6 +81,7 @@ class PredictionTask:
             task_config=self.task_config,
             examples_path=self.example_dir,
             num_examples=self.num_examples,
+            format=self.format,
         )
 
     def initialize_model(self) -> ChatOllama:
@@ -89,12 +91,16 @@ class PredictionTask:
         Returns:
             ChatOllama: The initialized model object.
         """
+        if self.reasoning_model:
+            self.format = ""
+        else:
+            self.format = "json"
         return ChatOllama(
             model=self.model_name,
             temperature=self.temperature,
             num_predict=self.num_predict,
             num_ctx=self.max_context_len,
-            format="json",
+            format=self.format,
             verbose=self.verbose,
             seed=self.seed,
             top_k=self.top_k,
