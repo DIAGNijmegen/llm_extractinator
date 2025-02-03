@@ -83,6 +83,8 @@ The following field is only mandatory if you want to have the model use examples
 
 - **Example_Path**: The path to data used for creating examples (only required if `num_examples > 0` when running the model).
 
+> [!Important]
+> If you don't want to use examples, omit the `Example_Path` field from the task configuration completely. Do not set it to an empty string!
 ---
 
 ## Input Flags for `extractinate`
@@ -96,8 +98,8 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--num_examples`          | `int`         | `0`                  | Number of examples to generate for each task.                               |
 | `--n_runs`                | `int`         | `5`                  | Number of runs to perform.                                                  |
 | `--temperature`           | `float`       | `0.3`                | Temperature for text generation.                                            |
-| `--max_context_len`       | `int`         | `8192`               | Maximum context length for input text.                                      |
-| `--num_predict`           | `int`         | `1024`               | Maximum number of tokens to predict.                                        |
+| `--max_context_len`       | `str/int`         | `auto`               | Maximum context length for input text. If set to 'auto', will automatically set based on input data.                                      |
+| `--num_predict`           | `int`         | `512`               | Maximum number of tokens to predict.                                        |
 | `--run_name`              | `Path`        | `"run"`              | Name of the run for logging purposes.                                       |
 | `--output_dir`            | `Path`        | `<project_root>/output` | Path to the directory for output files.                                      |
 | `--task_dir`              | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
@@ -111,6 +113,7 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--seed`                  | `int`         | `None`               | Random seed for reproducibility.                                            |
 | `--top_k`                 | `int`         | `None`               | Limits the sampling to the top K tokens.                                    |
 | `--top_p`                 | `float`       | `None`               | Nucleus sampling probability threshold.                                     |
+| `--reasoning_model`       | `bool`       | `False`              | Whether or not the model is a reasoning model (disables JSON mode)                                         |
 
 ---
 
@@ -144,7 +147,7 @@ To run the data extraction process, use either the command line or import the fu
 ## Option 1: Using the Command Line
 
 ```bash
-extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 8192 --translate
+extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 512 --translate
 ```
 
 ## Option 2: Using the Function in Python
