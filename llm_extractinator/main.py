@@ -69,15 +69,10 @@ class TaskRunner:
         set_debug(self.config.verbose)
 
         # Start the Ollama Server
-        # with OllamaServerManager(
-        #     model_name=self.config.model_name, log_dir=self.config.log_dir
-        # ):
-        print(f"Pulling model: {self.config.model_name}...")
-        ollama.pull(self.config.model_name)
-        self._run_task()
-
-        print("Stopping Ollama Server...")
-        subprocess.run(["ollama", "stop", self.config.model_name])
+        with OllamaServerManager(
+            model_name=self.config.model_name, log_dir=self.config.log_dir
+        ):
+            self._run_task()
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken for generating predictions: {total_time}")
 

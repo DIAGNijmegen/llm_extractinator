@@ -68,7 +68,7 @@ class OllamaServerManager:
         Context manager entry point.
         """
         # Pull the model and start the server
-        # self.start_server()
+        self.start_server()
         self.pull_model()
         return self
 
