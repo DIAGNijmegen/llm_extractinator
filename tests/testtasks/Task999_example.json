@@ -1,21 +1,23 @@
 {
-    "Task": "Testtask",
+    "Task": "Extract heart rate and patient name",
     "Type": "Classification",
-    "Description": "Extract the value of a and b from the input text. a will be an integer and b will be a string literal of either the name Alice, Bob or Charlie.",
+    "Description": "Extract the patient's heart rate (HR) and name from the input text. HR will be an integer representing beats per minute, and Name will be a string literal representing a person's first name.",
     "Data_Path": "testdata.json",
     "Input_Field": "text",
     "Parser_Format": {
-        "a": {
+        "HR": {
             "type": "int",
-            "description": "The value of a"
+            "description": "The patient's heart rate in beats per minute"
         },
-        "b": {
+        "Name": {
             "type": "str",
-            "description": "The value of b",
+            "description": "The patient's first name",
             "literals": [
                 "Alice",
                 "Bob",
-                "Charlie"
+                "Charlie",
+                "David",
+                "Emma"
             ]
         }
     }

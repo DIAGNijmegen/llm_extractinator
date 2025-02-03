@@ -1,22 +1,23 @@
 import json
+import subprocess
 import time
 import unittest
 from pathlib import Path
 
-from llm_extractinator.main import extractinate
 
-
-class TestExtractinator(unittest.TestCase):
+class TestExtractinatorCLI(unittest.TestCase):
     def setUp(self):
         """Set up paths and test input before running the test."""
         self.basepath = Path(__file__).resolve().parents[1] / "tests"
         self.output_dir = self.basepath / "testoutput"
-        self.run_name = "test_run/Task999_example-run0"
+        self.run_name = "test_run_cli/Task999_example-run0"
         self.expected_output_file = (
             self.output_dir / self.run_name / "nlp-predictions-dataset.json"
         )
+
         print(
-            "Does the expected output file exist?", self.expected_output_file.exists()
+            "Does the expected output file exist before test?",
+            self.expected_output_file.exists(),
         )
 
         # Ensure output directory is clean before test
@@ -29,30 +30,30 @@ class TestExtractinator(unittest.TestCase):
                 "Error cleaning output directory. Empty manually before running test."
             )
 
-    def test_extractinate_execution(self):
-        """Runs extractinate and verifies if output matches expected results."""
+    def test_extractinate_cli_execution(self):
+        """Runs extractinate via command line and verifies output."""
 
-        # Run extractinate with test input
-        extractinate(
-            model_name="qwen2.5:0.5b",
-            task_id=999,
-            num_examples=0,
-            n_runs=1,
-            temperature=0.0,
-            max_context_len="auto",
-            run_name="test_run",
-            num_predict=256,
-            output_dir=self.output_dir,
-            task_dir=self.basepath / "testtasks",
-            data_dir=self.basepath / "testdata",
-            translate=False,
-            verbose=False,
-            overwrite=True,
-            seed=42,
-        )
+        command = "python -m llm_extractinator.main \
+            --model_name qwen2.5:0.5b --task_id 999 --num_examples 0 --n_runs 1 \
+            --temperature 0 --max_context_len auto --run_name test_run_cli \
+            --num_predict 512 --output_dir {} --task_dir {} --data_dir {} \
+            --translate False --verbose False --overwrite True --seed 42".format(
+            self.output_dir, self.basepath / "testtasks", self.basepath / "testdata"
+        ).split()
+
+        # Run extractinate as a CLI command
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        # Print any errors if the test fails
+        if result.returncode != 0:
+            print("Command Output:", result.stdout)
+            print("Command Error:", result.stderr)
+
+        # Verify that the command executed successfully
+        self.assertEqual(result.returncode, 0, "CLI command failed to execute.")
 
         # Wait for the model to complete execution
-        time.sleep(10)  # Small delay in case of async writing
+        time.sleep(10)
 
         # Check if the output file was created
         self.assertTrue(

@@ -1,37 +1,37 @@
 [
     {
-        "text": "The value of a is 42 and the value of b is Alice.",
+        "text": "Alice has a heart rate of 78 bpm.",
         "expected_output": {
-            "a": 42,
-            "b": "Alice"
+            "HR": 78,
+            "Name": "Alice"
         }
     },
     {
-        "text": "b is Bob and a equals 23.",
+        "text": "The heart rate recorded for Bob is 90 bpm.",
         "expected_output": {
-            "a": 23,
-            "b": "Bob"
+            "HR": 90,
+            "Name": "Bob"
         }
     },
     {
-        "text": "Charlie is the value for b while a is 7.",
+        "text": "Charlie’s pulse is measured at 72 bpm.",
         "expected_output": {
-            "a": 7,
-            "b": "Charlie"
+            "HR": 72,
+            "Name": "Charlie"
         }
     },
     {
-        "text": "Here we have a as 99 and b as Alice.",
+        "text": "David is showing a heart rate of 65 beats per minute.",
         "expected_output": {
-            "a": 99,
-            "b": "Alice"
+            "HR": 65,
+            "Name": "David"
         }
     },
     {
-        "text": "Bob is assigned to b, whereas a has a value of 56.",
+        "text": "Emma's heart rate stands at 82 bpm.",
         "expected_output": {
-            "a": 56,
-            "b": "Bob"
+            "HR": 82,
+            "Name": "Emma"
         }
     }
 ]

@@ -11,7 +11,7 @@ class TestExtractinator(unittest.TestCase):
         """Set up paths and test input before running the test."""
         self.basepath = Path(__file__).resolve().parents[1] / "tests"
         self.output_dir = self.basepath / "testoutput"
-        self.run_name = "test_run/Task999_example-run0"
+        self.run_name = "test_run_deepseek/Task999_example-run0"
         self.expected_output_file = (
             self.output_dir / self.run_name / "nlp-predictions-dataset.json"
         )
@@ -34,14 +34,14 @@ class TestExtractinator(unittest.TestCase):
 
         # Run extractinate with test input
         extractinate(
-            model_name="qwen2.5:0.5b",
+            model_name="deepseek-r1:1.5b",
             task_id=999,
             num_examples=0,
             n_runs=1,
             temperature=0.0,
             max_context_len="auto",
-            run_name="test_run",
-            num_predict=256,
+            run_name="test_run_deepseek",
+            num_predict=1024,
             output_dir=self.output_dir,
             task_dir=self.basepath / "testtasks",
             data_dir=self.basepath / "testdata",
@@ -49,6 +49,7 @@ class TestExtractinator(unittest.TestCase):
             verbose=False,
             overwrite=True,
             seed=42,
+            reasoning_model=True,
         )
 
         # Wait for the model to complete execution
