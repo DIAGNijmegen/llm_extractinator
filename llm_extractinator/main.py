@@ -5,7 +5,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union, get_origin
 
 import numpy as np
 from langchain.globals import set_debug
@@ -20,10 +20,10 @@ class TaskConfig:
     task_id: int = 0
     num_examples: int = 0
     n_runs: int = 5
-    temperature: float = 0.3
-    max_context_len: int = 8192
+    temperature: float = 0.0
+    max_context_len: Union[int, str] = "auto"
     run_name: str = "run"
-    num_predict: int = 1024
+    num_predict: int = 512
     output_dir: Optional[Path] = None
     task_dir: Optional[Path] = None
     log_dir: Optional[Path] = None
@@ -36,15 +36,20 @@ class TaskConfig:
     seed: Optional[int] = None
     top_k: Optional[int] = None
     top_p: Optional[float] = None
+    reasoning_model: bool = False
 
     def resolve_paths(self) -> None:
-        """Resolves default paths if not provided."""
+        """Ensures all paths are Path objects and resolves defaults if not provided."""
         cwd = Path(os.getcwd())
-        self.output_dir = self.output_dir or cwd / "output"
-        self.task_dir = self.task_dir or cwd / "tasks"
-        self.log_dir = self.log_dir or self.output_dir / "output"
-        self.data_dir = self.data_dir or cwd / "data"
-        self.example_dir = self.example_dir or cwd / "examples"
+
+        # Ensure all paths are Path objects
+        self.output_dir = Path(self.output_dir) if self.output_dir else cwd / "output"
+        self.task_dir = Path(self.task_dir) if self.task_dir else cwd / "tasks"
+        self.log_dir = Path(self.log_dir) if self.log_dir else self.output_dir / "logs"
+        self.data_dir = Path(self.data_dir) if self.data_dir else cwd / "data"
+        self.example_dir = (
+            Path(self.example_dir) if self.example_dir else cwd / "examples"
+        )
 
 
 class TaskRunner:
@@ -91,16 +96,21 @@ def parse_args() -> TaskConfig:
     # Automatically map dataclass fields to argparse arguments
     for field in TaskConfig.__dataclass_fields__.values():
         arg_name = f"--{field.name.replace('_', '-')}"
-        arg_type = (
-            field.type if field.type is not Optional else str
-        )  # Handle Optional types
-        kwargs = {"type": arg_type, "default": field.default}
+        if field.name == "max_context_len":  # Handle "auto" case
+            parser.add_argument(arg_name, type=str, default=field.default)
+        else:
+            if get_origin(field.type) is Union:
+                arg_type = next(
+                    (t for t in field.type.__args__ if t is not type(None)), str
+                )
+            else:
+                arg_type = field.type
+            kwargs = {"type": arg_type, "default": field.default}
 
-        if field.type is bool:
-            kwargs.pop("type", None)  # Remove 'type' for boolean flags
-            kwargs["action"] = "store_true"
+            if field.type is bool:
+                kwargs = {"action": "store_true"}
 
-        parser.add_argument(arg_name, **kwargs)
+            parser.add_argument(arg_name, **kwargs)
 
     args, unknown = parser.parse_known_args()
     return TaskConfig(**vars(args))
@@ -114,12 +124,15 @@ def extractinate(**kwargs) -> None:
         random.seed(config.seed)
         np.random.seed(config.seed)
     task_runner = TaskRunner(config)
-    task_runner.run_tasks()
+    try:
+        task_runner.run_tasks()
+    except Exception as error:
+        print(f"Error running prediction tasks: {error}")
 
 
 def main():
     config = parse_args()
-    extractinate(config)
+    extractinate(**asdict(config))
 
 
 if __name__ == "__main__":

@@ -11,11 +11,6 @@ from llm_extractinator.utils import save_json
 
 
 class PredictionTask:
-    """
-    A class to represent a prediction task that involves loading data, initializing a model,
-    running predictions, and saving results.
-    """
-
     REQUIRED_PARAMS = {
         "task_id",
         "model_name",
@@ -31,8 +26,11 @@ class PredictionTask:
         "example_dir",
         "chunk_size",
         "translate",
+        "verbose",
         "overwrite",
         "seed",
+        "top_k",
+        "top_p",
     }
 
     def __init__(self, **kwargs) -> None:
@@ -42,11 +40,17 @@ class PredictionTask:
         Args:
             kwargs: Dictionary of parameters.
         """
-        # Set required parameters dynamically
+        missing_params = [
+            param for param in self.REQUIRED_PARAMS if param not in kwargs
+        ]
+        if missing_params:
+            raise ValueError(
+                f"Missing required parameters: {', '.join(missing_params)}"
+            )
+
         for key in self.REQUIRED_PARAMS:
             setattr(self, key, kwargs.get(key, None))
 
-        # Extract task information such as config, train and test paths
         self._extract_task_info()
 
         # Setup output paths
@@ -54,13 +58,22 @@ class PredictionTask:
         self.translation_path = (
             self.homepath / f"translations/{self.task_name}_translations.json"
         )
-        self.output_path_base = self.output_dir / Path(self.run_name)
+        self.output_path_base = Path(self.output_dir) / Path(self.run_name)
 
         # Initialize data and model
         self.data_loader = DataLoader(
             train_path=self.train_path, test_path=self.test_path
         )
         self.train, self.test = self.data_loader.load_data()
+
+        # Determine max_context_len dynamically
+        if self.max_context_len == "auto":
+            self.max_context_len = self.data_loader.get_max_input_tokens(
+                input_field=self.input_field,
+                num_predict=self.num_predict,
+                buffer_tokens=1000,
+            )
+
         self.model = self.initialize_model()
         self.predictor = Predictor(
             model=self.model,
@@ -86,21 +99,6 @@ class PredictionTask:
             seed=self.seed,
             top_k=self.top_k,
             top_p=self.top_p,
-        )
-
-    def initialize_model(self) -> ChatOllama:
-        """
-        Initialize the model using the given model name and temperature.
-
-        Returns:
-            ChatOllama: The initialized model object.
-        """
-        return ChatOllama(
-            model=self.model_name,
-            temperature=self.temperature,
-            num_predict=self.num_predict,
-            num_ctx=self.max_context_len,
-            format="json",
         )
 
     def _extract_task_info(self) -> None:

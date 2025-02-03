@@ -1,10 +1,10 @@
 import json
-import os
 import re
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import pandas as pd
+import tiktoken
 
 
 class DataLoader:
@@ -21,6 +21,10 @@ class DataLoader:
         self.train_path = Path(train_path) if train_path else None
         self.test_path = Path(test_path) if test_path else None
 
+        # Store data after loading
+        self.train = None
+        self.test = None
+
     def validate_file(self, file_path: Path) -> None:
         """
         Validates if the file exists and is a supported format.
@@ -35,9 +39,9 @@ class DataLoader:
         if not file_path.exists():
             raise FileNotFoundError(f"The file {file_path} does not exist.")
 
-        if file_path.suffix.lower() not in {".json", ".csv", ".parquet"}:
+        if file_path.suffix.lower() not in {".json", ".csv"}:
             raise ValueError(
-                f"Unsupported file format: {file_path.suffix}. Supported formats are .json, .csv, and .parquet."
+                f"Unsupported file format: {file_path.suffix}. Supported formats are .json, .csv"
             )
 
     def load_data(self) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
@@ -47,18 +51,15 @@ class DataLoader:
         Returns:
             Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]: DataFrames for training and testing data.
         """
-        train = None
-        test = None
-
         if self.train_path:
             self.validate_file(self.train_path)
-            train = self._load_file(self.train_path)
+            self.train = self._load_file(self.train_path)
 
         if self.test_path:
             self.validate_file(self.test_path)
-            test = self._load_file(self.test_path)
+            self.test = self._load_file(self.test_path)
 
-        return train, test
+        return self.train, self.test
 
     def _load_file(self, file_path: Path) -> pd.DataFrame:
         """
@@ -76,6 +77,60 @@ class DataLoader:
             return pd.read_csv(file_path)
         else:
             raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+    def count_tokens(self, text: str, model_name: str = "cl100k_base") -> int:
+        """
+        Estimate the number of tokens in a given text.
+
+        Args:
+            text (str): The text to tokenize.
+            model_name (str): The model to use for token estimation.
+
+        Returns:
+            int: The estimated token count.
+        """
+        try:
+            if model_name not in tiktoken.list_models():
+                model_name = "cl100k_base"
+            encoding = tiktoken.encoding_for_model(model_name)
+            return len(encoding.encode(text))
+        except Exception:
+            avg_token_ratio = 1.2  # Approximate: Avg token per word
+            return int(len(text.split()) * avg_token_ratio)
+
+    def get_max_input_tokens(
+        self, input_field, num_predict, buffer_tokens: int = 1000
+    ) -> int:
+        """
+        Computes the maximum token count for input data, considering a buffer.
+
+        Args:
+            buffer_tokens (int): Number of extra tokens to account for system prompt and retries.
+
+        Returns:
+            int: Adjusted maximum input token count.
+        """
+        max_train_tokens = 0
+        max_test_tokens = 0
+
+        if self.train is not None and input_field in self.train.columns:
+            max_train_tokens = max(
+                (self.count_tokens(text) for text in self.train[input_field].dropna()),
+                default=0,
+            )
+
+        if self.test is not None and input_field in self.test.columns:
+            max_test_tokens = max(
+                (self.count_tokens(text) for text in self.test[input_field].dropna()),
+                default=0,
+            )
+
+        # Choose the maximum between train and test, then add buffer
+        context_length = (
+            max(max_train_tokens, max_test_tokens) + buffer_tokens + num_predict
+        )
+        print(f"Using context length: {context_length}")
+        return context_length
 
 
 class TaskLoader:

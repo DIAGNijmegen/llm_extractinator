@@ -275,6 +275,8 @@ pyyaml==6.0.2
     #   langchain
     #   langchain-core
     #   uvicorn
+regex==2024.11.6
+    # via tiktoken
 requests==2.32.3
     # via
     #   huggingface-hub
@@ -284,6 +286,7 @@ requests==2.32.3
     #   posthog
     #   requests-oauthlib
     #   requests-toolbelt
+    #   tiktoken
 requests-oauthlib==2.0.0
     # via kubernetes
 requests-toolbelt==1.0.0
@@ -316,6 +319,8 @@ tenacity==9.0.0
     #   chromadb
     #   langchain
     #   langchain-core
+tiktoken==0.8.0
+    # via llm_extractinator (setup.cfg)
 tokenizers==0.20.3
     # via chromadb
 tqdm==4.67.1
