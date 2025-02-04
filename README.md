@@ -94,63 +94,42 @@ The following input flags can be used to configure the behavior of the `extracti
 | Flag                      | Type          | Default Value        | Description                                                                 |
 |---------------------------|---------------|----------------------|-----------------------------------------------------------------------------|
 | `--task_id`               | `int`         | **Required**         | Task ID to generate examples for.                                           |
-| `--model_name`            | `str`         | `"mistral-nemo"`     | Name of the model to use for prediction tasks. See [https://ollama.com/search](https://ollama.com/search) for the options.                              |
-| `--num_examples`          | `int`         | `0`                  | Number of examples to generate for each task.                               |
+| `--run_name`              | `str`         | "run"               | Name of the run for logging purposes.                                       |
 | `--n_runs`                | `int`         | `5`                  | Number of runs to perform.                                                  |
-| `--temperature`           | `float`       | `0.3`                | Temperature for text generation.                                            |
-| `--max_context_len`       | `str/int`         | `auto`               | Maximum context length for input text. If set to 'auto', will automatically set based on input data.                                      |
-| `--num_predict`           | `int`         | `512`               | Maximum number of tokens to predict.                                        |
-| `--run_name`              | `Path`        | `"run"`              | Name of the run for logging purposes.                                       |
+| `--num_examples`          | `int`         | `0`                  | Number of examples to generate for each task.                               |
+| `--num_predict`           | `int`         | `512`                | Maximum number of tokens to predict.                                        |
+| `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
+| `--overwrite`             | `bool`        | `False`              | Overwrite existing files instead of skipping them.                          |
+| `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
+| `--verbose`               | `bool`        | `False`              | Enable verbose logging.                                                     |
+| `--reasoning_model`       | `bool`        | `False`              | Whether or not the model is a reasoning model.                              |
+| `--model_name`            | `str`         | "mistral-nemo"      | Name of the model to use for prediction tasks.                              |
+| `--temperature`           | `float`       | `0.0`                | Temperature for text generation.                                            |
+| `--max_context_len`       | `str/int`     | `auto`               | Maximum context length for input text.                                      |
+| `--top_k`                 | `int`         | `None`               | Limits the sampling to the top K tokens.                                    |
+| `--top_p`                 | `float`       | `None`               | Nucleus sampling probability threshold.                                     |
+| `--seed`                  | `int`         | `None`               | Random seed for reproducibility.                                            |
 | `--output_dir`            | `Path`        | `<project_root>/output` | Path to the directory for output files.                                      |
 | `--task_dir`              | `Path`        | `<project_root>/tasks` | Path to the directory containing task configuration files.                   |
 | `--log_dir`               | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
 | `--data_dir`              | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
 | `--example_dir`           | `Path`        | `<project_root>/examples` | Path to the directory containing example data.                               |
-| `--chunk_size`            | `int`         | `None`               | Number of examples to generate in a single chunk. When None, use dataset size as chunksize.|
-| `--translate`             | `bool`        | `False`              | Translate the generated examples to English.                                |
-| `--verbose`               | `bool`        | `False`              | Enable verbose logging.                                                     |
-| `--overwrite`             | `bool`        | `False`              | Overwrite existing files instead of skipping them.                          |
-| `--seed`                  | `int`         | `None`               | Random seed for reproducibility.                                            |
-| `--top_k`                 | `int`         | `None`               | Limits the sampling to the top K tokens.                                    |
-| `--top_p`                 | `float`       | `None`               | Nucleus sampling probability threshold.                                     |
-| `--reasoning_model`       | `bool`       | `False`              | Whether or not the model is a reasoning model (disables JSON mode)                                         |
+| `--host`                  | `str`         | "localhost"         | Server hostname.                                                            |
+| `--port`                  | `int`         | `28900`              | Server port.                                                                |
 
 ---
 
-## Example `Task.json`
-
-Below is an example configuration file for a task:
-
-```json
-{
-    "Task": "Text Summarization",
-    "Type": "Summarization",
-    "Description": "Generate summaries for long-form text documents.",
-    "Data_Path": "documents.csv",
-    "Input_Field": "text",
-    "Example_Path": "examples.csv",
-    "Parser_Format": {
-        "summary": {
-            "type": "str",
-            "description": "The summary of the text document."
-        }
-    }
-}
-```
-
----
-
-# Running the Extractor
+## Running the Extractor
 
 To run the data extraction process, use either the command line or import the function in Python.
 
-## Option 1: Using the Command Line
+### Using the Command Line
 
 ```bash
-extractinate --task_id 001 --model_name "mistral-nemo" --num_examples 0 --max_context_len 8192 --num_predict 512 --translate
+extractinate --task_id 001 --model_name "mistral-nemo" 
 ```
 
-## Option 2: Using the Function in Python
+### Using the Function in Python
 
 ```python
 from llm_extractinator import extractinate
@@ -158,10 +137,6 @@ from llm_extractinator import extractinate
 extractinate(
     task_id=1,
     model_name="mistral-nemo",
-    num_examples=0,
-    max_context_len=8192,
-    num_predict=8192,
-    translate=True
 )
 ```
 
@@ -170,3 +145,4 @@ extractinate(
 ## Enhancements and Contributions
 
 Feel free to contribute by improving configurations, adding more task types, or extending model compatibility. Open a pull request or file an issue for discussions!
+
