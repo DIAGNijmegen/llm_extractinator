@@ -6,7 +6,7 @@ from pathlib import Path
 from llm_extractinator.main import extractinate
 
 
-class TestExtractinator(unittest.TestCase):
+class TestExtractinatorDeepseek(unittest.TestCase):
     def setUp(self):
         """Set up paths and test input before running the test."""
         self.basepath = Path(__file__).resolve().parents[1] / "tests"
@@ -29,7 +29,7 @@ class TestExtractinator(unittest.TestCase):
                 "Error cleaning output directory. Empty manually before running test."
             )
 
-    def test_extractinate_execution(self):
+    def test_extractinate_deepseek_execution(self):
         """Runs extractinate and verifies if output matches expected results."""
 
         # Run extractinate with test input

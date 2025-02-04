@@ -95,6 +95,7 @@ class Predictor:
         self.task_config = task_config
         self.num_examples = num_examples
         self.examples_path = examples_path
+        self.format = format
 
         self._extract_task_info()
 
