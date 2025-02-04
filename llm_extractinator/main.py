@@ -1,16 +1,15 @@
 import argparse
 import os
 import random
-import subprocess
+import sys
 import time
 import traceback
 from dataclasses import asdict, dataclass
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, Union, get_origin
+from typing import Optional, Union
 
 import numpy as np
-import ollama
 from langchain.globals import set_debug
 
 from llm_extractinator.ollama_server import OllamaServerManager
@@ -40,6 +39,8 @@ class TaskConfig:
     top_k: Optional[int] = None
     top_p: Optional[float] = None
     reasoning_model: bool = False
+    host: str = "localhost"
+    port: int = 28900
 
     def resolve_paths(self) -> None:
         """Ensures all paths are Path objects and resolves defaults if not provided."""
@@ -63,16 +64,15 @@ class TaskRunner:
         self.config = config
 
     def run_tasks(self) -> None:
-        """Runs the prediction tasks using multiprocessing."""
+        """Runs the prediction tasks using a managed Ollama server instance."""
         start_time = time.time()
-
         set_debug(self.config.verbose)
 
-        # Start the Ollama Server
-        with OllamaServerManager(
-            model_name=self.config.model_name, log_dir=self.config.log_dir
-        ):
+        with OllamaServerManager(host="localhost", port=28900) as manager:
+            manager.pull_model(self.config.model_name)
             self._run_task()
+            manager.stop(self.config.model_name)
+
         total_time = timedelta(seconds=time.time() - start_time)
         print(f"Total time taken for generating predictions: {total_time}")
 
@@ -89,30 +89,45 @@ class TaskRunner:
 
 def parse_args() -> TaskConfig:
     """Parses command-line arguments and returns a TaskConfig object."""
+
     parser = argparse.ArgumentParser(
         description="Run prediction tasks for a given model."
     )
 
-    # Automatically map dataclass fields to argparse arguments
-    for field in TaskConfig.__dataclass_fields__.values():
-        arg_name = f"--{field.name.replace('_', '-')}"
-        if field.name == "max_context_len":  # Handle "auto" case
-            parser.add_argument(arg_name, type=str, default=field.default)
-        else:
-            if get_origin(field.type) is Union:
-                arg_type = next(
-                    (t for t in field.type.__args__ if t is not type(None)), str
-                )
-            else:
-                arg_type = field.type
-            kwargs = {"type": arg_type, "default": field.default}
-
-            if field.type is bool:
-                kwargs = {"action": "store_true"}
-
-            parser.add_argument(arg_name, **kwargs)
+    parser.add_argument("--model_name", type=str, default="mistral-nemo")
+    parser.add_argument("--task_id", type=int, default=0)
+    parser.add_argument("--num_examples", type=int, default=0)
+    parser.add_argument("--n_runs", type=int, default=5)
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--max_context_len", type=str, default="auto")
+    parser.add_argument("--run_name", type=str, default="run")
+    parser.add_argument("--num_predict", type=int, default=512)
+    parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--task_dir", type=str, default=None)
+    parser.add_argument("--log_dir", type=str, default=None)
+    parser.add_argument("--data_dir", type=str, default=None)
+    parser.add_argument("--example_dir", type=str, default=None)
+    parser.add_argument("--chunk_size", type=int, default=None)
+    parser.add_argument("--translate", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--top_k", type=int, default=None)
+    parser.add_argument("--top_p", type=float, default=None)
+    parser.add_argument("--reasoning_model", action="store_true")
+    parser.add_argument("--host", type=str, default="localhost")
+    parser.add_argument("--port", type=int, default=28900)
 
     args, unknown = parser.parse_known_args()
+
+    # Convert max_context_len to int if it's a number, otherwise keep "auto"
+    try:
+        if args.max_context_len.lower() != "auto":
+            args.max_context_len = int(args.max_context_len)
+    except ValueError:
+        print(f"ERROR: Invalid max_context_len value: {args.max_context_len}")
+        sys.exit(1)
+
     return TaskConfig(**vars(args))
 
 
