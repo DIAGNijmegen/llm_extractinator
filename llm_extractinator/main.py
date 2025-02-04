@@ -18,35 +18,40 @@ from llm_extractinator.prediction_task import PredictionTask
 
 @dataclass
 class TaskConfig:
-    model_name: str = "mistral-nemo"
+    # General Task Settings
     task_id: int = 0
-    num_examples: int = 0
+    run_name: str = "run"
     n_runs: int = 5
+    num_examples: int = 0
+    num_predict: int = 512
+    chunk_size: Optional[int] = None
+    overwrite: bool = False
+    translate: bool = False
+    verbose: bool = False
+    reasoning_model: bool = False
+
+    # Model Configuration
+    model_name: str = "mistral-nemo"
     temperature: float = 0.0
     max_context_len: Union[int, str] = "auto"
-    run_name: str = "run"
-    num_predict: int = 512
+    top_k: Optional[int] = None
+    top_p: Optional[float] = None
+    seed: Optional[int] = None
+
+    # File Paths
     output_dir: Optional[Path] = None
     task_dir: Optional[Path] = None
     log_dir: Optional[Path] = None
     data_dir: Optional[Path] = None
     example_dir: Optional[Path] = None
-    chunk_size: Optional[int] = None
-    translate: bool = False
-    verbose: bool = False
-    overwrite: bool = False
-    seed: Optional[int] = None
-    top_k: Optional[int] = None
-    top_p: Optional[float] = None
-    reasoning_model: bool = False
+
+    # Server Configuration
     host: str = "localhost"
     port: int = 28900
 
     def resolve_paths(self) -> None:
         """Ensures all paths are Path objects and resolves defaults if not provided."""
         cwd = Path(os.getcwd())
-
-        # Ensure all paths are Path objects
         self.output_dir = Path(self.output_dir) if self.output_dir else cwd / "output"
         self.task_dir = Path(self.task_dir) if self.task_dir else cwd / "tasks"
         self.log_dir = Path(self.log_dir) if self.log_dir else self.output_dir / "logs"
@@ -68,7 +73,9 @@ class TaskRunner:
         start_time = time.time()
         set_debug(self.config.verbose)
 
-        with OllamaServerManager(host="localhost", port=28900) as manager:
+        with OllamaServerManager(
+            host=self.config.host, port=self.config.port
+        ) as manager:
             manager.pull_model(self.config.model_name)
             self._run_task()
             manager.stop(self.config.model_name)
@@ -89,32 +96,38 @@ class TaskRunner:
 
 def parse_args() -> TaskConfig:
     """Parses command-line arguments and returns a TaskConfig object."""
-
     parser = argparse.ArgumentParser(
         description="Run prediction tasks for a given model."
     )
 
-    parser.add_argument("--model_name", type=str, default="mistral-nemo")
+    # General Task Settings
     parser.add_argument("--task_id", type=int, default=0)
-    parser.add_argument("--num_examples", type=int, default=0)
-    parser.add_argument("--n_runs", type=int, default=5)
-    parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--max_context_len", type=str, default="auto")
     parser.add_argument("--run_name", type=str, default="run")
+    parser.add_argument("--n_runs", type=int, default=5)
+    parser.add_argument("--num_examples", type=int, default=0)
     parser.add_argument("--num_predict", type=int, default=512)
-    parser.add_argument("--output_dir", type=str, default=None)
-    parser.add_argument("--task_dir", type=str, default=None)
-    parser.add_argument("--log_dir", type=str, default=None)
-    parser.add_argument("--data_dir", type=str, default=None)
-    parser.add_argument("--example_dir", type=str, default=None)
     parser.add_argument("--chunk_size", type=int, default=None)
+    parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--translate", action="store_true")
     parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--reasoning_model", action="store_true")
+
+    # Model Configuration
+    parser.add_argument("--model_name", type=str, default="mistral-nemo")
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--max_context_len", type=str, default="auto")
     parser.add_argument("--top_k", type=int, default=None)
     parser.add_argument("--top_p", type=float, default=None)
-    parser.add_argument("--reasoning_model", action="store_true")
+    parser.add_argument("--seed", type=int, default=None)
+
+    # File Paths
+    parser.add_argument("--output_dir", type=Path, default=None)
+    parser.add_argument("--task_dir", type=Path, default=None)
+    parser.add_argument("--log_dir", type=Path, default=None)
+    parser.add_argument("--data_dir", type=Path, default=None)
+    parser.add_argument("--example_dir", type=Path, default=None)
+
+    # Server Configuration
     parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=int, default=28900)
 
@@ -133,8 +146,7 @@ def parse_args() -> TaskConfig:
 
 def extractinate(**kwargs) -> None:
     """Main function that accepts keyword arguments and runs task execution."""
-    config = TaskConfig(**kwargs)  # Convert kwargs to TaskConfig instance
-    # Set seeds if provided
+    config = TaskConfig(**kwargs)
     if config.seed:
         random.seed(config.seed)
         np.random.seed(config.seed)
