@@ -33,13 +33,41 @@ class TestExtractinatorCLI(unittest.TestCase):
     def test_extractinate_cli_execution(self):
         """Runs extractinate via command line and verifies output."""
 
-        command = "python -m llm_extractinator.main \
-            --model_name qwen2.5:0.5b --task_id 999 --num_examples 0 --n_runs 1 \
-            --temperature 0 --max_context_len auto --run_name test_run_cli \
-            --num_predict 512 --output_dir {} --task_dir {} --data_dir {} \
-            --translate False --verbose False --overwrite True --seed 42".format(
-            self.output_dir, self.basepath / "testtasks", self.basepath / "testdata"
-        ).split()
+        command = [
+            "python",
+            "-m",
+            "llm_extractinator.main",
+            "--model_name",
+            "qwen2.5:0.5b",
+            "--task_id",
+            "999",
+            "--num_examples",
+            "0",
+            "--n_runs",
+            "1",
+            "--temperature",
+            "0",
+            "--max_context_len",
+            "auto",
+            "--run_name",
+            "test_run_cli",
+            "--num_predict",
+            "512",
+            "--output_dir",
+            str(self.output_dir),
+            "--task_dir",
+            str(self.basepath / "testtasks"),
+            "--data_dir",
+            str(self.basepath / "testdata"),
+            "--translate",
+            "False",
+            "--verbose",
+            "False",
+            "--overwrite",
+            "True",
+            "--seed",
+            "42",
+        ]
 
         # Run extractinate as a CLI command
         result = subprocess.run(command, capture_output=True, text=True)
