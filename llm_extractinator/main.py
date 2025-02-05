@@ -36,7 +36,7 @@ class TaskConfig:
     # Model Configuration
     model_name: str = "mistral-nemo"
     temperature: float = 0.0
-    max_context_len: Union[int, str] = "split_max"
+    max_context_len: Union[int, str] = "max"
     quantile: float = 0.8
     top_k: Optional[int] = None
     top_p: Optional[float] = None
@@ -111,7 +111,7 @@ class TaskRunner:
 
         self._extract_task_info()
         self._load_data()
-        if self.config.max_context_len == "split_max":
+        if self.config.max_context_len == "split":
             self._split_data()
 
             # Run short cases
@@ -157,7 +157,7 @@ class TaskRunner:
                 manager.stop(self.config.model_name)
 
             self._combine_results()
-        elif self.config.max_context_len == "max_data":
+        elif self.config.max_context_len == "max":
             if "token_count" not in self.test.columns:
                 self.test = self.data_loader.add_token_count(
                     self.test, self.config.input_field
@@ -351,14 +351,14 @@ def parse_args() -> TaskConfig:
     parser.add_argument(
         "--max_context_len",
         type=str,
-        default="split_max",
-        help="Maximum context length; 'auto' to determine automatically.",
+        default="split",
+        help="Maximum context length; 'split' splits data into short and long cases and does a run for them seperately (good if your dataset distribution has a tail with long reports and a bulk of short ones), 'max' uses the maximum token length of the dataset, or a number sets a fixed length.",
     )
     parser.add_argument(
         "--quantile",
         type=float,
         default=0.8,
-        help="Quantile for splitting data into short and long cases based on token count. Only applicable when max_context_len is 'auto'.",
+        help="Quantile for splitting data into short and long cases based on token count. Only applicable when max_context_len is 'split'.",
     ),
     parser.add_argument(
         "--top_k",
@@ -421,8 +421,8 @@ def parse_args() -> TaskConfig:
     # Convert max_context_len to int if it's a number, otherwise keep as string
     try:
         if (
-            args.max_context_len.lower() != "split_max"
-            or args.max_context_len.lower() != "max_data"
+            args.max_context_len.lower() != "split"
+            and args.max_context_len.lower() != "max"
         ):
             args.max_context_len = int(args.max_context_len)
     except ValueError:

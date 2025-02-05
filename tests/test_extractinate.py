@@ -117,7 +117,7 @@ class TestExtractinator(unittest.TestCase):
             num_predict=1024,
             reasoning_model=True,
             n_runs=1,
-            max_context_len="auto",
+            max_context_len="max",
             translate=False,
         )
 
@@ -129,7 +129,7 @@ class TestExtractinator(unittest.TestCase):
             num_predict=512,
             reasoning_model=False,
             n_runs=1,
-            max_context_len="auto",
+            max_context_len="split",
             translate=False,
         )
 
@@ -153,7 +153,7 @@ class TestExtractinator(unittest.TestCase):
             num_predict=1024,
             reasoning_model=False,
             n_runs=5,
-            max_context_len="auto",
+            max_context_len="split",
             translate=False,
         )
 
@@ -177,7 +177,7 @@ class TestExtractinator(unittest.TestCase):
             num_predict=1024,
             reasoning_model=False,
             n_runs=5,
-            max_context_len="auto",
+            max_context_len="split",
             translate=True,
         )
 
@@ -216,7 +216,7 @@ class TestExtractinatorCLI(unittest.TestCase):
             "--temperature",
             "0",
             "--max_context_len",
-            "auto",
+            "max",
             "--run_name",
             "test_run_cli",
             "--num_predict",
