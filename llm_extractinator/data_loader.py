@@ -90,47 +90,81 @@ class DataLoader:
             int: The estimated token count.
         """
         try:
-            if model_name not in tiktoken.list_models():
-                model_name = "cl100k_base"
             encoding = tiktoken.encoding_for_model(model_name)
             return len(encoding.encode(text))
         except Exception:
             avg_token_ratio = 1.2  # Approximate: Avg token per word
             return int(len(text.split()) * avg_token_ratio)
 
+    def add_token_count(
+        self,
+        df: pd.DataFrame,
+        text_column: str = "text",
+        token_column: str = "token_count",
+    ) -> pd.DataFrame:
+        """
+        Adds a new column to the DataFrame with the token count for each text.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing the text column.
+            text_column (str): The name of the text column.
+            token_column (str): The name of the new token count column.
+
+        Returns:
+            pd.DataFrame: The DataFrame with the new token count column.
+        """
+        print("Counting tokens...")
+        df[token_column] = df[text_column].apply(self.count_tokens)
+        return df
+
+    def split_data(
+        self,
+        df: pd.DataFrame,
+        text_column: str = "text",
+        token_column: str = "token_count",
+        quantile: float = 0.8,
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Splits the DataFrame into two based on the quantile of the token count in the text column.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to split.
+            text_column (str): The name of the text column.
+            quantile (float): The quantile to split on. Default is 0.8.
+
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: Two DataFrames split by the quantile.
+        """
+        if token_column not in df.columns:
+            df = self.add_token_count(df, text_column, token_column)
+
+        threshold = df[token_column].quantile(quantile)
+        short_df = df[df[token_column] <= threshold]
+        long_df = df[df[token_column] > threshold]
+
+        return short_df, long_df
+
     def get_max_input_tokens(
-        self, input_field, num_predict, buffer_tokens: int = 1000
+        self,
+        df: pd.DataFrame,
+        token_column: str = "token_count",
+        num_predict: int = 512,
+        buffer_tokens: int = 1000,
+        num_examples: int = 0,
     ) -> int:
         """
         Computes the maximum token count for input data, considering a buffer.
 
         Args:
-            buffer_tokens (int): Number of extra tokens to account for system prompt and retries.
+            df (pd.DataFrame): The DataFrame containing the token count column.
+            token_column (str): The name of the token count column.
+            num_predict (int): The number of tokens to predict. Default is 512.
+            buffer_tokens (int): The buffer tokens to add. Default is 1000.
 
         Returns:
-            int: Adjusted maximum input token count.
+            int: The maximum token count for input data.
         """
-        max_train_tokens = 0
-        max_test_tokens = 0
-
-        if self.train is not None and input_field in self.train.columns:
-            max_train_tokens = max(
-                (self.count_tokens(text) for text in self.train[input_field].dropna()),
-                default=0,
-            )
-
-        if self.test is not None and input_field in self.test.columns:
-            max_test_tokens = max(
-                (self.count_tokens(text) for text in self.test[input_field].dropna()),
-                default=0,
-            )
-
-        # Choose the maximum between train and test, then add buffer
-        context_length = (
-            max(max_train_tokens, max_test_tokens) + buffer_tokens + num_predict
-        )
-        print(f"Using context length: {context_length}")
-        return context_length
+        return df[token_column].max() * (num_examples + 1) + buffer_tokens + num_predict
 
 
 class TaskLoader:
