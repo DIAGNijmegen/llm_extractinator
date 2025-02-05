@@ -101,35 +101,132 @@ def parse_args() -> TaskConfig:
     )
 
     # General Task Settings
-    parser.add_argument("--task_id", type=int, default=0)
-    parser.add_argument("--run_name", type=str, default="run")
-    parser.add_argument("--n_runs", type=int, default=5)
-    parser.add_argument("--num_examples", type=int, default=0)
-    parser.add_argument("--num_predict", type=int, default=512)
-    parser.add_argument("--chunk_size", type=int, default=None)
-    parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--translate", action="store_true")
-    parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--reasoning_model", action="store_true")
+    parser.add_argument(
+        "--task_id", type=int, default=0, help="Unique identifier for the task."
+    )
+    parser.add_argument(
+        "--run_name",
+        type=str,
+        default="run",
+        help="Name for the run, used as the folder name for the output files.",
+    )
+    parser.add_argument(
+        "--n_runs",
+        type=int,
+        default=5,
+        help="Number of times to repeat the task execution.",
+    )
+    parser.add_argument(
+        "--num_examples",
+        type=int,
+        default=0,
+        help="Number of examples to use in prompts. Must be supplied separately.",
+    )
+    parser.add_argument(
+        "--num_predict",
+        type=int,
+        default=512,
+        help="Maxinum number of tokens to generate for a prediction.",
+    )
+    parser.add_argument(
+        "--chunk_size",
+        type=int,
+        default=None,
+        help="Size of data chunks for processing; None means full dataset at once.",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="If set, existing files will be overwritten instead of skipped.",
+    )
+    parser.add_argument(
+        "--translate", action="store_true", help="If set, enables translation mode."
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="If set, prints detailed logs and debugging information.",
+    )
+    parser.add_argument(
+        "--reasoning_model",
+        action="store_true",
+        help="If set, enables a reasoning-based model for task execution (disables JSON mode).",
+    )
 
     # Model Configuration
-    parser.add_argument("--model_name", type=str, default="mistral-nemo")
-    parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--max_context_len", type=str, default="auto")
-    parser.add_argument("--top_k", type=int, default=None)
-    parser.add_argument("--top_p", type=float, default=None)
-    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="mistral-nemo",
+        help="Name of the model to use. Follows Ollama naming scheme.",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="Sampling temperature; higher values lead to more randomness in outputs.",
+    )
+    parser.add_argument(
+        "--max_context_len",
+        type=str,
+        default="auto",
+        help="Maximum context length; 'auto' to determine automatically.",
+    )
+    parser.add_argument(
+        "--top_k",
+        type=int,
+        default=None,
+        help="Top-k sampling parameter; restricts sampling to the top-k most likely words.",
+    )
+    parser.add_argument(
+        "--top_p",
+        type=float,
+        default=None,
+        help="Top-p (nucleus) sampling parameter; restricts sampling to top cumulative probability mass.",
+    )
+    parser.add_argument(
+        "--seed", type=int, default=None, help="Random seed for reproducibility."
+    )
 
     # File Paths
-    parser.add_argument("--output_dir", type=Path, default=None)
-    parser.add_argument("--task_dir", type=Path, default=None)
-    parser.add_argument("--log_dir", type=Path, default=None)
-    parser.add_argument("--data_dir", type=Path, default=None)
-    parser.add_argument("--example_dir", type=Path, default=None)
+    parser.add_argument(
+        "--output_dir",
+        type=Path,
+        default=None,
+        help="Directory where output files will be saved.",
+    )
+    parser.add_argument(
+        "--task_dir",
+        type=Path,
+        default=None,
+        help="Directory containing task files.",
+    )
+    parser.add_argument(
+        "--log_dir", type=Path, default=None, help="Directory for logging output."
+    )
+    parser.add_argument(
+        "--data_dir",
+        type=Path,
+        default=None,
+        help="Directory containing input data files.",
+    )
+    parser.add_argument(
+        "--example_dir",
+        type=Path,
+        default=None,
+        help="Directory containing example files.",
+    )
 
     # Server Configuration
-    parser.add_argument("--host", type=str, default="localhost")
-    parser.add_argument("--port", type=int, default=28900)
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="Host address for running the server.",
+    )
+    parser.add_argument(
+        "--port", type=int, default=28900, help="Port number for the server."
+    )
 
     args, unknown = parser.parse_known_args()
 
