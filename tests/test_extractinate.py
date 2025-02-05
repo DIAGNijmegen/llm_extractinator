@@ -122,12 +122,12 @@ class TestExtractinator(unittest.TestCase):
         )
 
     def test_extractinate_ctx_auto(self):
-        """Test extractinate with max_context_len set to 512"""
+        """Test extractinate with max_context_len set to split"""
         self.run_extractinate_test(
             model_name="deepseek-r1:1.5b",
             run_name="test_run_max_context_len",
-            num_predict=512,
-            reasoning_model=False,
+            num_predict=1024,
+            reasoning_model=True,
             n_runs=1,
             max_context_len="split",
             translate=False,

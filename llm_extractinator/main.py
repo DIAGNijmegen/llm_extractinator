@@ -256,6 +256,13 @@ class TaskRunner:
         """
         try:
             print("Combining results...")
+            if not self.short_paths:
+                raise ValueError(
+                    "No paths found for short cases. Something went wrong."
+                )
+            if not self.long_paths:
+                raise ValueError("No paths found for long cases. Something went wrong.")
+
             for short_path, long_path in zip(self.short_paths, self.long_paths):
                 short_df = pd.read_json(short_path, orient="records")
                 long_df = pd.read_json(long_path, orient="records")
