@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 from langchain_ollama import ChatOllama
 
-from llm_extractinator.data_loader import DataLoader, TaskLoader
+from llm_extractinator.data_loader import DataLoader
 from llm_extractinator.predictor import Predictor
 from llm_extractinator.utils import save_json
 
@@ -32,6 +32,14 @@ class PredictionTask:
         "top_k",
         "top_p",
         "reasoning_model",
+        "train_path",
+        "test_path",
+        "input_field",
+        "task_name",
+        "task_config",
+        "data_split",
+        "train",
+        "test",
     }
 
     def __init__(self, **kwargs) -> None:
@@ -52,20 +60,12 @@ class PredictionTask:
         for key in self.REQUIRED_PARAMS:
             setattr(self, key, kwargs.get(key, None))
 
-        self._extract_task_info()
-
         # Setup output paths
         self.homepath = Path(__file__).resolve().parents[1]
         self.translation_path = (
             self.homepath / f"translations/{self.task_name}_translations.json"
         )
         self.output_path_base = Path(self.output_dir) / Path(self.run_name)
-
-        # Initialize data and model
-        self.data_loader = DataLoader(
-            train_path=self.train_path, test_path=self.test_path
-        )
-        self.train, self.test = self.data_loader.load_data()
 
         # Determine max_context_len dynamically
         if self.max_context_len == "auto":
@@ -107,21 +107,6 @@ class PredictionTask:
             top_p=self.top_p,
         )
 
-    def _extract_task_info(self) -> None:
-        """
-        Extract task information from the task configuration file.
-        """
-        task_loader = TaskLoader(folder_path=self.task_dir, task_id=self.task_id)
-        self.task_config = task_loader.find_and_load_task()
-        self.example_file = self.task_config.get("Example_Path")
-        if self.example_file is not None:
-            self.train_path = self.example_dir / self.task_config.get("Example_Path")
-        else:
-            self.train_path = None
-        self.test_path = self.data_dir / self.task_config.get("Data_Path")
-        self.input_field = self.task_config.get("Input_Field")
-        self.task_name = task_loader.get_task_name()
-
     def _load_examples(self) -> Dict:
         """
         Loads the examples for the task from the training data.
@@ -143,7 +128,7 @@ class PredictionTask:
         with self.translation_path.open("r") as f:
             self.test = pd.read_json(f)
 
-    def run(self) -> None:
+    def run(self) -> List[Path]:
         """
         Run the prediction task by preparing the model, running predictions, and saving the results.
         """
@@ -158,11 +143,15 @@ class PredictionTask:
             model_name="nomic-embed-text", examples=examples
         )
 
+        outpath_list = []
+
         # Run predictions across multiple runs
         for run_idx in range(self.n_runs):
-            self._run_single_prediction(run_idx)
+            outpath_list.append(self._run_single_prediction(run_idx))
 
-    def _run_single_prediction(self, run_idx: int) -> None:
+        return outpath_list
+
+    def _run_single_prediction(self, run_idx: int) -> Path:
         """
         Run a single prediction iteration and save the results.
 
@@ -214,15 +203,22 @@ class PredictionTask:
                     chunk_predictions.extend(json.load(f))
 
             # Save the predictions to a JSON file
+            if self.data_split is not None:
+                filename = f"nlp-predictions-dataset-{self.data_split}.json"
+            else:
+                filename = "nlp-predictions-dataset.json"
+
             save_json(
                 chunk_predictions,
                 outpath=output_path,
-                filename="nlp-predictions-dataset.json",
+                filename=filename,
             )
 
             # Remove the chunk files
             for chunk_file in chunk_files:
                 chunk_file.unlink()
+
+            return output_path / filename
 
         else:
             # Get prediction results
@@ -233,9 +229,16 @@ class PredictionTask:
                 for sample, result in zip(self.test.itertuples(index=False), results)
             ]
 
+            if self.data_split is not None:
+                filename = f"nlp-predictions-dataset-{self.data_split}.json"
+            else:
+                filename = "nlp-predictions-dataset.json"
+
             # Save the predictions to a JSON file
             save_json(
                 predictions,
                 outpath=output_path,
-                filename="nlp-predictions-dataset.json",
+                filename=filename,
             )
+
+            return output_path / filename

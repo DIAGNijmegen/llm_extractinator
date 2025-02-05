@@ -105,7 +105,7 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--reasoning_model`       | `bool`        | `False`              | Whether or not the model is a reasoning model.                              |
 | `--model_name`            | `str`         | "mistral-nemo"      | Name of the model to use for prediction tasks.                              |
 | `--temperature`           | `float`       | `0.0`                | Temperature for text generation.                                            |
-| `--max_context_len`       | `str/int`     | `auto`               | Maximum context length for input text.                                      |
+| `--max_context_len`       | `str/int`     | `split_max`               | Maximum context length for input text. Set to "split_max" or "max_dataset"                                     |
 | `--top_k`                 | `int`         | `None`               | Limits the sampling to the top K tokens.                                    |
 | `--top_p`                 | `float`       | `None`               | Nucleus sampling probability threshold.                                     |
 | `--seed`                  | `int`         | `None`               | Random seed for reproducibility.                                            |
