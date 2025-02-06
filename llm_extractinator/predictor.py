@@ -358,10 +358,11 @@ class Predictor:
 
         Args:
             results (List[Dict[str, Any]]): The list of results to be validated and potentially fixed.
+            parser_model (BaseModel): The Pydantic model for validation.
             max_attempts (int, optional): Maximum number of attempts to fix each result. Defaults to 3.
 
         Returns:
-            List[Dict[str, Any]]: The list of results with all items validated or attempted to be fixed.
+            List[Dict[str, Any]]: The validated and fixed results.
         """
 
         def extract_json_from_text(text: str) -> Optional[dict]:
@@ -423,8 +424,9 @@ class Predictor:
             result.setdefault("status", "pending")
             result["retry_count"] = 0
 
-            # If format is not json, attempt to extract json from the output
+            # If format is not JSON, attempt to extract JSON from the output
             if self.format != "json" and isinstance(result, dict):
+                extracted_json = None
                 for key, value in result.items():
                     if isinstance(value, str):  # Only process string values
                         extracted_json = extract_json_from_text(value)
@@ -433,6 +435,10 @@ class Predictor:
                                 extracted_json
                             )  # Merge extracted JSON into result
                             break  # Stop after first successful extraction
+
+                # If no JSON was extracted, mark for retrying
+                if not extracted_json:
+                    result["status"] = "invalid"
 
         attempt = 0
         while attempt < max_attempts:
@@ -453,6 +459,7 @@ class Predictor:
             invalid_results = [results[i] for i in invalid_indices]
             index_mapping = {i: results[i]["original_index"] for i in invalid_indices}
             fixing_inputs = [{"completion": str(result)} for result in invalid_results]
+
             print(
                 f"Retry {attempt + 1}: Attempting to fix {len(invalid_indices)} invalid results..."
             )
@@ -468,6 +475,12 @@ class Predictor:
                 # Update the results with fixed outputs
                 for idx, fixed_result in zip(invalid_indices, fixed_results):
                     original_index = index_mapping[idx]
+
+                    if self.format != "json":
+                        extracted_json = extract_json_from_text(str(fixed_result))
+                        if extracted_json:
+                            fixed_result = extracted_json
+
                     try:
                         parser_model.model_validate(fixed_result)
                         fixed_result["retry_count"] = results[idx]["retry_count"] + 1
