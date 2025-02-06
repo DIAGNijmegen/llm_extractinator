@@ -14,7 +14,7 @@ from langchain_core.example_selectors import (
     BaseExampleSelector,
     MaxMarginalRelevanceExampleSelector,
 )
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.outputs import LLMResult
 from langchain_core.prompts import (
     AIMessagePromptTemplate,
@@ -533,8 +533,11 @@ class Predictor:
             List[Dict[str, Any]]: A list of prediction results.
         """
 
-        # Create a processing chain: prompt -> model -> output parser
-        chain = self.prompt | self.model | self.parser
+        if self.format == "json":
+            # Chain: prompt -> model -> output parser
+            chain = self.prompt | self.model | self.parser
+        else:
+            chain = self.prompt | self.model | StrOutputParser()
 
         # Preprocess test data
         test_data_processed = [
