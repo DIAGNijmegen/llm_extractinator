@@ -49,10 +49,6 @@ class TaskConfig:
     data_dir: Optional[Path] = None
     example_dir: Optional[Path] = None
 
-    # Server Configuration
-    host: str = "localhost"
-    port: int = 28900
-
     # Loaded from task file
     train_path: Optional[Path] = None
     test_path: Optional[Path] = None
@@ -80,9 +76,6 @@ class TaskConfig:
 
         if self.top_p is not None and not (0 <= self.top_p <= 1):
             raise ValueError(f"top_p must be between 0 and 1, got {self.top_p}")
-
-        if self.port <= 0 or self.port > 65535:
-            raise ValueError(f"port must be between 1 and 65535, got {self.port}")
 
         self.resolve_paths()
 
@@ -128,9 +121,7 @@ class TaskRunner:
                 "Running short cases with max_context_len:", self.config.max_context_len
             )
 
-            with OllamaServerManager(
-                host=self.config.host, port=self.config.port
-            ) as manager:
+            with OllamaServerManager() as manager:
                 manager.pull_model(self.config.model_name)
                 self.short_paths = self._run_task()
                 manager.stop(self.config.model_name)
@@ -149,9 +140,7 @@ class TaskRunner:
                 "Running long cases with max_context_len:", self.config.max_context_len
             )
 
-            with OllamaServerManager(
-                host=self.config.host, port=self.config.port
-            ) as manager:
+            with OllamaServerManager() as manager:
                 manager.pull_model(self.config.model_name)
                 self.long_paths = self._run_task()
                 manager.stop(self.config.model_name)
@@ -174,9 +163,7 @@ class TaskRunner:
                 "Running full cases with max_context_len:", self.config.max_context_len
             )
 
-            with OllamaServerManager(
-                host=self.config.host, port=self.config.port
-            ) as manager:
+            with OllamaServerManager() as manager:
                 manager.pull_model(self.config.model_name)
                 _ = self._run_task()
                 manager.stop(self.config.model_name)
@@ -410,17 +397,6 @@ def parse_args() -> TaskConfig:
         type=Path,
         default=None,
         help="Directory containing example files.",
-    )
-
-    # Server Configuration
-    parser.add_argument(
-        "--host",
-        type=str,
-        default="localhost",
-        help="Host address for running the server.",
-    )
-    parser.add_argument(
-        "--port", type=int, default=28900, help="Port number for the server."
     )
 
     args, unknown = parser.parse_known_args()
