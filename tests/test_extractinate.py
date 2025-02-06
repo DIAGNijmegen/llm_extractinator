@@ -30,7 +30,7 @@ class TestExtractinator(unittest.TestCase):
         self.output_dir = self.basepath / "testoutput"
 
         # Ensure output directory is clean before test
-        # clean_output_dir(self.output_dir)
+        clean_output_dir(self.output_dir)
 
     def run_extractinate_test(
         self,
@@ -93,8 +93,6 @@ class TestExtractinator(unittest.TestCase):
                     self.assertFalse(
                         missing_keys, f"Missing keys at index {idx}: {missing_keys}"
                     )
-
-        # clean_output_dir(self.output_dir)
 
     # Individual test cases for different models
     def test_extractinate_base(self):

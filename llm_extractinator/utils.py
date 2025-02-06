@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from pathlib import Path
 from typing import Optional
@@ -30,3 +31,14 @@ def save_json(
             time.sleep(delay)
     else:
         print(f"Failed to save data after {retries} attempts.")
+
+
+def extract_json_from_text(text: str) -> str:
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        try:
+            json.loads(match.group(0))
+            return str(match.group(0))
+        except json.JSONDecodeError:
+            pass
+    return "\{\}"
