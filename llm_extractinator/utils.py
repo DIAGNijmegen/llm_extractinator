@@ -41,4 +41,4 @@ def extract_json_from_text(text: str) -> str:
             return str(match.group(0))
         except json.JSONDecodeError:
             pass
-    return "\{\}"
+    return "{}"

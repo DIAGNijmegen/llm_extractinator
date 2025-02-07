@@ -170,9 +170,7 @@ class TaskRunner:
         else:
             self.config.train = self.train
             self.config.test = self.test
-            with OllamaServerManager(
-                host=self.config.host, port=self.config.port
-            ) as manager:
+            with OllamaServerManager() as manager:
                 manager.pull_model(self.config.model_name)
                 _ = self._run_task()
                 manager.stop(self.config.model_name)
