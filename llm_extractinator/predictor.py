@@ -24,12 +24,13 @@ from langchain_core.prompts import (
     PromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain_core.runnables import RunnableLambda
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
 from llm_extractinator.output_parsers import load_parser
-from llm_extractinator.utils import save_json
+from llm_extractinator.utils import extract_json_from_text
 
 # Disable debug mode for LangChain
 set_debug(False)
@@ -369,6 +370,7 @@ class Predictor:
             """Extract JSON from text if self.format is not 'json'."""
             json_pattern = re.compile(r"\{.*?\}", re.DOTALL)
             match = json_pattern.search(text)
+            print(match)
             if match:
                 try:
                     return json.loads(match.group())
@@ -416,7 +418,13 @@ class Predictor:
         fixing_prompt = self.ollama_prepare_fixing_prompt(
             format_instructions=format_instructions
         )
-        fixing_chain = fixing_prompt | self.model | JsonOutputParser()
+        fixing_chain = (
+            fixing_prompt
+            | self.model
+            | StrOutputParser
+            | extract_json_from_text
+            | JsonOutputParser()
+        )
 
         # Initialize results with metadata for retries and statuses
         for i, result in enumerate(results):
@@ -533,11 +541,13 @@ class Predictor:
             List[Dict[str, Any]]: A list of prediction results.
         """
 
-        if self.format == "json":
-            # Chain: prompt -> model -> output parser
-            chain = self.prompt | self.model | self.parser
-        else:
-            chain = self.prompt | self.model | StrOutputParser()
+        chain = (
+            self.prompt
+            | self.model
+            | StrOutputParser()
+            | extract_json_from_text
+            | self.parser
+        )
 
         # Preprocess test data
         test_data_processed = [
@@ -545,6 +555,7 @@ class Predictor:
         ]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
+        print(results[0])
         callbacks.progress_bar.close()
 
         return self.validate_and_fix_results(results, parser_model=self.parser_model)
