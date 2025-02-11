@@ -90,7 +90,7 @@ class DataLoader:
             int: The estimated token count.
         """
         try:
-            encoding = tiktoken.encoding_for_model(model_name)
+            encoding = tiktoken.get_encoding(model_name)
             return len(encoding.encode(text))
         except Exception:
             avg_token_ratio = 1.2  # Approximate: Avg token per word
