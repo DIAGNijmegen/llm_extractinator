@@ -370,7 +370,6 @@ class Predictor:
             """Extract JSON from text if self.format is not 'json'."""
             json_pattern = re.compile(r"\{.*?\}", re.DOTALL)
             match = json_pattern.search(text)
-            print(match)
             if match:
                 try:
                     return json.loads(match.group())
