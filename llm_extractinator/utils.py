@@ -1,8 +1,9 @@
 import json
+import random
 import re
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -42,3 +43,23 @@ def extract_json_from_text(text: str) -> str:
         except json.JSONDecodeError:
             pass
     return "{}"
+
+
+def handle_failure(annotation):
+    """Handle various types and return default values for failed cases."""
+    if get_origin(annotation) is Literal:
+        return random.choice(get_args(annotation))
+    type_defaults = {str: "", int: 0, float: 0.0, bool: False, list: [], dict: {}}
+
+    if annotation in type_defaults:
+        return type_defaults[annotation]
+    if get_origin(annotation) is Optional or get_origin(annotation) is Union:
+        return handle_failure(get_args(annotation)[0])
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return annotation(
+            **{
+                field: handle_failure(field_type)
+                for field, field_type in annotation.__annotations__.items()
+            }
+        )
+    return None

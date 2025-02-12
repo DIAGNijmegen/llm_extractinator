@@ -177,7 +177,7 @@ class PredictionTask:
                 chunk_output_path = (
                     output_path / f"nlp-predictions-dataset-{chunk_idx}.json"
                 )
-                if chunk_output_path.exists():
+                if chunk_output_path.exists() and not self.overwrite:
                     print(f"Chunk prediction {chunk_idx} already exists. Skipping...")
                     continue
 

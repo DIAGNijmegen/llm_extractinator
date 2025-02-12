@@ -30,7 +30,7 @@ from pydantic import BaseModel, ValidationError
 from tqdm.auto import tqdm
 
 from llm_extractinator.output_parsers import load_parser
-from llm_extractinator.utils import extract_json_from_text
+from llm_extractinator.utils import extract_json_from_text, handle_failure
 
 # Disable debug mode for LangChain
 set_debug(False)
@@ -355,134 +355,73 @@ class Predictor:
         max_attempts: int = 3,
     ) -> List[Dict[str, Any]]:
         """
-        Validate and batch-fix results. If any results are invalid, try fixing them in batches.
+        Validate and batch-fix results, retrying a limited number of times.
 
         Args:
-            results (List[Dict[str, Any]]): The list of results to be validated and potentially fixed.
+            results (List[Dict[str, Any]]): The list of results to validate and fix.
             parser_model (BaseModel): The Pydantic model for validation.
-            max_attempts (int, optional): Maximum number of attempts to fix each result. Defaults to 3.
+            max_attempts (int, optional): Maximum attempts to fix each result. Defaults to 3.
 
         Returns:
-            List[Dict[str, Any]]: The validated and fixed results.
+            List[Dict[str, Any]]: The validated and corrected results.
         """
 
-        def extract_json_from_text(text: str) -> Optional[dict]:
-            """Extract JSON from text if self.format is not 'json'."""
-            json_pattern = re.compile(r"\{.*?\}", re.DOTALL)
-            match = json_pattern.search(text)
-            if match:
-                try:
-                    return json.loads(match.group())
-                except json.JSONDecodeError:
-                    return None
-            return None
-
-        def handle_failure(annotation):
-            """Handle various types and return default values for failed cases."""
-            if get_origin(annotation) is Literal:
-                return random.choice(get_args(annotation))
-            elif annotation == str:
-                return ""
-            elif annotation == int:
-                return 0
-            elif annotation == float:
-                return 0.0
-            elif annotation == bool:
-                return False
-            elif get_origin(annotation) is list:
-                return []
-            elif get_origin(annotation) is dict:
-                return {}
-            elif get_origin(annotation) is Optional:
-                return handle_failure(get_args(annotation)[0])
-            elif get_origin(annotation) is Union:
-                return handle_failure(get_args(annotation)[0])
-            elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                nested_instance = {
-                    field_name: handle_failure(field)
-                    for field_name, field in annotation.__annotations__.items()
-                }
-                return annotation(**nested_instance)
-            elif annotation == Any:
-                return None
-            else:
-                return None
-
-        # Initialize the output parser and format instructions
         parser = JsonOutputParser(pydantic_object=parser_model)
         parser_model_fields = parser_model.model_fields
         format_instructions = parser.get_format_instructions()
 
-        # Prepare a chain for fixing the results
-        fixing_prompt = self.ollama_prepare_fixing_prompt(
-            format_instructions=format_instructions
-        )
         fixing_chain = (
-            fixing_prompt
+            self.ollama_prepare_fixing_prompt(format_instructions=format_instructions)
             | self.model
             | StrOutputParser
             | extract_json_from_text
             | JsonOutputParser()
         )
 
-        # Initialize results with metadata for retries and statuses
+        # Initialize metadata and try extracting JSON if needed
         for i, result in enumerate(results):
             result["original_index"] = i
             result.setdefault("status", "pending")
             result["retry_count"] = 0
 
-            # If format is not JSON, attempt to extract JSON from the output
             if self.format != "json" and isinstance(result, dict):
-                extracted_json = None
-                for key, value in result.items():
-                    if isinstance(value, str):  # Only process string values
-                        extracted_json = extract_json_from_text(value)
-                        if extracted_json:
-                            result.update(
-                                extracted_json
-                            )  # Merge extracted JSON into result
-                            break  # Stop after first successful extraction
-
-                # If no JSON was extracted, mark for retrying
-                if not extracted_json:
+                extracted_json = next(
+                    (
+                        extract_json_from_text(value)
+                        for key, value in result.items()
+                        if isinstance(value, str)
+                    ),
+                    None,
+                )
+                if extracted_json:
+                    result.update(extracted_json)
+                else:
                     result["status"] = "invalid"
 
         attempt = 0
         while attempt < max_attempts:
-            # Collect indices of invalid results
-            invalid_indices = []
-            for i, result in enumerate(results):
-                try:
-                    parser_model.model_validate(result)
-                    result["status"] = "success"
-                except ValidationError:
-                    invalid_indices.append(i)
-
-            # If no invalid results, exit the loop
+            # Identify invalid results
+            invalid_indices = [
+                i for i, r in enumerate(results) if r["status"] != "success"
+            ]
             if not invalid_indices:
-                break
-
-            # Prepare the batch for fixing
-            invalid_results = [results[i] for i in invalid_indices]
-            index_mapping = {i: results[i]["original_index"] for i in invalid_indices}
-            fixing_inputs = [{"completion": str(result)} for result in invalid_results]
+                break  # Stop if all results are valid
 
             print(
-                f"Retry {attempt + 1}: Attempting to fix {len(invalid_indices)} invalid results..."
+                f"Retry {attempt + 1}: Fixing {len(invalid_indices)} invalid results..."
             )
 
+            invalid_results = [results[i] for i in invalid_indices]
+            fixing_inputs = [{"completion": str(result)} for result in invalid_results]
+
             try:
-                # Attempt to fix the batch
                 callbacks = BatchCallBack(len(invalid_indices))
                 fixed_results = fixing_chain.batch(
                     fixing_inputs, config={"callbacks": [callbacks]}
                 )
                 callbacks.progress_bar.close()
 
-                # Update the results with fixed outputs
                 for idx, fixed_result in zip(invalid_indices, fixed_results):
-                    original_index = index_mapping[idx]
-
                     if self.format != "json":
                         extracted_json = extract_json_from_text(str(fixed_result))
                         if extracted_json:
@@ -490,40 +429,42 @@ class Predictor:
 
                     try:
                         parser_model.model_validate(fixed_result)
-                        fixed_result["retry_count"] = results[idx]["retry_count"] + 1
-                        fixed_result["status"] = "success"
-                        fixed_result["original_index"] = original_index
+                        fixed_result.update(
+                            {
+                                "retry_count": results[idx]["retry_count"] + 1,
+                                "status": "success",
+                                "original_index": results[idx]["original_index"],
+                            }
+                        )
                         results[idx] = fixed_result
                     except ValidationError:
                         results[idx]["retry_count"] += 1
                         results[idx]["status"] = "failed"
+
             except Exception as e:
                 print(f"Batch fixing failed at attempt {attempt + 1}: {str(e)}")
 
             attempt += 1
 
-        # Handle any remaining failures after max_attempts
-        for i in invalid_indices:
-            if results[i].get("status") != "success":
+        # Assign default values to permanently failed cases
+        for result in results:
+            if result.get("status") != "success":
                 print(
-                    f"Failed to fix output at original index {results[i]['original_index']} after {max_attempts} attempts. Assigning default values."
+                    f"Failed to fix result at index {result['original_index']}. Assigning default values."
                 )
-                results[i].pop("properties", None)
-                results[i].pop("required", None)
-                for key in parser_model_fields:
-                    results[i][key] = handle_failure(
-                        parser_model_fields[key].annotation
-                    )
-                results[i]["retry_count"] = max_attempts
-                results[i]["status"] = "failed"
+                result.pop("properties", None)
+                result.pop("required", None)
+                result.update(
+                    {
+                        key: handle_failure(field.annotation)
+                        for key, field in parser_model_fields.items()
+                    }
+                )
+                result["retry_count"] = max_attempts
+                result["status"] = "failed"
 
-        # Sort results back to original order
-        try:
-            results.sort(key=lambda x: x["original_index"])
-        except KeyError as e:
-            raise KeyError(f"KeyError during sorting: {str(e)}")
-
-        # Remove 'original_index' key after sorting
+        # Restore original order and remove metadata
+        results.sort(key=lambda x: x["original_index"])
         for result in results:
             result.pop("original_index", None)
 
