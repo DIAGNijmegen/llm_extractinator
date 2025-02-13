@@ -355,7 +355,7 @@ class Predictor:
         max_attempts: int = 3,
     ) -> List[Dict[str, Any]]:
         """
-        Validate and batch-fix results, retrying a limited number of times.
+        Validate and batch-fix results while keeping metadata separate.
 
         Args:
             results (List[Dict[str, Any]]): The list of results to validate and fix.
@@ -375,35 +375,29 @@ class Predictor:
             | self.model
             | StrOutputParser
             | extract_json_from_text
-            | JsonOutputParser()
         )
 
-        # Initialize metadata and try extracting JSON if needed
-        for i, result in enumerate(results):
-            result["original_index"] = i
-            result.setdefault("status", "pending")
-            result["retry_count"] = 0
+        # Store metadata separately
+        index_mapping = {i: result for i, result in enumerate(results)}
 
-            if self.format != "json" and isinstance(result, dict):
-                extracted_json = next(
-                    (
-                        extract_json_from_text(value)
-                        for key, value in result.items()
-                        if isinstance(value, str)
-                    ),
-                    None,
-                )
-                if extracted_json:
-                    result.update(extracted_json)
-                else:
-                    result["status"] = "invalid"
+        # Strip metadata before validation
+        stripped_results = [
+            {k: v for k, v in result.items() if k in parser_model_fields}
+            for result in results
+        ]
 
         attempt = 0
         while attempt < max_attempts:
             # Identify invalid results
-            invalid_indices = [
-                i for i, r in enumerate(results) if r["status"] != "success"
-            ]
+            invalid_indices = []
+            for i, r in enumerate(stripped_results):
+                if isinstance(r, BaseModel):
+                    r = r.model_dump()
+                try:
+                    parser_model.model_validate(r)
+                except ValidationError:
+                    invalid_indices.append(i)
+
             if not invalid_indices:
                 break  # Stop if all results are valid
 
@@ -411,7 +405,7 @@ class Predictor:
                 f"Retry {attempt + 1}: Fixing {len(invalid_indices)} invalid results..."
             )
 
-            invalid_results = [results[i] for i in invalid_indices]
+            invalid_results = [stripped_results[i] for i in invalid_indices]
             fixing_inputs = [{"completion": str(result)} for result in invalid_results]
 
             try:
@@ -428,47 +422,37 @@ class Predictor:
                             fixed_result = extracted_json
 
                     try:
+                        if isinstance(fixed_result, BaseModel):
+                            fixed_result = fixed_result.model_dump()
+
+                        # Strip unnecessary metadata before validation
+                        fixed_result = {
+                            k: v
+                            for k, v in fixed_result.items()
+                            if k in parser_model_fields
+                        }
                         parser_model.model_validate(fixed_result)
-                        fixed_result.update(
-                            {
-                                "retry_count": results[idx]["retry_count"] + 1,
-                                "status": "success",
-                                "original_index": results[idx]["original_index"],
-                            }
-                        )
-                        results[idx] = fixed_result
+
+                        stripped_results[idx] = fixed_result
                     except ValidationError:
-                        results[idx]["retry_count"] += 1
-                        results[idx]["status"] = "failed"
+                        pass  # Leave it in invalid state for now
 
             except Exception as e:
                 print(f"Batch fixing failed at attempt {attempt + 1}: {str(e)}")
 
             attempt += 1
 
-        # Assign default values to permanently failed cases
-        for result in results:
-            if result.get("status") != "success":
-                print(
-                    f"Failed to fix result at index {result['original_index']}. Assigning default values."
-                )
-                result.pop("properties", None)
-                result.pop("required", None)
-                result.update(
-                    {
-                        key: handle_failure(field.annotation)
-                        for key, field in parser_model_fields.items()
-                    }
-                )
-                result["retry_count"] = max_attempts
-                result["status"] = "failed"
+        # Assign default values for failed results
+        for i in invalid_indices:
+            stripped_results[i] = {
+                key: handle_failure(parser_model_fields[key].annotation)
+                for key in parser_model_fields
+            }
 
-        # Restore original order and remove metadata
-        results.sort(key=lambda x: x["original_index"])
-        for result in results:
-            result.pop("original_index", None)
+        # Restore the original order using index_mapping
+        final_results = [stripped_results[i] for i in sorted(index_mapping.keys())]
 
-        return results
+        return final_results
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """
@@ -481,13 +465,7 @@ class Predictor:
             List[Dict[str, Any]]: A list of prediction results.
         """
 
-        chain = (
-            self.prompt
-            | self.model
-            | StrOutputParser()
-            | extract_json_from_text
-            | self.parser
-        )
+        chain = self.prompt | self.model | StrOutputParser() | extract_json_from_text
 
         # Preprocess test data
         test_data_processed = [
@@ -495,7 +473,7 @@ class Predictor:
         ]
         callbacks = BatchCallBack(len(test_data_processed))
         results = chain.batch(test_data_processed, config={"callbacks": [callbacks]})
-        print(results[0])
+        print("DEBUG:", results)
         callbacks.progress_bar.close()
 
         return self.validate_and_fix_results(results, parser_model=self.parser_model)

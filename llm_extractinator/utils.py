@@ -34,32 +34,34 @@ def save_json(
         print(f"Failed to save data after {retries} attempts.")
 
 
-def extract_json_from_text(text: str) -> str:
+def extract_json_from_text(text: str) -> dict:
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
+        json_text = text[text.find("{") : text.rfind("}") + 1]
         try:
-            json.loads(match.group(0))
-            return str(match.group(0))
+            return json.loads(json_text)
         except json.JSONDecodeError:
-            pass
-    return "{}"
+            return {}
 
 
 def handle_failure(annotation):
     """Handle various types and return default values for failed cases."""
     if get_origin(annotation) is Literal:
         return random.choice(get_args(annotation))
+
     type_defaults = {str: "", int: 0, float: 0.0, bool: False, list: [], dict: {}}
 
     if annotation in type_defaults:
         return type_defaults[annotation]
-    if get_origin(annotation) is Optional or get_origin(annotation) is Union:
+
+    if get_origin(annotation) in {Optional, Union}:
         return handle_failure(get_args(annotation)[0])
+
     if isinstance(annotation, type) and issubclass(annotation, BaseModel):
-        return annotation(
-            **{
-                field: handle_failure(field_type)
-                for field, field_type in annotation.__annotations__.items()
-            }
-        )
+        nested_instance = {
+            field_name: handle_failure(field)
+            for field_name, field in annotation.__annotations__.items()
+        }
+        return annotation.model_construct(**nested_instance)
+
     return None
