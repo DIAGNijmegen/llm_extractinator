@@ -42,26 +42,3 @@ def extract_json_from_text(text: str) -> dict:
             return json.loads(json_text)
         except json.JSONDecodeError:
             return {}
-
-
-def handle_failure(annotation):
-    """Handle various types and return default values for failed cases."""
-    if get_origin(annotation) is Literal:
-        return random.choice(get_args(annotation))
-
-    type_defaults = {str: "", int: 0, float: 0.0, bool: False, list: [], dict: {}}
-
-    if annotation in type_defaults:
-        return type_defaults[annotation]
-
-    if get_origin(annotation) in {Optional, Union}:
-        return handle_failure(get_args(annotation)[0])
-
-    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
-        nested_instance = {
-            field_name: handle_failure(field)
-            for field_name, field in annotation.__annotations__.items()
-        }
-        return annotation.model_construct(**nested_instance)
-
-    return None

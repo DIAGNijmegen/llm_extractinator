@@ -7,6 +7,7 @@ from langchain_ollama import ChatOllama
 
 from llm_extractinator.data_loader import DataLoader
 from llm_extractinator.predictor import Predictor
+from llm_extractinator.translator import Translator
 from llm_extractinator.utils import save_json
 
 
@@ -43,12 +44,7 @@ class PredictionTask:
     }
 
     def __init__(self, **kwargs) -> None:
-        """
-        Initialize the PredictionTask dynamically by extracting only required parameters.
-
-        Args:
-            kwargs: Dictionary of parameters.
-        """
+        # Check required parameters
         missing_params = [
             param for param in self.REQUIRED_PARAMS if param not in kwargs
         ]
@@ -67,7 +63,7 @@ class PredictionTask:
         )
         self.output_path_base = Path(self.output_dir) / Path(self.run_name)
 
-        # Determine max_context_len dynamically
+        # If user selects "auto" for context length, compute it (example)
         if self.max_context_len == "auto":
             self.max_context_len = self.data_loader.get_max_input_tokens(
                 input_field=self.input_field,
@@ -75,26 +71,25 @@ class PredictionTask:
                 buffer_tokens=1000,
             )
 
+        # Decide whether we want JSON output or not
+        if self.reasoning_model:
+            self.format = ""
+        else:
+            self.format = "json"
+
+        # Initialize the LLM model
         self.model = self.initialize_model()
+
+        # Create a predictor instance (no more 'generate_translations' inside Predictor)
         self.predictor = Predictor(
             model=self.model,
             task_config=self.task_config,
             examples_path=self.example_dir,
             num_examples=self.num_examples,
-            format=self.format,
+            output_format=self.format,
         )
 
     def initialize_model(self) -> ChatOllama:
-        """
-        Initialize the model using the given model name and temperature.
-
-        Returns:
-            ChatOllama: The initialized model object.
-        """
-        if self.reasoning_model:
-            self.format = ""
-        else:
-            self.format = "json"
         return ChatOllama(
             model=self.model_name,
             temperature=self.temperature,
@@ -107,12 +102,9 @@ class PredictionTask:
             top_p=self.top_p,
         )
 
-    def _load_examples(self) -> Dict:
+    def _load_examples(self) -> List[Dict]:
         """
         Loads the examples for the task from the training data.
-
-        Returns:
-            Dict: Loaded examples.
         """
         return self.train[["input", "output"]].to_dict(orient="records")
 
@@ -120,10 +112,14 @@ class PredictionTask:
         """
         Translate the text of the dataset to English.
         """
+        # If there's already a translation file and we don't want to overwrite, skip
         if not self.translation_path.exists():
             print(f"Translating Task {self.task_id}...")
             self.translation_path.parent.mkdir(parents=True, exist_ok=True)
-            self.predictor.generate_translations(self.test, self.translation_path)
+
+            # Use the dedicated translator
+            translator = Translator(model=self.model, input_field=self.input_field)
+            translator.generate_translations(self.test, self.translation_path)
 
         with self.translation_path.open("r") as f:
             self.test = pd.read_json(f)
@@ -132,6 +128,7 @@ class PredictionTask:
         """
         Run the prediction task by preparing the model, running predictions, and saving the results.
         """
+        # Optionally translate first
         if self.translate:
             self._translate_task()
 
@@ -140,7 +137,8 @@ class PredictionTask:
 
         # Prepare the predictor with the loaded examples
         self.predictor.prepare_prompt_ollama(
-            model_name="nomic-embed-text", examples=examples
+            model_name="nomic-embed-text",  # or the actual embedding model name you prefer
+            examples=examples,
         )
 
         outpath_list = []
@@ -154,9 +152,6 @@ class PredictionTask:
     def _run_single_prediction(self, run_idx: int) -> Path:
         """
         Run a single prediction iteration and save the results.
-
-        Args:
-            run_idx (int): The index of the current run.
         """
         output_path = self.output_path_base / f"{self.task_name}-run{run_idx}"
         output_path.mkdir(parents=True, exist_ok=True)
@@ -168,10 +163,11 @@ class PredictionTask:
             print(
                 f"Prediction {run_idx + 1} of {self.n_runs} already exists. Skipping..."
             )
-            return
+            return prediction_file
 
         print(f"Running prediction {run_idx + 1} of {self.n_runs}...")
 
+        # If chunking is enabled
         if self.chunk_size is not None:
             for chunk_idx in range(0, len(self.test), self.chunk_size):
                 chunk_output_path = (
@@ -195,35 +191,30 @@ class PredictionTask:
                     filename=chunk_output_path.name,
                 )
 
-            # Merge the chunk predictions into a single file
+            # Merge chunked predictions
             chunk_files = list(output_path.glob("nlp-predictions-dataset-*.json"))
             chunk_predictions = []
             for chunk_file in chunk_files:
                 with chunk_file.open("r") as f:
                     chunk_predictions.extend(json.load(f))
 
-            # Save the predictions to a JSON file
+            # Decide on a final filename for merged predictions
             if self.data_split is not None:
                 filename = f"nlp-predictions-dataset-{self.data_split}.json"
             else:
                 filename = "nlp-predictions-dataset.json"
 
-            save_json(
-                chunk_predictions,
-                outpath=output_path,
-                filename=filename,
-            )
+            save_json(chunk_predictions, outpath=output_path, filename=filename)
 
-            # Remove the chunk files
+            # Optionally remove the chunk files
             for chunk_file in chunk_files:
                 chunk_file.unlink()
 
             return output_path / filename
 
+        # Otherwise, no chunking
         else:
-            # Get prediction results
             results = self.predictor.predict(self.test)
-
             predictions = [
                 {**sample._asdict(), **result}
                 for sample, result in zip(self.test.itertuples(index=False), results)
@@ -234,11 +225,5 @@ class PredictionTask:
             else:
                 filename = "nlp-predictions-dataset.json"
 
-            # Save the predictions to a JSON file
-            save_json(
-                predictions,
-                outpath=output_path,
-                filename=filename,
-            )
-
+            save_json(predictions, outpath=output_path, filename=filename)
             return output_path / filename
