@@ -13,7 +13,8 @@ from langchain_core.prompts import (
 
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser
-from llm_extractinator.validator import validate_and_fix_results
+
+# from llm_extractinator.validator import validate_and_fix_results
 
 
 class Translator:

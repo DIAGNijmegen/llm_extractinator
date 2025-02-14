@@ -1,19 +1,18 @@
-# predictor.py
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import ollama
 import pandas as pd
+from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
 from langchain_chroma import Chroma
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableLambda
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser
 from llm_extractinator.prompt_utils import build_few_shot_prompt, build_zero_shot_prompt
-from llm_extractinator.utils import extract_json_from_text
-from llm_extractinator.validator import validate_and_fix_results
+from llm_extractinator.validator import validate_results
 
 
 class Predictor:
@@ -31,13 +30,6 @@ class Predictor:
     ) -> None:
         """
         Initialize the Predictor with the provided model, task configuration, and paths.
-
-        Args:
-            model: The language model to be used (e.g., ChatOllama).
-            task_config: Configuration for the task, including task name, input, etc.
-            examples_path: Path where the generated examples are saved.
-            num_examples: Number of examples to select for few-shot learning.
-            output_format: Expected output format ("json" by default).
         """
         self.model = model
         self.task_config = task_config
@@ -71,11 +63,21 @@ class Predictor:
         self.parser_model = load_parser(
             task_type=self.type, parser_format=self.parser_format
         )
-        self.parser = JsonOutputParser(pydantic_object=self.parser_model)
-        self.format_instructions = self.parser.get_format_instructions()
+        # We’ll build an actual LangChain PydanticOutputParser
+        base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
+
+        # We also keep the usual "format_instructions" for instructing the model
+        self.format_instructions = base_parser.get_format_instructions()
+
+        # Create an OutputFixingParser that wraps the base parser
+        self.fixing_parser = OutputFixingParser.from_llm(
+            parser=base_parser,
+            llm=self.model,
+            max_retries=3,
+        )
 
         if examples:
-            ollama.pull(model_name)
+            ollama.pull(model_name)  # Ensure local model is available
             self.embedding_model = OllamaEmbeddings(model=model_name)
 
             from langchain_core.example_selectors import (
@@ -103,30 +105,37 @@ class Predictor:
         """
         Make predictions on the test data.
 
-        Args:
-            test_data: The test data containing text in self.input_field.
-
         Returns:
-            A list of prediction results.
+            A list of validated (or defaulted) prediction results.
         """
-        chain = self.prompt | self.model | StrOutputParser() | extract_json_from_text
+        # We'll do a simple chain: prompt -> model -> fix_parser
+        chain = self.prompt | self.model | self.fixing_parser
 
+        # Prepare input to the chain
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
         ]
+
+        # Callback for progress
         callbacks = BatchCallBack(len(test_data_processed))
+
+        # The chain output will be Pydantic-validated or auto-fixed objects
         raw_results = chain.batch(
             test_data_processed,
             config={"callbacks": [callbacks]},
         )
         callbacks.progress_bar.close()
 
-        # Validate and fix the results
-        final_results = validate_and_fix_results(
-            raw_results,
-            parser_model=self.parser_model,
-            model=self.model,
-            output_format=self.output_format,
-        )
+        # raw_results will be a list of pydantic objects (or dicts) if all went well
+        # We'll do a final pass to ensure each item definitely matches schema,
+        # or fallback to `handle_failure` if the parser gave up.
+        final_results = []
+        for item in raw_results:
+            # The OutputFixingParser should yield actual BaseModel objects,
+            # but we might still do a fallback check:
+            final_results.append(validate_results(item, self.parser_model))
 
-        return final_results
+        # Return list of dicts (since model_dump() might be more convenient than raw pydantic objects)
+        return [
+            r.model_dump() if hasattr(r, "model_dump") else r for r in final_results
+        ]

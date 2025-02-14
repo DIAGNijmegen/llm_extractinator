@@ -137,7 +137,7 @@ def build_few_shot_prompt(
     )
 
 
-def prepare_fixing_prompt(format_instructions: str) -> ChatPromptTemplate:
+def build_fixing_prompt(format_instructions: str) -> ChatPromptTemplate:
     """
     Prepare a prompt for fixing incorrectly formatted JSON output.
     """
