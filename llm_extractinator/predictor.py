@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -12,7 +13,28 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser
 from llm_extractinator.prompt_utils import build_few_shot_prompt, build_zero_shot_prompt
-from llm_extractinator.validator import validate_results
+from llm_extractinator.validator import handle_prediction_failure
+
+
+def handle_failure(error: Exception, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle failures during prediction by logging the error and returning a default response.
+
+    Args:
+        error (Exception): The exception encountered during prediction.
+        input_data (Dict[str, Any]): The input data that caused the error.
+
+    Returns:
+        Dict[str, Any]: A default response with an error message, ensuring automatic evaluation is not affected.
+    """
+    logging.error(f"Prediction failed for input: {input_data}. Error: {str(error)}")
+
+    # Return a default response indicating failure, ensuring evaluation continues smoothly
+    return {
+        "input": input_data.get("input", "Unknown"),
+        "error": str(error),
+        "prediction": "default_value",
+    }
 
 
 class Predictor:
@@ -64,14 +86,14 @@ class Predictor:
             task_type=self.type, parser_format=self.parser_format
         )
         # We’ll build an actual LangChain PydanticOutputParser
-        base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
+        self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
 
         # We also keep the usual "format_instructions" for instructing the model
-        self.format_instructions = base_parser.get_format_instructions()
+        self.format_instructions = self.base_parser.get_format_instructions()
 
         # Create an OutputFixingParser that wraps the base parser
         self.fixing_parser = OutputFixingParser.from_llm(
-            parser=base_parser,
+            parser=self.base_parser,
             llm=self.model,
             max_retries=3,
         )
@@ -119,23 +141,26 @@ class Predictor:
         # Callback for progress
         callbacks = BatchCallBack(len(test_data_processed))
 
-        # The chain output will be Pydantic-validated or auto-fixed objects
+        # Execute batch prediction with error handling
         raw_results = chain.batch(
             test_data_processed,
             config={"callbacks": [callbacks]},
+            return_exceptions=True,
         )
+
         callbacks.progress_bar.close()
 
-        # raw_results will be a list of pydantic objects (or dicts) if all went well
-        # We'll do a final pass to ensure each item definitely matches schema,
-        # or fallback to `handle_failure` if the parser gave up.
         final_results = []
-        for item in raw_results:
-            # The OutputFixingParser should yield actual BaseModel objects,
-            # but we might still do a fallback check:
-            final_results.append(validate_results(item, self.parser_model))
+        for input_data, result in zip(test_data_processed, raw_results):
+            if isinstance(result, Exception):
+                final_results.append(
+                    handle_prediction_failure(result, input_data, self.parser_model)
+                )
+            else:
+                result_dict = (
+                    result.model_dump() if hasattr(result, "model_dump") else result
+                )
+                result_dict["status"] = "success"
+                final_results.append(result_dict)
 
-        # Return list of dicts (since model_dump() might be more convenient than raw pydantic objects)
-        return [
-            r.model_dump() if hasattr(r, "model_dump") else r for r in final_results
-        ]
+        return final_results

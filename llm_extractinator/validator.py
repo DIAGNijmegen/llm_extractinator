@@ -1,7 +1,6 @@
-# validator.py
-
+import logging
 import random
-from typing import Any, Literal, Optional, Union, get_args, get_origin
+from typing import Any, Dict, Literal, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel, ValidationError
 
@@ -11,9 +10,11 @@ def handle_failure(annotation):
     Return default/failure values depending on annotation type.
     Called only after all fix attempts have failed.
     """
-    # If it's a literal, pick a random valid literal
-    if get_origin(annotation) is type(Literal):
-        return random.choice(get_args(annotation))
+    # If it's a Literal, pick a random valid literal
+    if get_origin(annotation) is Literal:  # Corrected this check
+        literals = get_args(annotation)
+        if literals:
+            return random.choice(literals)
 
     # Basic defaults for common types
     type_defaults = {str: "", int: 0, float: 0.0, bool: False, list: [], dict: {}}
@@ -22,7 +23,7 @@ def handle_failure(annotation):
 
     # If it's Optional[X] or Union[X, None], handle X
     if get_origin(annotation) in {Optional, Union}:
-        # get first item that isn't None
+        # Get first item that isn't None
         subtypes = [t for t in get_args(annotation) if t is not type(None)]
         if subtypes:
             return handle_failure(subtypes[0])
@@ -38,6 +39,21 @@ def handle_failure(annotation):
 
     # Fallback
     return None
+
+
+def handle_prediction_failure(
+    error: Exception, input_data: Dict[str, Any], parser_model: BaseModel
+) -> Dict[str, Any]:
+    """
+    Handle failures during prediction by logging the error and returning a default response.
+    """
+    logging.error(f"Prediction failed for input: {input_data}. Error: {str(error)}")
+
+    default_values = {}
+    for field_name, field_def in parser_model.model_fields.items():
+        default_values[field_name] = handle_failure(field_def.annotation)
+
+    return {**default_values, "status": "failure"}
 
 
 def validate_results(
