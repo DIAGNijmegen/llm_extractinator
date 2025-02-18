@@ -1,20 +1,20 @@
-# translator.py
+import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
+import ollama
 import pandas as pd
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    PromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
+from langchain_chroma import Chroma
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser
+from llm_extractinator.prompt_utils import build_translation_prompt
+from llm_extractinator.validator import handle_prediction_failure
 
-# from llm_extractinator.validator import validate_and_fix_results
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class Translator:
@@ -30,66 +30,60 @@ class Translator:
         self.model = model
         self.input_field = input_field
 
-        # Load parser for translations
-        parser_model = load_parser(task_type="Translation", parser_format=None)
-        self.translation_parser = JsonOutputParser(pydantic_object=parser_model)
-        self.translation_format_instructions = (
-            self.translation_parser.get_format_instructions()
+    def _prepare_translation_prompt(
+        self,
+    ) -> None:
+        """
+        Prepare the translation prompt.
+        """
+        logger.info("Preparing translation prompt.")
+        self.parser_model = load_parser(task_type="Translation", parser_format=None)
+        self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
+        self.format_instructions = self.base_parser.get_format_instructions()
+        self.fixing_parser = OutputFixingParser.from_llm(
+            parser=self.base_parser,
+            llm=self.model,
+            max_retries=3,
         )
-        self.parser_model = parser_model
 
-        self.translation_prompt = self._create_translation_prompt()
-
-    def _create_translation_prompt(self) -> ChatPromptTemplate:
-        """
-        Create the ChatPromptTemplate used for translations.
-        """
-        system_prompt = SystemMessagePromptTemplate(
-            prompt=PromptTemplate(
-                template=(
-                    "You're a professional translator. "
-                    "Translate the following text from English to Spanish.\n"
-                    "**Format instructions:**\n{format_instructions}"
-                ),
-                input_variables=[],
-                partial_variables={
-                    "format_instructions": self.translation_format_instructions
-                },
-            )
+        self.prompt = build_translation_prompt(
+            format_instructions=self.format_instructions,
         )
-        human_prompt = HumanMessagePromptTemplate(
-            prompt=PromptTemplate(
-                template="{input}",
-                input_variables=["input"],
-            )
-        )
-        return ChatPromptTemplate.from_messages([system_prompt, human_prompt])
 
-    def generate_translations(self, data: pd.DataFrame, savepath: Path) -> pd.DataFrame:
+    def translate(
+        self, test_data: pd.DataFrame, savepath: Path
+    ) -> List[Dict[str, Any]]:
         """
-        Generate translations for the given data, validate them, and save to disk.
+        Make predictions on the test data.
         """
-        chain = self.translation_prompt | self.model | self.translation_parser
-
-        data_processed = [
-            {"input": row[self.input_field]} for _, row in data.iterrows()
+        logger.info("Starting translation with %d samples.", len(test_data))
+        self._prepare_translation_prompt()
+        chain = self.prompt | self.model | self.fixing_parser
+        test_data_processed = [
+            {"input": row[self.input_field]} for _, row in test_data.iterrows()
         ]
-
-        callbacks = BatchCallBack(len(data_processed))
-        raw_results = chain.batch(data_processed, config={"callbacks": [callbacks]})
-
-        # Validate and fix results
-        results = validate_and_fix_results(
-            raw_results,
-            parser_model=self.parser_model,
-            model=self.model,
-            output_format="json",
-            max_attempts=3,
+        callbacks = BatchCallBack(len(test_data_processed))
+        raw_results = chain.batch(
+            test_data_processed,
+            config={"callbacks": [callbacks]},
+            return_exceptions=True,
         )
+        callbacks.progress_bar.close()
 
-        # Extract final translations
-        translations = [res["translation"] for res in results]
-        data[self.input_field] = translations
+        final_results = []
+        for input_data, result in zip(test_data_processed, raw_results):
+            if isinstance(result, Exception):
+                final_results.append(
+                    handle_prediction_failure(result, input_data, self.parser_model)
+                )
+            else:
+                result_dict = (
+                    result.model_dump() if hasattr(result, "model_dump") else result
+                )
+                result_dict["status"] = "success"
+                final_results.append(result_dict)
 
-        data.to_json(savepath, orient="records", indent=4)
-        return data
+        logger.info("Saving translations.")
+        test_data[self.input_field] = [res["translation"] for res in final_results]
+        test_data.to_json(savepath, orient="records", indent=4)
+        logger.info("Translation completed successfully.")
