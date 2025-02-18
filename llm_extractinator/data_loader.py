@@ -202,7 +202,7 @@ class DataLoader:
             num_predict = df[token_column].max() + buffer_tokens
         if reasoning_model:
             num_predict = num_predict + buffer_tokens
-        logging.info(f"Adapting num_predict for translation to: {num_predict}")
+        logging.info(f"Adapting num_predict to: {num_predict}")
         return num_predict
 
 

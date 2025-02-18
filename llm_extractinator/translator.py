@@ -36,7 +36,6 @@ class Translator:
         """
         Prepare the translation prompt.
         """
-        logger.info("Preparing translation prompt.")
         self.parser_model = load_parser(task_type="Translation", parser_format=None)
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
         self.format_instructions = self.base_parser.get_format_instructions()

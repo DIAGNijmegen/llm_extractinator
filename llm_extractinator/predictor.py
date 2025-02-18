@@ -45,7 +45,6 @@ class Predictor:
         """
         Initialize the Predictor with the provided model, task configuration, and paths.
         """
-        logger.info("Initializing Predictor with task config: %s", task_config)
         self.model = model
         self.task_config = task_config
         self.num_examples = num_examples
@@ -73,7 +72,6 @@ class Predictor:
         """
         Prepare the system and human prompts for few-shot learning based on provided examples.
         """
-        logger.info("Preparing prompt.")
         self.parser_model = load_parser(
             task_type=self.type, parser_format=self.parser_format
         )
@@ -86,7 +84,7 @@ class Predictor:
         )
 
         if examples:
-            logger.info("Using few-shot examples for prompt preparation.")
+            logger.info("Creating few-shot prompt.")
             ollama.pull(embedding_model)
             self.embedding_model = OllamaEmbeddings(model=embedding_model)
             from langchain_core.example_selectors import (
@@ -103,7 +101,7 @@ class Predictor:
                 example_selector=self.example_selector,
             )
         else:
-            logger.info("Using zero-shot learning prompt.")
+            logger.info("Creating zero-shot prompt.")
             self.prompt = build_zero_shot_prompt(
                 task=self.task,
                 description=self.description,

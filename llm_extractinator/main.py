@@ -17,8 +17,12 @@ from langchain.globals import set_debug
 from llm_extractinator.data_loader import DataLoader, TaskLoader
 from llm_extractinator.ollama_server import OllamaServerManager
 from llm_extractinator.prediction_task import PredictionTask
-from llm_extractinator.translator import Translator
 from llm_extractinator.utils import save_json
+
+
+class NoHttpRequestsFilter(logging.Filter):
+    def filter(self, record):
+        return "HTTP Request:" not in record.getMessage()
 
 
 def setup_logging(log_dir: Path):
@@ -30,6 +34,10 @@ def setup_logging(log_dir: Path):
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
     )
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
 
 @dataclass
@@ -150,7 +158,7 @@ class TaskRunner:
                 f"Running short cases with max_context_len: {self.config.max_context_len}"
             )
 
-            with OllamaServerManager() as manager:
+            with OllamaServerManager(log_dir=self.config.log_dir) as manager:
                 manager.pull_model(self.config.model_name)
                 self.short_paths = self._run_task()
                 manager.stop(self.config.model_name)
@@ -169,7 +177,7 @@ class TaskRunner:
                 f"Running long cases with max_context_len: {self.config.max_context_len}"
             )
 
-            with OllamaServerManager() as manager:
+            with OllamaServerManager(log_dir=self.config.log_dir) as manager:
                 manager.pull_model(self.config.model_name)
                 self.long_paths = self._run_task()
                 manager.stop(self.config.model_name)
@@ -188,14 +196,14 @@ class TaskRunner:
                 f"Running cases with max_context_len: {self.config.max_context_len}"
             )
 
-            with OllamaServerManager() as manager:
+            with OllamaServerManager(log_dir=self.config.log_dir) as manager:
                 manager.pull_model(self.config.model_name)
                 _ = self._run_task()
                 manager.stop(self.config.model_name)
         else:
             self.config.train = self.train
             self.config.test = self.test
-            with OllamaServerManager() as manager:
+            with OllamaServerManager(log_dir=self.config.log_dir) as manager:
                 manager.pull_model(self.config.model_name)
                 _ = self._run_task()
                 manager.stop(self.config.model_name)

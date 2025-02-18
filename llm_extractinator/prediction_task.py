@@ -6,7 +6,6 @@ from typing import Dict, List
 import pandas as pd
 from langchain_ollama import ChatOllama
 
-from llm_extractinator.data_loader import DataLoader
 from llm_extractinator.predictor import Predictor
 from llm_extractinator.translator import Translator
 from llm_extractinator.utils import save_json
@@ -74,7 +73,6 @@ class PredictionTask:
         )
 
     def initialize_model(self) -> ChatOllama:
-        logger.info("Initializing ChatOllama model: %s", self.model_name)
         return ChatOllama(
             model=self.model_name,
             temperature=self.temperature,
@@ -107,11 +105,7 @@ class PredictionTask:
         with self.translation_path.open("r") as f:
             self.test = pd.read_json(f)
 
-        logger.info("Translation complete.")
-
     def run(self) -> List[Path]:
-        logger.info("Starting prediction task.")
-
         if self.translate:
             self._translate_task()
 
@@ -126,12 +120,9 @@ class PredictionTask:
         for run_idx in range(self.n_runs):
             outpath_list.append(self._run_single_prediction(run_idx))
 
-        logger.info("Prediction task completed.")
         return outpath_list
 
     def _run_single_prediction(self, run_idx: int) -> Path:
-        logger.info("Running single prediction %d/%d", run_idx + 1, self.n_runs)
-
         output_path = self.output_path_base / f"{self.task_name}-run{run_idx}"
         output_path.mkdir(parents=True, exist_ok=True)
 
@@ -182,7 +173,7 @@ class PredictionTask:
 
             return output_path / filename
         else:
-            logger.info("Running standard prediction.")
+            logger.info("Running predictions without chunking.")
             results = self.predictor.predict(self.test)
             predictions = [
                 {**sample._asdict(), **result}
