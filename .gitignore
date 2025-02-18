@@ -167,3 +167,4 @@ output/*
 translations/*
 .vscode/
 tests/testoutput/*
+tests/testtranslations/*
