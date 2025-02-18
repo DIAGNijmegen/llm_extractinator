@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import random
 import sys
@@ -16,7 +17,19 @@ from langchain.globals import set_debug
 from llm_extractinator.data_loader import DataLoader, TaskLoader
 from llm_extractinator.ollama_server import OllamaServerManager
 from llm_extractinator.prediction_task import PredictionTask
+from llm_extractinator.translator import Translator
 from llm_extractinator.utils import save_json
+
+
+def setup_logging(log_dir: Path):
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "task_runner.log"
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
+    )
 
 
 @dataclass
@@ -48,6 +61,7 @@ class TaskConfig:
     log_dir: Optional[Path] = None
     data_dir: Optional[Path] = None
     example_dir: Optional[Path] = None
+    translation_dir: Optional[Path] = None
 
     # Loaded from task file
     train_path: Optional[Path] = None
@@ -89,6 +103,10 @@ class TaskConfig:
         self.example_dir = (
             Path(self.example_dir) if self.example_dir else cwd / "examples"
         )
+        self.translation_dir = (
+            Path(self.translation_dir) if self.translation_dir else cwd / "translations"
+        )
+        setup_logging(self.log_dir)
 
 
 class TaskRunner:
@@ -104,6 +122,17 @@ class TaskRunner:
 
         self._extract_task_info()
         self._load_data()
+
+        # Set num_predict based on input length for translation
+        if self.config.translate or self.config.reasoning_model:
+            self.config.num_predict = self.data_loader.adapt_num_predict(
+                df=self.test,
+                token_column="token_count",
+                translate=self.config.translate,
+                reasoning_model=self.config.reasoning_model,
+                num_predict=self.config.num_predict,
+            )
+
         if self.config.max_context_len == "split":
             self._split_data()
 
@@ -117,8 +146,8 @@ class TaskRunner:
             self.config.train = self.short_train
             self.config.test = self.short_test
 
-            print(
-                "Running short cases with max_context_len:", self.config.max_context_len
+            logging.info(
+                f"Running short cases with max_context_len: {self.config.max_context_len}"
             )
 
             with OllamaServerManager() as manager:
@@ -136,8 +165,8 @@ class TaskRunner:
             self.config.train = self.long_train
             self.config.test = self.long_test
 
-            print(
-                "Running long cases with max_context_len:", self.config.max_context_len
+            logging.info(
+                f"Running long cases with max_context_len: {self.config.max_context_len}"
             )
 
             with OllamaServerManager() as manager:
@@ -147,10 +176,6 @@ class TaskRunner:
 
             self._combine_results()
         elif self.config.max_context_len == "max":
-            if "token_count" not in self.test.columns:
-                self.test = self.data_loader.add_token_count(
-                    self.test, self.config.input_field
-                )
             self.config.max_context_len = self.data_loader.get_max_input_tokens(
                 df=self.test,
                 num_predict=self.config.num_predict,
@@ -159,8 +184,8 @@ class TaskRunner:
             self.config.train = self.train
             self.config.test = self.test
 
-            print(
-                "Running full cases with max_context_len:", self.config.max_context_len
+            logging.info(
+                f"Running cases with max_context_len: {self.config.max_context_len}"
             )
 
             with OllamaServerManager() as manager:
@@ -176,7 +201,7 @@ class TaskRunner:
                 manager.stop(self.config.model_name)
 
         total_time = timedelta(seconds=time.time() - start_time)
-        print(f"Total time taken for generating predictions: {total_time}")
+        logging.info(f"Task execution completed in {total_time}")
 
     def _run_task(self) -> bool:
         """Executes a single prediction task in parallel."""
@@ -215,7 +240,9 @@ class TaskRunner:
         self.data_loader = DataLoader(
             train_path=self.config.train_path, test_path=self.config.test_path
         )
-        self.train, self.test = self.data_loader.load_data()
+        self.train, self.test = self.data_loader.load_data(
+            text_column=self.config.input_field
+        )
 
     def _split_data(self) -> None:
         """
@@ -265,7 +292,7 @@ class TaskRunner:
                 long_path.unlink()
 
         except Exception as error:
-            print(f"Error combining results: {error}")
+            logging.error(f"Error combining results: {error}")
 
 
 def parse_args() -> TaskConfig:
@@ -396,6 +423,12 @@ def parse_args() -> TaskConfig:
         default=None,
         help="Directory containing example files.",
     )
+    parser.add_argument(
+        "--translation_dir",
+        type=Path,
+        default=None,
+        help="Directory containing translation files.",
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -407,7 +440,9 @@ def parse_args() -> TaskConfig:
         ):
             args.max_context_len = int(args.max_context_len)
     except ValueError:
-        print(f"ERROR: Invalid max_context_len value: {args.max_context_len}")
+        logging.error(
+            "max_context_len must be 'split', 'max', or an integer. Exiting..."
+        )
         sys.exit(1)
 
     return TaskConfig(**vars(args))
@@ -423,7 +458,7 @@ def extractinate(**kwargs) -> None:
     try:
         task_runner.run_tasks()
     except Exception as error:
-        print(f"Error running prediction tasks: {error}")
+        logging.error(f"Error running tasks: {error}")
         traceback.print_exc()
 
 

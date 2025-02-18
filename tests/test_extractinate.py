@@ -57,6 +57,7 @@ class TestExtractinator(unittest.TestCase):
             output_dir=self.output_dir,
             task_dir=self.basepath / "testtasks",
             data_dir=self.basepath / "testdata",
+            translation_dir=self.basepath / "testtranslations",
             translate=translate,
             verbose=False,
             overwrite=True,
@@ -110,7 +111,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_base(self):
         """Test extractinate with Qwen model"""
         self.run_extractinate_test(
-            model_name="gemma2:2b",
+            model_name="gemma2",
             run_name="test_run",
             num_predict=256,
             reasoning_model=False,
@@ -146,7 +147,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_n_runs(self):
         """Test extractinate with multiple runs"""
         self.run_extractinate_test(
-            model_name="gemma2:2b",
+            model_name="gemma2",
             run_name="test_run_deepseek_n_runs",
             num_predict=1024,
             reasoning_model=False,
@@ -158,7 +159,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_n_runs_and_ctx_auto(self):
         """Test extractinate with multiple runs and max_context_len set to auto"""
         self.run_extractinate_test(
-            model_name="gemma2:2b",
+            model_name="gemma2",
             run_name="test_run_deepseek_n_runs_auto",
             num_predict=1024,
             reasoning_model=False,
@@ -170,7 +171,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_translate(self):
         """Test extractinate with translation enabled"""
         self.run_extractinate_test(
-            model_name="gemma2:2b",
+            model_name="gemma2",
             run_name="test_run_translate",
             num_predict=1024,
             reasoning_model=False,
@@ -182,7 +183,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_translate_ctx_auto_n_runs(self):
         """Test extractinate with translation enabled, max_context_len set to auto and multiple runs"""
         self.run_extractinate_test(
-            model_name="gemma2:2b",
+            model_name="gemma2",
             run_name="test_run_translate_ctx_auto_n_runs",
             num_predict=1024,
             reasoning_model=False,
@@ -216,7 +217,7 @@ class TestExtractinatorCLI(unittest.TestCase):
             "-m",
             "llm_extractinator.main",
             "--model_name",
-            "gemma2:2b",
+            "gemma2",
             "--task_id",
             "999",
             "--num_examples",

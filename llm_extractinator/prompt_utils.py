@@ -1,6 +1,5 @@
-# prompt_utils.py
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import List
 
 from langchain_core.prompts import (
     AIMessagePromptTemplate,
@@ -153,6 +152,30 @@ def build_fixing_prompt(format_instructions: str) -> ChatPromptTemplate:
             template=load_template("output_fixing/human_prompt"),
             input_variables=["completion"],
             partial_variables={"format_instructions": format_instructions},
+        )
+    )
+
+    return ChatPromptTemplate.from_messages([system_prompt, human_prompt])
+
+
+def build_translation_prompt(
+    format_instructions: str,
+) -> ChatPromptTemplate:
+    """
+    Prepare a prompt for translating text to English.
+    """
+    system_prompt = SystemMessagePromptTemplate(
+        prompt=PromptTemplate(
+            template=load_template("translation/system_prompt"),
+            input_variables=[],
+            partial_variables={"format_instructions": format_instructions},
+        )
+    )
+
+    human_prompt = HumanMessagePromptTemplate(
+        prompt=PromptTemplate(
+            template=load_template("translation/human_prompt"),
+            input_variables=["input"],
         )
     )
 

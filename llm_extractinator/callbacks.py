@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from langchain_core.callbacks import BaseCallbackHandler
