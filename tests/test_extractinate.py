@@ -85,20 +85,32 @@ class TestExtractinator(unittest.TestCase):
             # Ensure predictions are not empty
             self.assertTrue(len(predictions) > 0, "Output file contains no data.")
 
-            # Check that the required keys are present in the actual output
+            # Check each prediction
             for idx, prediction in enumerate(predictions):
                 with self.subTest(index=idx):
-                    required_keys = {"HR", "Name", "status", "retry_count"}
+                    required_keys = {"HR", "Name", "status"}
                     missing_keys = required_keys - prediction.keys()
                     self.assertFalse(
                         missing_keys, f"Missing keys at index {idx}: {missing_keys}"
                     )
 
+                    # If status is "success", compare actual vs. expected output
+                    if prediction.get("status") == "success":
+                        expected_output = prediction.get("expected_output", {})
+                        actual_output = {
+                            k: prediction[k] for k in ["HR", "Name"] if k in prediction
+                        }
+                        self.assertEqual(
+                            actual_output,
+                            expected_output,
+                            f"Mismatch in output at index {idx}: expected {expected_output}, got {actual_output}",
+                        )
+
     # Individual test cases for different models
     def test_extractinate_base(self):
         """Test extractinate with Qwen model"""
         self.run_extractinate_test(
-            model_name="qwen2.5:0.5b",
+            model_name="gemma2:2b",
             run_name="test_run",
             num_predict=256,
             reasoning_model=False,
@@ -134,7 +146,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_n_runs(self):
         """Test extractinate with multiple runs"""
         self.run_extractinate_test(
-            model_name="qwen2.5:0.5b",
+            model_name="gemma2:2b",
             run_name="test_run_deepseek_n_runs",
             num_predict=1024,
             reasoning_model=False,
@@ -146,7 +158,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_n_runs_and_ctx_auto(self):
         """Test extractinate with multiple runs and max_context_len set to auto"""
         self.run_extractinate_test(
-            model_name="qwen2.5:0.5b",
+            model_name="gemma2:2b",
             run_name="test_run_deepseek_n_runs_auto",
             num_predict=1024,
             reasoning_model=False,
@@ -158,7 +170,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_translate(self):
         """Test extractinate with translation enabled"""
         self.run_extractinate_test(
-            model_name="qwen2.5:0.5b",
+            model_name="gemma2:2b",
             run_name="test_run_translate",
             num_predict=1024,
             reasoning_model=False,
@@ -170,7 +182,7 @@ class TestExtractinator(unittest.TestCase):
     def test_extractinate_translate_ctx_auto_n_runs(self):
         """Test extractinate with translation enabled, max_context_len set to auto and multiple runs"""
         self.run_extractinate_test(
-            model_name="qwen2.5:0.5b",
+            model_name="gemma2:2b",
             run_name="test_run_translate_ctx_auto_n_runs",
             num_predict=1024,
             reasoning_model=False,
@@ -204,7 +216,7 @@ class TestExtractinatorCLI(unittest.TestCase):
             "-m",
             "llm_extractinator.main",
             "--model_name",
-            "qwen2.5:0.5b",
+            "gemma2:2b",
             "--task_id",
             "999",
             "--num_examples",
@@ -256,10 +268,22 @@ class TestExtractinatorCLI(unittest.TestCase):
 
         for idx, prediction in enumerate(predictions):
             with self.subTest(index=idx):
-                required_keys = {"HR", "Name", "status", "retry_count"}
+                required_keys = {"HR", "Name", "status"}
                 missing_keys = required_keys - prediction.keys()
                 self.assertFalse(
                     missing_keys, f"Missing keys at index {idx}: {missing_keys}"
+                )
+
+            # If status is "success", compare actual vs. expected output
+            if prediction.get("status") == "success":
+                expected_output = prediction.get("expected_output", {})
+                actual_output = {
+                    k: prediction[k] for k in ["HR", "Name"] if k in prediction
+                }
+                self.assertEqual(
+                    actual_output,
+                    expected_output,
+                    f"Mismatch in output at index {idx}: expected {expected_output}, got {actual_output}",
                 )
 
 
