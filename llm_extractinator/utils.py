@@ -1,10 +1,13 @@
 import json
+import logging
 import re
 import time
 from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 def save_json(
@@ -23,14 +26,16 @@ def save_json(
         try:
             with path.open("w+") as f:
                 json.dump(data, f, indent=4)
-            print(f"Data successfully saved to {path}")
+            logger.info(f"Data saved to {path}.")
             break
         except IOError as e:
             attempt += 1
-            print(f"Error saving data to {path}: {e}. Retrying {attempt}/{retries}...")
+            logger.error(
+                f"Failed to save data to {path}. Retrying ({attempt}/{retries})..."
+            )
             time.sleep(delay)
     else:
-        print(f"Failed to save data after {retries} attempts.")
+        logger.error(f"Failed to save data to {path} after {retries} attempts.")
 
 
 def extract_json_from_text(text: str) -> dict:

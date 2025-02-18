@@ -267,7 +267,7 @@ class TaskRunner:
         Combine the results from short and long examples.
         """
         try:
-            print("Combining results...")
+            logging.info("Combining results from short and long cases.")
             if not self.short_paths:
                 raise ValueError(
                     "No paths found for short cases. Something went wrong."
