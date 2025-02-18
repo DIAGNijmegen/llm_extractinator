@@ -114,6 +114,7 @@ The following input flags can be used to configure the behavior of the `extracti
 | `--log_dir`               | `Path`        | `<project_root>/output` | Path to the directory for log files.                                        |
 | `--data_dir`              | `Path`        | `<project_root>/data` | Path to the directory containing input data.                                 |
 | `--example_dir`           | `Path`        | `<project_root>/examples` | Path to the directory containing example data.                               |
+| `--translation_dir`       | `Path`        | `<project_root>/translations` | Path to the directory containing translated examples.                        |
 
 ---
 
