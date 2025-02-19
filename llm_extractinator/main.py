@@ -131,6 +131,7 @@ class TaskRunner:
         self._extract_task_info()
         self._load_data()
 
+        # Set num_predict based on input length for translation
         if self.config.translate or self.config.reasoning_model:
             self.config.num_predict = self.data_loader.adapt_num_predict(
                 df=self.test,
@@ -143,29 +144,56 @@ class TaskRunner:
         if self.config.max_context_len == "split":
             self._split_data()
 
-            self._set_max_context_len("short", self.short_test)
-            logging.info(
-                f"Running short cases with max_context_len: {self.config.max_context_len}"
-            )
-            self.short_paths = self._run_with_manager()
-
-            self._set_max_context_len("long", self.long_test)
-            logging.info(
-                f"Running long cases with max_context_len: {self.config.max_context_len}"
-            )
-            self.long_paths = self._run_with_manager()
-
-            self._combine_results()
-        else:
-            dataset = "test" if self.config.max_context_len == "max" else "train"
+            # Run short cases
             self.config.max_context_len = self.data_loader.get_max_input_tokens(
-                df=self.test if dataset == "test" else self.train,
+                df=self.short_test,
                 num_predict=self.config.num_predict,
                 num_examples=self.config.num_examples,
             )
+            self.config.data_split = "short"
+            self.config.train = self.short_train
+            self.config.test = self.short_test
+
+            logging.info(
+                f"Running short cases with max_context_len: {self.config.max_context_len}"
+            )
+
+            self._run_with_manager()
+
+            # Run long cases
+            self.config.max_context_len = self.data_loader.get_max_input_tokens(
+                df=self.long_test,
+                num_predict=self.config.num_predict,
+                num_examples=self.config.num_examples,
+            )
+            self.config.data_split = "long"
+            self.config.train = self.long_train
+            self.config.test = self.long_test
+
+            logging.info(
+                f"Running long cases with max_context_len: {self.config.max_context_len}"
+            )
+
+            self._run_with_manager()
+
+            self._combine_results()
+        elif self.config.max_context_len == "max":
+            self.config.max_context_len = self.data_loader.get_max_input_tokens(
+                df=self.test,
+                num_predict=self.config.num_predict,
+                num_examples=self.config.num_examples,
+            )
+            self.config.train = self.train
+            self.config.test = self.test
+
             logging.info(
                 f"Running cases with max_context_len: {self.config.max_context_len}"
             )
+
+            self._run_with_manager()
+        else:
+            self.config.train = self.train
+            self.config.test = self.test
             self._run_with_manager()
 
         total_time = timedelta(seconds=time.time() - start_time)
@@ -173,31 +201,35 @@ class TaskRunner:
 
     def _run_with_manager(self) -> None:
         """Runs the task with a managed Ollama server."""
-        with OllamaServerManager(log_dir=self.config.log_dir) as manager:
+        with OllamaServerManager() as manager:
             manager.pull_model(self.config.model_name)
-            result = self._run_task()
+            _ = self._run_task()
             manager.stop(self.config.model_name)
-        return result
 
     def _run_task(self) -> bool:
-        """Executes a single prediction task in parallel with error handling."""
+        """Executes a single prediction task in parallel."""
         try:
             task = PredictionTask(**asdict(self.config))
             return task.run()
         except Exception as error:
-            logging.error(f"Task execution failed: {error}", exc_info=True)
-            raise
+            traceback.print_exc()
+            return False
 
     def _extract_task_info(self) -> None:
-        """Extract task information from the task configuration file."""
+        """
+        Extract task information from the task configuration file.
+        """
         task_loader = TaskLoader(
             folder_path=self.config.task_dir, task_id=self.config.task_id
         )
         self.config.task_config = task_loader.find_and_load_task()
         self.example_file = self.config.task_config.get("Example_Path")
-        self.config.train_path = (
-            self.config.example_dir / self.example_file if self.example_file else None
-        )
+        if self.example_file is not None:
+            self.config.train_path = (
+                self.config.example_dir / self.config.task_config.get("Example_Path")
+            )
+        else:
+            self.config.train_path = None
         self.config.test_path = self.config.data_dir / self.config.task_config.get(
             "Data_Path"
         )
@@ -205,7 +237,9 @@ class TaskRunner:
         self.config.task_name = task_loader.get_task_name()
 
     def _load_data(self) -> None:
-        """Load the training and testing data for the prediction task."""
+        """
+        Load the training and testing data for the prediction task.
+        """
         self.data_loader = DataLoader(
             train_path=self.config.train_path, test_path=self.config.test_path
         )
@@ -214,42 +248,33 @@ class TaskRunner:
         )
 
     def _split_data(self) -> None:
-        """Split the data into short and long examples based on token count."""
-        split_train = (
-            self.data_loader.split_data
-            if self.train is not None
-            else lambda *args, **kwargs: (None, None)
-        )
-
-        self.short_train, self.long_train = split_train(
-            df=self.train,
-            text_column=self.config.input_field,
-            quantile=self.config.quantile,
-        )
+        """
+        Split the data into short and long examples based on token count.
+        """
+        if self.train is not None:
+            self.short_train, self.long_train = self.data_loader.split_data(
+                df=self.train,
+                quantile=self.config.quantile,
+            )
+        else:
+            self.short_train, self.long_train = None, None
         self.short_test, self.long_test = self.data_loader.split_data(
             df=self.test,
-            text_column=self.config.input_field,
             quantile=self.config.quantile,
         )
 
-    def _set_max_context_len(self, data_split: str, df: pd.DataFrame) -> None:
-        """Set max_context_len based on the dataset."""
-        self.config.max_context_len = self.data_loader.get_max_input_tokens(
-            df=df,
-            num_predict=self.config.num_predict,
-            num_examples=self.config.num_examples,
-        )
-        self.config.data_split = data_split
-        self.config.train = getattr(self, f"{data_split}_train")
-        self.config.test = getattr(self, f"{data_split}_test")
-
     def _combine_results(self) -> None:
-        """Combine short and long case results into a single JSON dataset."""
+        """
+        Combine the results from short and long examples.
+        """
         try:
             logging.info("Combining results from short and long cases.")
-
-            if not (self.short_paths and self.long_paths):
-                raise ValueError("Missing results from either short or long cases.")
+            if not self.short_paths:
+                raise ValueError(
+                    "No paths found for short cases. Something went wrong."
+                )
+            if not self.long_paths:
+                raise ValueError("No paths found for long cases. Something went wrong.")
 
             for short_path, long_path in zip(self.short_paths, self.long_paths):
                 short_df = pd.read_json(short_path, orient="records")
@@ -262,11 +287,13 @@ class TaskRunner:
                     filename="nlp-predictions-dataset.json",
                 )
 
-                short_path.unlink(missing_ok=True)
-                long_path.unlink(missing_ok=True)
+            # Remove the individual files
+            for short_path, long_path in zip(self.short_paths, self.long_paths):
+                short_path.unlink()
+                long_path.unlink()
 
         except Exception as error:
-            logging.error(f"Error combining results: {error}", exc_info=True)
+            logging.error(f"Error combining results: {error}")
 
 
 def parse_args() -> TaskConfig:

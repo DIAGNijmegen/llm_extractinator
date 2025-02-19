@@ -133,7 +133,6 @@ class DataLoader:
     def split_data(
         self,
         df: pd.DataFrame,
-        text_column: str = "text",
         token_column: str = "token_count",
         quantile: float = 0.8,
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
