@@ -1,10 +1,14 @@
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import pandas as pd
 import tiktoken
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class DataLoader:
@@ -44,7 +48,9 @@ class DataLoader:
                 f"Unsupported file format: {file_path.suffix}. Supported formats are .json, .csv"
             )
 
-    def load_data(self) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    def load_data(
+        self, text_column: str = "text"
+    ) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
         """
         Loads the training and testing datasets if paths are provided and valid.
 
@@ -53,15 +59,20 @@ class DataLoader:
         """
         if self.train_path:
             self.validate_file(self.train_path)
-            self.train = self._load_file(self.train_path)
+            self.train = self._load_file(self.train_path, text_column)
 
         if self.test_path:
             self.validate_file(self.test_path)
-            self.test = self._load_file(self.test_path)
+            self.test = self._load_file(self.test_path, text_column)
 
         return self.train, self.test
 
-    def _load_file(self, file_path: Path) -> pd.DataFrame:
+    def _load_file(
+        self,
+        file_path: Path,
+        text_column: str = "text",
+        token_column: str = "token_count",
+    ) -> pd.DataFrame:
         """
         Loads a data file based on its extension.
 
@@ -72,9 +83,11 @@ class DataLoader:
             pd.DataFrame: Loaded data as a DataFrame.
         """
         if file_path.suffix.lower() == ".json":
-            return pd.read_json(file_path)
+            df = pd.read_json(file_path)
+            return self.add_token_count(df, text_column, token_column)
         elif file_path.suffix.lower() == ".csv":
-            return pd.read_csv(file_path)
+            df = pd.read_csv(file_path)
+            return self.add_token_count(df, text_column, token_column)
         else:
             raise ValueError(f"Unsupported file format: {file_path.suffix}")
 
@@ -113,14 +126,13 @@ class DataLoader:
         Returns:
             pd.DataFrame: The DataFrame with the new token count column.
         """
-        print("Counting tokens...")
+        logger.info("Adding token count column to DataFrame.")
         df[token_column] = df[text_column].apply(self.count_tokens)
         return df
 
     def split_data(
         self,
         df: pd.DataFrame,
-        text_column: str = "text",
         token_column: str = "token_count",
         quantile: float = 0.8,
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -135,8 +147,7 @@ class DataLoader:
         Returns:
             Tuple[pd.DataFrame, pd.DataFrame]: Two DataFrames split by the quantile.
         """
-        if token_column not in df.columns:
-            df = self.add_token_count(df, text_column, token_column)
+        logger.info(f"Splitting DataFrame based on token count quantile: {quantile}")
 
         threshold = df[token_column].quantile(quantile)
         short_df = df[df[token_column] <= threshold]
@@ -165,6 +176,33 @@ class DataLoader:
             int: The maximum token count for input data.
         """
         return df[token_column].max() * (num_examples + 1) + buffer_tokens + num_predict
+
+    def adapt_num_predict(
+        self,
+        df: pd.DataFrame,
+        token_column: str = "token_count",
+        buffer_tokens: int = 1000,
+        translate: bool = False,
+        reasoning_model: bool = False,
+        num_predict: int = 512,
+    ) -> int:
+        """
+        Computes the maximum token count for input data, considering a buffer.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing the token count column.
+            token_column (str): The name of the token count column.
+            buffer_tokens (int): The buffer tokens to add. Default is 1000.
+
+        Returns:
+            int: The maximum token count for input data.
+        """
+        if translate:
+            num_predict = df[token_column].max() + buffer_tokens
+        if reasoning_model:
+            num_predict = num_predict + buffer_tokens
+        logging.info(f"Adapting num_predict to: {num_predict}")
+        return num_predict
 
 
 class TaskLoader:

@@ -1,6 +1,9 @@
-import socket
+import logging
 import subprocess
 import time
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class OllamaServerManager:
@@ -20,23 +23,23 @@ class OllamaServerManager:
 
         # Wait for the server to start
         time.sleep(5)
-        print("Ollama server started and ready.")
+        logger.info("Ollama server started.")
 
     def stop(self, model_name):
         command = ["ollama", "stop", model_name]
         try:
             subprocess.run(command, check=True, text=True)
-            print(f"Model '{model_name}' stopped successfully.")
+            logger.info(f"Model '{model_name}' stopped successfully.")
         except subprocess.CalledProcessError:
-            print(f"Failed to stop model '{model_name}'.")
+            logger.error(f"Failed to stop model '{model_name}'.")
 
     def pull_model(self, model_name):
         command = ["ollama", "pull", model_name]
         try:
             subprocess.run(command, check=True, text=True)
-            print(f"Model '{model_name}' pulled successfully.")
+            logger.info(f"Model '{model_name}' pulled successfully.")
         except subprocess.CalledProcessError:
-            print(f"Failed to pull model '{model_name}'.")
+            logger.error(f"Failed to pull model '{model_name}'.")
 
     def __enter__(self):
         self.start()
@@ -44,10 +47,10 @@ class OllamaServerManager:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.process is None:
-            print("No Ollama server is running.")
+            logger.warning("Ollama server is not running.")
             return
 
         self.process.terminate()
         self.process.wait()
         self.process = None
-        print("Ollama server stopped.")
+        logger.info("Ollama server stopped.")
