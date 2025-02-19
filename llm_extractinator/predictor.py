@@ -17,18 +17,6 @@ from llm_extractinator.validator import handle_prediction_failure
 logger = logging.getLogger(__name__)
 
 
-def handle_failure(error: Exception, input_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Handle failures during prediction by logging the error and returning a default response.
-    """
-    logger.error("Prediction failed for input: %s. Error: %s", input_data, str(error))
-    return {
-        "input": input_data.get("input", "Unknown"),
-        "error": str(error),
-        "prediction": "default_value",
-    }
-
-
 class Predictor:
     """
     A class responsible for generating and executing predictions on test data using a language model.

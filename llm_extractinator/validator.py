@@ -47,7 +47,6 @@ def handle_prediction_failure(
     """
     Handle failures during prediction by logging the error and returning a default response.
     """
-    logging.error(f"Prediction failed for input: {input_data}. Error: {str(error)}")
 
     default_values = {}
     for field_name, field_def in parser_model.model_fields.items():
