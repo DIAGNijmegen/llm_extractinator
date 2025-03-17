@@ -39,7 +39,6 @@ def setup_logging(log_dir: Path):
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
-
 @dataclass
 class TaskConfig:
     # General Task Settings
@@ -201,10 +200,11 @@ class TaskRunner:
 
     def _run_with_manager(self) -> None:
         """Runs the task with a managed Ollama server."""
-        with OllamaServerManager() as manager:
-            manager.pull_model(self.config.model_name)
-            filepath = self._run_task()
-            manager.stop(self.config.model_name)
+        manager = OllamaServerManager(self.config.log_dir)
+        manager.start_server()
+        manager.pull_model(self.config.model_name)
+        filepath = self._run_task()
+        manager.stop(self.config.model_name)
         return filepath
 
     def _run_task(self) -> bool:
