@@ -138,6 +138,10 @@ extractinate(
     model_name="mistral-nemo",
 )
 ```
+---
+## Citation
+
+If you use our model, please cite it using the following DOI: [10.5281/zenodo.15089764](https://doi.org/10.5281/zenodo.15089764) :slightly_smiling_face: 	
 
 ---
 
