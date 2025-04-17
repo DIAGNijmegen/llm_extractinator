@@ -13,7 +13,7 @@ This project enables the efficient extraction of structured data from unstructur
 
 ### Tool Workflow
 
-![Overview of the LLM Data Extractor](images/overview.png)
+<img src="images/overview.png" alt="Overview of the LLM Data Extractor" width="400"/>
 
 ---
 
