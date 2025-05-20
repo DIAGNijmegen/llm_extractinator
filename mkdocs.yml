@@ -1,0 +1,13 @@
+site_name: LLM Extractinator
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Data Structure: data-structure.md
+  - Configuration: configuration.md
+  - CLI Usage: cli-usage.md
+  - Running: running.md
+  - Citation: citation.md
+  - Contributing: contributing.md
