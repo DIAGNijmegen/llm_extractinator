@@ -1,10 +1,8 @@
 {
-    "Task": "Name of the task",
-    "Type": "Classification",
     "Description": "Detailed description of the task",
-    "Data_Path": "/path/to/data.json",
+    "Data_Path": "data.json (given that the data is in the /data directory)",
+    "Example_Path": "examples.json (given that the examples are in the /examples directory)",
     "Input_Field": "text",
-    "Example_Path": "/path/to/example.json",
     "Parser_Format": {
         "id": {
             "type": "int",

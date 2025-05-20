@@ -44,8 +44,6 @@ class Predictor:
         """
         Extract task information from the task configuration.
         """
-        self.task = self.task_config.get("Task")
-        self.type = self.task_config.get("Type")
         self.length = self.task_config.get("Length")
         self.description = self.task_config.get("Description")
         self.input_field = self.task_config.get("Input_Field")
@@ -61,7 +59,7 @@ class Predictor:
         Prepare the system and human prompts for few-shot learning based on provided examples.
         """
         self.parser_model = load_parser(
-            task_type=self.type, parser_format=self.parser_format
+            task_type="Extraction", parser_format=self.parser_format
         )
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
         self.format_instructions = self.base_parser.get_format_instructions()
@@ -83,7 +81,6 @@ class Predictor:
                 examples, self.embedding_model, Chroma, k=self.num_examples
             )
             self.prompt = build_few_shot_prompt(
-                task=self.task,
                 description=self.description,
                 format_instructions=self.format_instructions,
                 example_selector=self.example_selector,
@@ -91,7 +88,6 @@ class Predictor:
         else:
             logger.info("Creating zero-shot prompt.")
             self.prompt = build_zero_shot_prompt(
-                task=self.task,
                 description=self.description,
                 format_instructions=self.format_instructions,
             )

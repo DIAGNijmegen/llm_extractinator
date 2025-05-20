@@ -1,6 +1,4 @@
 {
-    "Task": "Extract heart rate and patient name",
-    "Type": "Classification",
     "Description": "Extract the patient's heart rate (HR) and name from the input text. HR will be an integer representing beats per minute, and Name will be a string literal representing a person's first name.",
     "Data_Path": "testdata.json",
     "Input_Field": "text",

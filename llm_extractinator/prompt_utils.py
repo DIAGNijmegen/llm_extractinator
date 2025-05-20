@@ -50,7 +50,6 @@ def create_human_prompt(
 
 
 def build_zero_shot_prompt(
-    task: str,
     description: str,
     format_instructions: str,
 ) -> ChatPromptTemplate:
@@ -58,7 +57,7 @@ def build_zero_shot_prompt(
     Build a zero-shot prompt without examples.
     """
     system_template = load_template("data_extraction/system_prompt").format(
-        task=task, description=description
+        description=description
     )
     system_prompt = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
@@ -80,7 +79,6 @@ def build_zero_shot_prompt(
 
 
 def build_few_shot_prompt(
-    task: str,
     description: str,
     format_instructions: str,
     example_selector,
@@ -89,7 +87,7 @@ def build_few_shot_prompt(
     Build a few-shot prompt with examples.
     """
     system_template = load_template("data_extraction/system_prompt").format(
-        task=task, description=description
+        description=description
     )
     final_system_prompt = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
