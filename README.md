@@ -12,13 +12,32 @@ LLM Extractinator enables efficient extraction of structured data from unstructu
 
 ## 🔧 Installation
 
-Install from PyPI:
+## 1. **Install Ollama**
+
+### On **Linux**:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+### On **Windows** or **macOS**:
+
+Download the installer from:  
+[https://ollama.com/download](https://ollama.com/download)
+
+---
+
+## 2. **Install the Package**
+
+You have two options:
+
+### 🔹 Option A – Install from PyPI:
 
 ```bash
 pip install llm_extractinator
 ```
 
-Or for development:
+### 🔹 Option B – Install from a Local Clone:
 
 ```bash
 git clone https://github.com/DIAGNijmegen/llm_extractinator.git
