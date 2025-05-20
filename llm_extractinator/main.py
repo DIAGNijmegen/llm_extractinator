@@ -39,12 +39,13 @@ def setup_logging(log_dir: Path):
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
+
 @dataclass
 class TaskConfig:
     # General Task Settings
     task_id: int = 0
     run_name: str = "run"
-    n_runs: int = 5
+    n_runs: int = 1
     num_examples: int = 0
     num_predict: int = 512
     chunk_size: Optional[int] = None
@@ -54,7 +55,7 @@ class TaskConfig:
     reasoning_model: bool = False
 
     # Model Configuration
-    model_name: str = "mistral-nemo"
+    model_name: str = "phi4"
     temperature: float = 0.0
     max_context_len: Union[int, str] = "max"
     quantile: float = 0.8
@@ -316,7 +317,7 @@ def parse_args() -> TaskConfig:
     parser.add_argument(
         "--n_runs",
         type=int,
-        default=5,
+        default=1,
         help="Number of times to repeat the task execution.",
     )
     parser.add_argument(
@@ -360,7 +361,7 @@ def parse_args() -> TaskConfig:
     parser.add_argument(
         "--model_name",
         type=str,
-        default="mistral-nemo",
+        default="phi4",
         help="Name of the model to use. Follows Ollama naming scheme.",
     )
     parser.add_argument(
