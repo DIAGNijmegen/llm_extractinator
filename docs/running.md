@@ -13,6 +13,6 @@ from llm_extractinator import extractinate
 
 extractinate(
     task_id=1,
-    model_name="mistral-nemo"
+    model_name="phi4"
 )
 ```
