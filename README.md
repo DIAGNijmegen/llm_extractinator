@@ -1,13 +1,12 @@
 # LLM Extractinator
 
-![Overview of the LLM Data Extractor](images/doofenshmirtz.jpg)
+![Overview of the LLM Data Extractor](docs/images/doofenshmirtz.jpg)
 
 > ⚠️ This tool is a prototype in active development and may change significantly. Always verify results!
 
 LLM Extractinator enables efficient extraction of structured data from unstructured text using large language models (LLMs). It supports configurable task definitions, CLI or Python usage, and flexible data input/output formats.
 
-📘 **Full documentation**: [https://<your_username>.github.io/llm_extractinator/](https://<your_username>.github.io/llm_extractinator/)  
-_(replace with actual GitHub Pages link after deployment)_
+📘 **Full documentation**: [https://DIAGNijmegen.github.io/llm_extractinator/](https://DIAGNijmegen.github.io/llm_extractinator/)  
 
 ---
 

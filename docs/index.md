@@ -6,3 +6,5 @@
 
 **LLM Extractinator** enables efficient extraction of structured data from unstructured text using large language models (LLMs).  
 It supports flexible configuration, task setup, and can be used via both **CLI** and **Python interface**.
+
+![Workflow Diagram](images/overview.png)
