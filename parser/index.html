@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../data-structure/">
+        <link rel="next" href="../cli-usage/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Installation - LLM Extractinator</title>
+        <title>Parser - LLM Extractinator</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation-guide" class="md-skip">
+        <a href="#build-parser-interactive-pydantic-model-builder" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation
+              Parser
             
           </span>
         </div>
@@ -213,32 +213,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Installation
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -249,92 +227,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-install-ollama" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Install Ollama
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Install Ollama">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#on-linux" class="md-nav__link">
-    <span class="md-ellipsis">
-      On Linux:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#on-windows-or-macos" class="md-nav__link">
-    <span class="md-ellipsis">
-      On Windows or macOS:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-install-the-package" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Install the Package
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Install the Package">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-install-from-pypi" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option A – Install from PyPI:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-install-from-a-local-clone" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option B – Install from a Local Clone:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -387,10 +279,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../parser/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Parser
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -401,6 +315,146 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      🚀 Getting Started
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputparser-root-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      📦 OutputParser Root Model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧱 Interface Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧱 Interface Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-manager-sidebar" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧭 Model Manager (Sidebar)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-is-this-useful" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why is this useful?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why is this useful?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to use it:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      🏗️ Design Tab
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Code Tab
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      💾 Export Tab
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧪 Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      📁 Output Location
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -520,28 +574,97 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-install-ollama" class="md-nav__link">
+  <a href="#getting-started" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Install Ollama
+      🚀 Getting Started
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Install Ollama">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputparser-root-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      📦 OutputParser Root Model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧱 Interface Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧱 Interface Overview">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#on-linux" class="md-nav__link">
+  <a href="#model-manager-sidebar" class="md-nav__link">
     <span class="md-ellipsis">
-      On Linux:
+      🧭 Model Manager (Sidebar)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#on-windows-or-macos" class="md-nav__link">
+  <a href="#why-is-this-useful" class="md-nav__link">
     <span class="md-ellipsis">
-      On Windows or macOS:
+      Why is this useful?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why is this useful?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to use it:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      🏗️ Design Tab
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Code Tab
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-tab" class="md-nav__link">
+    <span class="md-ellipsis">
+      💾 Export Tab
     </span>
   </a>
   
@@ -553,35 +676,20 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-install-the-package" class="md-nav__link">
+  <a href="#example_1" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Install the Package
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Install the Package">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-install-from-pypi" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option A – Install from PyPI:
+      🧪 Example
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-install-from-a-local-clone" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#output-location" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Option B – Install from a Local Clone:
+      📁 Output Location
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -601,26 +709,88 @@
 
 
 
-<h1 id="installation-guide">🚀 Installation Guide</h1>
-<p>Follow these steps to install and use the tool:</p>
+<h1 id="build-parser-interactive-pydantic-model-builder">🛠️ <code>build-parser</code> – Interactive Pydantic Model Builder</h1>
+<p>The <code>build-parser</code> command launches an intuitive <strong>web-based tool</strong> to visually create <a href="https://docs.pydantic.dev/latest/">Pydantic v2</a> models—without writing a single line of code. It's great for designing <strong>OutputParser formats</strong>, structured data schemas, or simply organizing typed data models.</p>
 <hr />
-<h2 id="1-install-ollama">1. <strong>Install Ollama</strong></h2>
-<h3 id="on-linux">On <strong>Linux</strong>:</h3>
-<pre><code class="language-bash">curl -fsSL https://ollama.com/install.sh | sh
+<h2 id="getting-started">🚀 Getting Started</h2>
+<p>Make sure your Python package is installed in an environment where the CLI is available. Then, simply run:</p>
+<pre><code class="language-bash">build-parser
 </code></pre>
-<h3 id="on-windows-or-macos">On <strong>Windows</strong> or <strong>macOS</strong>:</h3>
-<p>Download the installer from:<br />
-<a href="https://ollama.com/download">https://ollama.com/download</a></p>
+<p>This command launches a local Streamlit app in your browser.</p>
 <hr />
-<h2 id="2-install-the-package">2. <strong>Install the Package</strong></h2>
-<p>You have two options:</p>
-<h3 id="option-a-install-from-pypi">🔹 Option A – Install from PyPI:</h3>
-<pre><code class="language-bash">pip install llm_extractinator
+<h2 id="outputparser-root-model">📦 OutputParser Root Model</h2>
+<p>At the core of this tool is the <strong><code>OutputParser</code></strong> class. This is the primary model used by the LLM in your framework to parse outputs into structured JSON.</p>
+<p>You always start with the <code>OutputParser</code> model, and build its fields just like any Pydantic model. You can then create <strong>additional models</strong> to use as nested types or components within <code>OutputParser</code>.</p>
+<p>This approach supports building <strong>complex, hierarchical schemas</strong> using composition and reuse.</p>
+<hr />
+<h2 id="interface-overview">🧱 Interface Overview</h2>
+<h3 id="model-manager-sidebar">🧭 Model Manager (Sidebar)</h3>
+<p>The Model Manager allows you to create additional models beyond <code>OutputParser</code>.</p>
+<h3 id="why-is-this-useful">Why is this useful?</h3>
+<p>Often, structured outputs require <strong>nested objects</strong> or repeated elements. Instead of defining everything flatly in <code>OutputParser</code>, you can:</p>
+<ul>
+<li>Break down your schema into logical subcomponents</li>
+<li>Reuse those components across multiple fields</li>
+<li>Keep your data models clean, readable, and maintainable</li>
+</ul>
+<h4 id="example">Example:</h4>
+<p>You could define a <code>Product</code> model and use it as a field in <code>OutputParser</code> like:</p>
+<pre><code class="language-python">class OutputParser(BaseModel):
+    products: list[Product]
 </code></pre>
-<h3 id="option-b-install-from-a-local-clone">🔹 Option B – Install from a Local Clone:</h3>
-<pre><code class="language-bash">git clone https://github.com/DIAGNijmegen/llm_extractinator.git
-cd llm_extractinator
-pip install -e .
+<h4 id="how-to-use-it">How to use it:</h4>
+<ul>
+<li>Enter a model name (e.g., <code>Product</code>, <code>Metadata</code>)</li>
+<li>Click ➕ Add model</li>
+<li>Names must begin with a capital letter and be valid Python identifiers</li>
+</ul>
+<hr />
+<h3 id="design-tab">🏗️ Design Tab</h3>
+<p>Use this section to add fields to <code>OutputParser</code> and any other models you've created.</p>
+<ul>
+<li>Field name</li>
+<li>Field type (primitive, special type, or reference to another model)</li>
+<li>Mark as <code>Optional</code> if needed</li>
+<li>Provide subtypes for <code>list</code>/<code>dict</code>, or values for <code>Literal</code></li>
+</ul>
+<hr />
+<h3 id="code-tab">📝 Code Tab</h3>
+<p>This shows the full generated code using <a href="https://docs.pydantic.dev/latest/">Pydantic v2</a>:</p>
+<ul>
+<li>Starts with the <code>OutputParser</code> model</li>
+<li>Includes any additional models you’ve defined</li>
+</ul>
+<hr />
+<h3 id="export-tab">💾 Export Tab</h3>
+<p>Choose to either:</p>
+<ul>
+<li><strong>Download</strong> the generated code as a <code>.py</code> file</li>
+<li>Or <strong>save directly</strong> to <code>tasks/parsers/</code> inside your project</li>
+</ul>
+<hr />
+<h2 id="example_1">🧪 Example</h2>
+<p>Let’s say you want to extract a list of products from LLM output:</p>
+<ol>
+<li>Define a model called <code>Product</code> with fields like:</li>
+<li><code>name</code>: <code>str</code></li>
+<li><code>price</code>: <code>float</code></li>
+<li>In <code>OutputParser</code>, add:</li>
+<li><code>products</code>: <code>list[Product]</code></li>
+</ol>
+<p>Resulting code:</p>
+<pre><code class="language-python">from pydantic import BaseModel
+
+class Product(BaseModel):
+    name: str
+    price: float
+
+class OutputParser(BaseModel):
+    products: list[Product]
+</code></pre>
+<hr />
+<h2 id="output-location">📁 Output Location</h2>
+<p>If you choose <strong>"Save to <code>tasks/parsers/</code>"</strong>, your file will be saved at:</p>
+<pre><code class="language-bash">&lt;project-root&gt;/tasks/parsers/&lt;filename&gt;.py
 </code></pre>
 
 

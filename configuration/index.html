@@ -12,7 +12,7 @@
         <link rel="prev" href="../data-structure/">
       
       
-        <link rel="next" href="../cli-usage/">
+        <link rel="next" href="../parser/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -316,6 +316,36 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="📌 Required Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#about-parser_format" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 About Parser_Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 About Parser_Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -331,6 +361,28 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Parser
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -456,6 +508,36 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="📌 Required Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#about-parser_format" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 About Parser_Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 About Parser_Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -491,13 +573,29 @@
 <h2 id="required-fields">📌 Required Fields</h2>
 <p>Your JSON file must include the following keys:</p>
 <ul>
-<li><code>Task</code>: Name of the task  </li>
-<li><code>Type</code>: Task type  </li>
 <li><code>Description</code>: Description of the task  </li>
 <li><code>Data_Path</code>: Filename of the dataset  </li>
 <li><code>Input_Field</code>: Column containing the text data  </li>
-<li><code>Parser_Format</code>: JSON format for the expected output  </li>
+<li><code>Parser_Format</code>: The filename of the file containing the parser format in the <code>tasks/parsers/</code> folder</li>
 </ul>
+<hr />
+<h3 id="about-parser_format">🔍 About <code>Parser_Format</code></h3>
+<p>This field should reference a Python file located in <code>tasks/parsers/</code> which defines a Pydantic model called <code>OutputParser</code>.</p>
+<p>This file is usually created using the <code>build-parser</code> tool. It must contain a class named <code>OutputParser</code>, which will be used by the LLM to structure its response into a valid JSON object.</p>
+<p>You may define other nested models to keep the schema organized, but <code>OutputParser</code> is the root that the system will rely on.</p>
+<h4 id="example">Example:</h4>
+<pre><code class="language-json">&quot;Parser_Format&quot;: &quot;product_parser.py&quot;
+</code></pre>
+<p>The file <code>tasks/parsers/product_parser.py</code> might look like:</p>
+<pre><code class="language-python">from pydantic import BaseModel
+
+class Product(BaseModel):
+    name: str
+    price: float
+
+class OutputParser(BaseModel):
+    products: list[Product]
+</code></pre>
 <hr />
 <h2 id="optional-for-using-examples">🔄 Optional (for using examples)</h2>
 <ul>
