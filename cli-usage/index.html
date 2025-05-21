@@ -313,6 +313,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    CLI Usage
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -324,6 +337,97 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧰 Basic Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      🚩 Required Flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#general-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ General Options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧠 Model Configuration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-input-and-data-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧪 Task Input and Data Control
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-and-directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      📁 Paths and Directories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      💡 Examples
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -415,6 +519,86 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧰 Basic Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      🚩 Required Flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#general-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ General Options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧠 Model Configuration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-input-and-data-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧪 Task Input and Data Control
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-and-directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      📁 Paths and Directories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      💡 Examples
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -430,7 +614,29 @@
 
 
 <h1 id="cli-usage-extractinate">💻 CLI Usage: <code>extractinate</code></h1>
-<p>Below are the configurable input flags for the CLI tool:</p>
+<p><code>extractinate</code> is a command-line tool for running and evaluating task-based generation experiments using customizable models, input data, and output settings.</p>
+<h2 id="basic-usage">🧰 Basic Usage</h2>
+<pre><code class="language-bash">extractinate --task_id 1 --run_name &quot;baseline_run&quot;
+</code></pre>
+<h2 id="required-flags">🚩 Required Flags</h2>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--task_id</code></td>
+<td><code>int</code></td>
+<td>ID of the task to run (required)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="general-options">⚙️ General Options</h2>
 <table>
 <thead>
 <tr>
@@ -442,139 +648,193 @@
 </thead>
 <tbody>
 <tr>
-<td><code>--task_id</code></td>
-<td><code>int</code></td>
-<td><strong>Required</strong></td>
-<td>Task ID to run</td>
-</tr>
-<tr>
 <td><code>--run_name</code></td>
 <td><code>str</code></td>
 <td><code>"run"</code></td>
-<td>Logging name</td>
+<td>Unique name for this run (used in logging)</td>
 </tr>
 <tr>
 <td><code>--n_runs</code></td>
 <td><code>int</code></td>
-<td><code>0</code></td>
-<td>Number of runs</td>
-</tr>
-<tr>
-<td><code>--num_examples</code></td>
-<td><code>int</code></td>
-<td><code>0</code></td>
-<td>Examples per task</td>
-</tr>
-<tr>
-<td><code>--num_predict</code></td>
-<td><code>int</code></td>
-<td><code>512</code></td>
-<td>Max prediction tokens</td>
-</tr>
-<tr>
-<td><code>--chunk_size</code></td>
-<td><code>int</code></td>
-<td><code>None</code></td>
-<td>Chunk size</td>
-</tr>
-<tr>
-<td><code>--overwrite</code></td>
-<td><code>bool</code></td>
-<td><code>False</code></td>
-<td>Overwrite existing outputs</td>
-</tr>
-<tr>
-<td><code>--translate</code></td>
-<td><code>bool</code></td>
-<td><code>False</code></td>
-<td>Translate examples</td>
+<td><code>1</code></td>
+<td>Number of repetitions for the task run</td>
 </tr>
 <tr>
 <td><code>--verbose</code></td>
 <td><code>bool</code></td>
 <td><code>False</code></td>
-<td>Verbose output</td>
+<td>If set, prints detailed logs to console</td>
 </tr>
 <tr>
-<td><code>--reasoning_model</code></td>
+<td><code>--overwrite</code></td>
 <td><code>bool</code></td>
 <td><code>False</code></td>
-<td>Use reasoning model</td>
-</tr>
-<tr>
-<td><code>--model_name</code></td>
-<td><code>str</code></td>
-<td><code>"phi4"</code></td>
-<td>Model name</td>
-</tr>
-<tr>
-<td><code>--temperature</code></td>
-<td><code>float</code></td>
-<td><code>0.0</code></td>
-<td>Generation temperature</td>
-</tr>
-<tr>
-<td><code>--max_context_len</code></td>
-<td><code>str</code></td>
-<td><code>"max"</code></td>
-<td>Context length behavior</td>
-</tr>
-<tr>
-<td><code>--top_k</code></td>
-<td><code>int</code></td>
-<td><code>None</code></td>
-<td>Top-K sampling</td>
-</tr>
-<tr>
-<td><code>--top_p</code></td>
-<td><code>float</code></td>
-<td><code>None</code></td>
-<td>Nucleus sampling</td>
+<td>Overwrite existing outputs if they exist</td>
 </tr>
 <tr>
 <td><code>--seed</code></td>
 <td><code>int</code></td>
 <td><code>None</code></td>
-<td>Random seed</td>
+<td>Random seed for reproducibility (if set)</td>
 </tr>
+</tbody>
+</table>
+<hr />
+<h2 id="model-configuration">🧠 Model Configuration</h2>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--model_name</code></td>
+<td><code>str</code></td>
+<td><code>"phi4"</code></td>
+<td>Name of the model to use</td>
+</tr>
+<tr>
+<td><code>--temperature</code></td>
+<td><code>float</code></td>
+<td><code>0.0</code></td>
+<td>Sampling temperature (0 = deterministic output)</td>
+</tr>
+<tr>
+<td><code>--top_k</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>Top-K sampling: only consider the top K predictions</td>
+</tr>
+<tr>
+<td><code>--top_p</code></td>
+<td><code>float</code></td>
+<td><code>None</code></td>
+<td>Top-P sampling (nucleus): consider top tokens summing to p</td>
+</tr>
+<tr>
+<td><code>--num_predict</code></td>
+<td><code>int</code></td>
+<td><code>512</code></td>
+<td>Maximum number of tokens to generate</td>
+</tr>
+<tr>
+<td><code>--max_context_len</code></td>
+<td><code>str or int</code></td>
+<td><code>"max"</code></td>
+<td>Context length policy (<code>"max"</code> for maximum in dataset, <code>"split"</code> for splitting dataset in two parts based on length, integer number for set length)</td>
+</tr>
+<tr>
+<td><code>--reasoning_model</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Use for a model that performs automatic reasoning such as Deepseek-r1 (turns of JSON mode and searches the result for a valid JSON output)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="task-input-and-data-control">🧪 Task Input and Data Control</h2>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--num_examples</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Number of input examples to use per task</td>
+</tr>
+<tr>
+<td><code>--chunk_size</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>Size of input chunks (if <code>None</code>, uses full input)</td>
+</tr>
+<tr>
+<td><code>--translate</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Whether to translate input cases to English before processing (not recommended)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="paths-and-directories">📁 Paths and Directories</h2>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><code>--output_dir</code></td>
 <td><code>Path</code></td>
 <td><code>output/</code></td>
-<td>Output directory</td>
-</tr>
-<tr>
-<td><code>--task_dir</code></td>
-<td><code>Path</code></td>
-<td><code>tasks/</code></td>
-<td>Task config directory</td>
+<td>Directory where results are saved</td>
 </tr>
 <tr>
 <td><code>--log_dir</code></td>
 <td><code>Path</code></td>
 <td><code>output/</code></td>
-<td>Log directory</td>
+<td>Directory for logs</td>
 </tr>
 <tr>
 <td><code>--data_dir</code></td>
 <td><code>Path</code></td>
 <td><code>data/</code></td>
-<td>Input data path</td>
+<td>Directory for input data</td>
+</tr>
+<tr>
+<td><code>--task_dir</code></td>
+<td><code>Path</code></td>
+<td><code>tasks/</code></td>
+<td>Directory with task configuration</td>
 </tr>
 <tr>
 <td><code>--example_dir</code></td>
 <td><code>Path</code></td>
 <td><code>examples/</code></td>
-<td>Examples directory</td>
+<td>Directory with example files</td>
 </tr>
 <tr>
 <td><code>--translation_dir</code></td>
 <td><code>Path</code></td>
 <td><code>translations/</code></td>
-<td>Translation directory</td>
+<td>Directory for translated examples</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="examples">💡 Examples</h2>
+<p>Run a task with default settings:</p>
+<pre><code class="language-bash">extractinate --task_id 1
+</code></pre>
+<p>Run with Llama-3.3 model and verbose logging:</p>
+<pre><code class="language-bash">extractinate --task_id 1 --model_name &quot;llama3.3&quot; --verbose
+</code></pre>
+<p>Run with a reasoning model and different temperature and number of prediction tokens:</p>
+<pre><code class="language-bash">extractinate --task_id 1 --model_name &quot;deepseek-r1:8b&quot; --reasoning_model --run_name &quot;reasoning_run&quot; --temperature 0.5 --num_predict 2048
+</code></pre>
+<hr />
+<h2 id="notes">📝 Notes</h2>
+<ul>
+<li>Flags like <code>--top_k</code> and <code>--top_p</code> are optional but useful for controlling model creativity.</li>
+<li><code>--num_examples</code> and <code>--chunk_size</code> can help manage memory and execution time on large tasks.</li>
+<li>If <code>--seed</code> is set, runs will be deterministic (assuming the model allows it).</li>
+</ul>
 
 
 
