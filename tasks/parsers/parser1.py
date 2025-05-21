@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel
 
 
-class ExampleModel(BaseModel):
+class OutputParser(BaseModel):
     string_field: str
     optional_string_field: Optional[str] = None
 
