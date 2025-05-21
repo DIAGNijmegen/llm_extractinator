@@ -52,7 +52,7 @@ Each task is defined using a JSON file stored in the `tasks/` directory.
 
 Filename format:
 
-```
+```bash
 TaskXXX_name.json
 ```
 
@@ -83,7 +83,7 @@ This launches a web UI to create a Pydantic `OutputParser` model, which defines 
 
 The resulting `.py` file should be saved in:
 
-```
+```bash
 tasks/parsers/
 ```
 
