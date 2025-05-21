@@ -193,6 +193,130 @@ class TestExtractinator(unittest.TestCase):
         )
 
 
+class TestExtractinator2(unittest.TestCase):
+    """Test cases for Extractinator with different models"""
+
+    def setUp(self):
+        """Set up paths and test input before running the test."""
+        self.basepath = Path(__file__).resolve().parents[1] / "tests"
+        self.output_dir = self.basepath / "testoutput"
+
+        # Ensure output directory is clean before test
+        clean_output_dir(self.output_dir)
+
+    def run_extractinate_test2(
+        self,
+        model_name,
+        run_name,
+        num_predict,
+        reasoning_model,
+        n_runs,
+        max_context_len,
+        translate,
+    ):
+        """Runs extractinate and verifies if output matches expected results."""
+
+        # Run extractinate with test input
+        extractinate(
+            model_name=model_name,
+            task_id=998,
+            num_examples=0,
+            n_runs=n_runs,
+            temperature=0.0,
+            max_context_len=max_context_len,
+            run_name=run_name,
+            num_predict=num_predict,
+            output_dir=self.output_dir,
+            task_dir=self.basepath / "testtasks",
+            data_dir=self.basepath / "testdata",
+            translation_dir=self.basepath / "testtranslations",
+            translate=translate,
+            verbose=False,
+            overwrite=True,
+            seed=42,
+            reasoning_model=reasoning_model,
+        )
+
+        # Wait for the model to complete execution
+        time.sleep(10)  # Small delay in case of async writing
+
+        for run_idx in range(n_runs):
+            run_output_path = (
+                self.output_dir / f"{run_name}/Task998_example2-run{run_idx}"
+            )
+            expected_output_file = run_output_path / "nlp-predictions-dataset.json"
+
+            # Check if the output file was created
+            self.assertTrue(
+                expected_output_file.exists(), "Expected output file was not created."
+            )
+
+            # Read the output file
+            with open(expected_output_file, "r", encoding="utf-8") as f:
+                predictions = json.load(f)
+
+            # Ensure predictions are not empty
+            self.assertTrue(len(predictions) > 0, "Output file contains no data.")
+
+            # Check each prediction
+            for idx, prediction in enumerate(predictions):
+                with self.subTest(index=idx):
+                    self.assertIn(
+                        "status", prediction, f"Missing 'status' at index {idx}"
+                    )
+
+                    if prediction.get("status") == "success":
+                        self.assertIn(
+                            "expected_output",
+                            prediction,
+                            f"Missing 'expected_output' for successful prediction at index {idx}",
+                        )
+
+                        expected_output = prediction["expected_output"]
+                        actual_products = prediction.get("products")
+
+                        # Check that actual_products is a list of dicts with required keys
+                        self.assertIsInstance(
+                            actual_products,
+                            list,
+                            f"'products' should be a list at index {idx}",
+                        )
+                        for p_idx, product in enumerate(actual_products):
+                            self.assertIn(
+                                "name",
+                                product,
+                                f"Missing 'name' in product {p_idx} at index {idx}",
+                            )
+                            self.assertIn(
+                                "price",
+                                product,
+                                f"Missing 'price' in product {p_idx} at index {idx}",
+                            )
+                            self.assertIsInstance(
+                                product["price"],
+                                (float, int),
+                                f"'price' must be a number in product {p_idx} at index {idx}",
+                            )
+
+                        self.assertEqual(
+                            actual_products,
+                            expected_output["products"],
+                            f"Mismatch in products at index {idx}: expected {expected_output['products']}, got {actual_products}",
+                        )
+
+    def test_extractinate_base_2(self):
+        """Test extractinate with Qwen model"""
+        self.run_extractinate_test2(
+            model_name="gemma2",
+            run_name="test_run",
+            num_predict=256,
+            reasoning_model=False,
+            n_runs=1,
+            max_context_len=512,
+            translate=False,
+        )
+
+
 class TestExtractinatorCLI(unittest.TestCase):
     def setUp(self):
         """Set up paths and test input before running the test."""

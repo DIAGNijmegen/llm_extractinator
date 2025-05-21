@@ -7,6 +7,7 @@ nav:
   - Installation: installation.md
   - Data Structure: data-structure.md
   - Configuration: configuration.md
+  - Parser: parser.md
   - CLI Usage: cli-usage.md
   - Running: running.md
   - Citation: citation.md
