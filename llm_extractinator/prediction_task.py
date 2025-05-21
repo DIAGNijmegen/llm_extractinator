@@ -70,6 +70,7 @@ class PredictionTask:
             examples_path=self.example_dir,
             num_examples=self.num_examples,
             output_format=self.format,
+            task_dir=self.task_dir,
         )
 
     def initialize_model(self) -> ChatOllama:

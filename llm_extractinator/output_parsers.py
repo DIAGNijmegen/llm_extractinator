@@ -1,3 +1,6 @@
+import importlib.util
+import sys
+from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Type
 
 from pydantic import BaseModel, Field, create_model
@@ -97,3 +100,23 @@ def load_parser(
         raise ValueError("parser_format must be provided for custom task types.")
 
     return create_pydantic_model_from_json(parser_format)
+
+
+def load_parser_pydantic(parser_path: Path) -> BaseModel:
+    """
+    Load a Pydantic model from a python file
+    """
+    if parser_path.exists():
+        module_name = parser_path.stem  # Get the filename without .py
+        spec = importlib.util.spec_from_file_location(module_name, str(parser_path))
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+
+        if hasattr(module, "OutputParser"):
+            return getattr(module, "OutputParser")
+        else:
+            raise ImportError(f"No OutputParser class found in {parser_path}")
+
+    else:
+        raise FileNotFoundError(f"Parser file not found in {parser_path}.")

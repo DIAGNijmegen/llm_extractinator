@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -9,7 +10,7 @@ from langchain_chroma import Chroma
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from llm_extractinator.callbacks import BatchCallBack
-from llm_extractinator.output_parsers import load_parser
+from llm_extractinator.output_parsers import load_parser, load_parser_pydantic
 from llm_extractinator.prompt_utils import build_few_shot_prompt, build_zero_shot_prompt
 from llm_extractinator.validator import handle_prediction_failure
 
@@ -29,6 +30,7 @@ class Predictor:
         examples_path: Path,
         num_examples: int,
         output_format: str = "json",
+        task_dir: Path = Path(os.getcwd()) / "tasks",
     ) -> None:
         """
         Initialize the Predictor with the provided model, task configuration, and paths.
@@ -38,6 +40,7 @@ class Predictor:
         self.num_examples = num_examples
         self.examples_path = examples_path
         self.output_format = output_format
+        self.task_dir = task_dir
         self._extract_task_info()
 
     def _extract_task_info(self) -> None:
@@ -49,7 +52,6 @@ class Predictor:
         self.input_field = self.task_config.get("Input_Field")
         self.train_path = self.task_config.get("Example_Path")
         self.test_path = self.task_config.get("Data_Path")
-        self.task_name = self.task_config.get("Task_Name")
         self.parser_format = self.task_config.get("Parser_Format")
 
     def prepare_prompt_ollama(
@@ -58,9 +60,25 @@ class Predictor:
         """
         Prepare the system and human prompts for few-shot learning based on provided examples.
         """
-        self.parser_model = load_parser(
-            task_type="Extraction", parser_format=self.parser_format
-        )
+        if isinstance(self.parser_format, dict):
+            try:
+                self.parser_model = load_parser(
+                    task_type="Extraction", parser_format=self.parser_format
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to load parser model. Ensure the parser format is correct."
+                )
+                raise e
+        else:
+            try:
+                parser_path = self.task_dir / "parsers" / self.parser_format
+                self.parser_model = load_parser_pydantic(parser_path=parser_path)
+            except Exception as e:
+                logger.error(
+                    "Failed to load parser model. Ensure the parser format is correct."
+                )
+                raise e
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
         self.format_instructions = self.base_parser.get_format_instructions()
         self.fixing_parser = OutputFixingParser.from_llm(
