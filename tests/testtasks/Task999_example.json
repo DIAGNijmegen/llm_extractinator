@@ -2,21 +2,5 @@
     "Description": "Extract the patient's heart rate (HR) and name from the input text. HR will be an integer representing beats per minute, and Name will be a string literal representing a person's first name.",
     "Data_Path": "testdata.json",
     "Input_Field": "text",
-    "Parser_Format": {
-        "HR": {
-            "type": "int",
-            "description": "The patient's heart rate in beats per minute"
-        },
-        "Name": {
-            "type": "str",
-            "description": "The patient's first name",
-            "literals": [
-                "Alice",
-                "Bob",
-                "Charlie",
-                "David",
-                "Emma"
-            ]
-        }
-    }
+    "Parser_Format": "output_parser.py"
 }
