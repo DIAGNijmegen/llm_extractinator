@@ -46,6 +46,28 @@ extractinate(task_id=1, model_name="phi4")
 
 ---
 
+## 🛠️ Visual Schema Builder (Optional)
+
+You can visually design the output schema using:
+
+```bash
+build-parser
+```
+
+This launches a web UI to create a Pydantic `OutputParser` model, which defines the structure of the extracted data. Additional models can be added and nested for complex formats.
+
+The resulting `.py` file should be saved in:
+
+```bash
+tasks/parsers/
+```
+
+And referenced in your task JSON under the `Parser_Format` key.
+
+👉 See [parser docs](https://DIAGNijmegen.github.io/llm_extractinator/parser) for full usage.
+
+---
+
 ## 📄 Citation
 
 If you use this tool, please cite:
