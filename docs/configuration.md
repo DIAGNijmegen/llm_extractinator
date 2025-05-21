@@ -12,12 +12,10 @@ TaskXXX_taskname.json
 
 Your JSON file must include the following keys:
 
-- `Task`: Name of the task  
-- `Type`: Task type  
 - `Description`: Description of the task  
 - `Data_Path`: Filename of the dataset  
 - `Input_Field`: Column containing the text data  
-- `Parser_Format`: JSON format for the expected output  
+- `Parser_Format`: The filename of the file containing the parser format in the `tasks/parsers/` folder
 
 ---
 
