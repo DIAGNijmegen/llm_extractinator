@@ -67,7 +67,7 @@ Example contents:
 }
 ```
 
-- `Parser_Format` refers to a `.py` file in `tasks/parsers/` that defines a Pydantic `OutputParser` class used to structure the LLM output.
+`Parser_Format` refers to a `.py` file in `tasks/parsers/` that defines a Pydantic `OutputParser` class used to structure the LLM output.
 
 ---
 
