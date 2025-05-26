@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import os
 import textwrap
 from typing import Any, Literal, Optional
@@ -26,18 +27,18 @@ st.markdown(
 
     **What can you do here?**
     - Create Python data models using a visual interface.
-    - Add fields with built-in types, collections, or nested models.
+    - Add fields with built‑in types, collections, or nested models.
+    - **Import** existing model files to continue editing them.
     - Export the resulting code to use in your projects.
     """
 )
-
 
 ################################################################################
 # Session state ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ################################################################################
 
 if "models" not in st.session_state:
-    st.session_state.models: dict[str, list[dict[str, Any]]] = {"OutputParser": []}
+    st.session_state.models = {"OutputParser": []}
 
 ################################################################################
 # Constants ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -100,52 +101,110 @@ def generate_code() -> str:
     return "\n".join(code)
 
 
+def _parse_models_from_source(source: str) -> dict[str, list[dict[str, Any]]]:
+    """Return a models‑dict like the GUI expects by static parsing of the file."""
+    tree = ast.parse(source)
+    models: dict[str, list[dict[str, Any]]] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        # ensure BaseModel inheritance
+        if not any(
+            isinstance(base, ast.Name) and base.id == "BaseModel" for base in node.bases
+        ):
+            continue
+        fields: list[dict[str, Any]] = []
+        for stmt in node.body:
+            if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+                field_name = stmt.target.id
+                field_type = ast.get_source_segment(source, stmt.annotation)
+                if stmt.value is None and field_type:
+                    fields.append({"name": field_name, "type": field_type})
+                elif field_type:
+                    # optional (default value provided)
+                    fields.append({"name": field_name, "type": field_type})
+        models[node.name] = fields
+    return models
+
+
 ################################################################################
-# Sidebar ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# Sidebar ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ################################################################################
 
 with st.sidebar:
-    st.header("📦 Model Manager")
-    with st.expander("ℹ️ What’s this app for?", expanded=False):
-        st.markdown(
-            textwrap.dedent(
-                """
-                This tool helps you **build Python data models** using [Pydantic](https://docs.pydantic.dev/latest/), a library for data validation and settings management.
+    manager_tab, import_tab = st.tabs(["📦 Model Manager", "📂 Import file"])
 
-                **Key concepts:**
-                - A **model** defines a structure for data, like a form or schema.
-                - Each model has **fields** (like `name: str` or `age: int`) with types.
-                - You can use **primitive types** (`str`, `int`, etc.), **collections** (`list`, `dict`), or special types like `Optional`, `Literal`, or nested models.
-                
-                You can:
-                - Add multiple models
-                - Define fields with various types
-                - Export the generated code
+    ############################################################################
+    # 📦 Model Manager TAB
+    ############################################################################
+    with manager_tab:
+        st.header("📦 Model Manager")
+        with st.expander("ℹ️ What’s this app for?", expanded=False):
+            st.markdown(
+                textwrap.dedent(
+                    """
+                    This tool helps you **build Python data models** using [Pydantic](https://docs.pydantic.dev/latest/), a library for data validation and settings management.
 
-                Use this to create OutputParser formats.
-                """
+                    **Key concepts:**
+                    - A **model** defines a structure for data, like a form or schema.
+                    - Each model has **fields** (like `name: str` or `age: int`) with types.
+                    - You can use **primitive types** (`str`, `int`, etc.), **collections** (`list`, `dict`), or special types like `Optional`, `Literal`, or nested models.
+
+                    You can:
+                    - Add multiple models
+                    - Define fields with various types
+                    - Export the generated code
+
+                    Use this to create OutputParser formats.
+                    """
+                )
             )
+
+        new_model = st.text_input(
+            "Enter new model name (e.g. User)",
+            key="_new_model_name",
+            help="Model names must begin with a capital letter and be valid Python identifiers.",
+        )
+        if st.button("➕ Add model", use_container_width=True):
+            name = new_model.strip()
+            if not name:
+                st.warning("Please enter a model name.")
+            elif not name.isidentifier() or not name[0].isupper():
+                st.warning(
+                    "Model names should start with a capital letter and be valid Python identifiers (letters, numbers, or underscores)."
+                )
+            elif name in st.session_state.models:
+                st.warning(f"A model named **{name}** already exists.")
+            else:
+                st.session_state.models[name] = []
+                st.success(f"Model **{name}** created.")
+
+    ############################################################################
+    # 📂 Import file TAB
+    ############################################################################
+    with import_tab:
+        st.header("📂 Import existing models")
+        uploaded_file = st.file_uploader(
+            "Upload a Python file containing Pydantic BaseModel classes", type=["py"]
         )
 
-    new_model = st.text_input(
-        "Enter new model name (e.g. User)",
-        key="_new_model_name",
-        help="Model names must begin with a capital letter and be valid Python identifiers.",
-    )
-    if st.button("➕ Add model", use_container_width=True):
-        name = new_model.strip()
-        if not name:
-            st.warning("Please enter a model name.")
-        elif not name.isidentifier() or not name[0].isupper():
-            st.warning(
-                "Model names should start with a capital letter and be valid Python identifiers (letters, numbers, or underscores)."
-            )
-        elif name in st.session_state.models:
-            st.warning(f"A model named **{name}** already exists.")
-        else:
-            st.session_state.models[name] = []
-            st.success(f"Model **{name}** created.")
-
+        if uploaded_file:
+            source_code = uploaded_file.read().decode("utf-8")
+            if st.button("🔄 Load into editor", type="primary"):
+                try:
+                    imported_models = _parse_models_from_source(source_code)
+                    if not imported_models:
+                        st.warning(
+                            "No BaseModel subclasses found in the uploaded file."
+                        )
+                    else:
+                        st.session_state.models = imported_models
+                        st.success(
+                            "Models imported successfully! You can now edit them in the Design tab."
+                        )
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Error while parsing file: {e}")
 
 ################################################################################
 # Main tabs ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -230,7 +289,6 @@ with design_tab:
         else:
             st.info("No fields yet. Add one using the inputs above.")
 
-
 with code_tab:
     st.subheader("📝 Generated Python Code")
     st.markdown(
@@ -242,11 +300,10 @@ with code_tab:
 with export_tab:
     st.subheader("📄 Save as file name (without .py)")
 
-    # Input stays outside, but we’ll fetch its current value on each button press
     st.text_input(
         "Filename",
         value="output_parser",
-        key="export_file_name",  # key to access latest value
+        key="export_file_name",
         help="Name for the generated Python file, without the .py extension.",
     )
 
