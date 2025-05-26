@@ -215,13 +215,21 @@ with design_tab:
                 st.success(f"Field **{name}** added to **{model_name}**.")
 
         if st.session_state.models[model_name]:
-            st.dataframe(
-                st.session_state.models[model_name],
-                hide_index=True,
-                use_container_width=True,
-            )
+            st.markdown("#### Fields")
+            for i, field in enumerate(st.session_state.models[model_name]):
+                cols = st.columns([3, 3, 3, 1])
+                cols[0].markdown(f"`{field['name']}`")
+                cols[1].markdown(f"`{field['type']}`")
+                is_optional = field["type"].startswith("Optional[")
+                cols[2].markdown("🔓 Optional" if is_optional else "🔒 Required")
+                if cols[3].button(
+                    "🗑️", key=f"del_{model_name}_{i}", help="Remove this field"
+                ):
+                    del st.session_state.models[model_name][i]
+                    st.rerun()
         else:
             st.info("No fields yet. Add one using the inputs above.")
+
 
 with code_tab:
     st.subheader("📝 Generated Python Code")
@@ -233,7 +241,14 @@ with code_tab:
 
 with export_tab:
     st.subheader("📄 Save as file name (without .py)")
-    file_name = st.text_input("", value="output_parser")
+
+    # Input stays outside, but we’ll fetch its current value on each button press
+    st.text_input(
+        "Filename",
+        value="output_parser",
+        key="export_file_name",  # key to access latest value
+        help="Name for the generated Python file, without the .py extension.",
+    )
 
     col1, col2 = st.columns(2)
 
@@ -241,14 +256,16 @@ with export_tab:
         st.download_button(
             "💾 Download .py file",
             data=source,
-            file_name=f"{file_name}.py",
+            file_name=f"{st.session_state.export_file_name}.py",
             mime="text/x-python",
         )
+
     with col2:
         if st.button("💾 Save to tasks/parsers/"):
+            filename = st.session_state.export_file_name.strip()
             output_dir = os.path.join(os.getcwd(), "tasks", "parsers")
             os.makedirs(output_dir, exist_ok=True)
-            file_path = os.path.join(output_dir, f"{file_name.strip()}.py")
+            file_path = os.path.join(output_dir, f"{filename}.py")
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(source)
             st.success(f"Saved to `{file_path}`")
