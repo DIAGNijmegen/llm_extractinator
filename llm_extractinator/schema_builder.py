@@ -8,7 +8,7 @@ from typing import Any, Literal, Optional
 import streamlit as st
 
 ################################################################################
-# Page config ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# Page config
 ################################################################################
 
 if "_PAGE_CONFIG_DONE" not in globals():
@@ -56,9 +56,12 @@ def _compose_type(
 def _detect_imports() -> list[str]:
     imports = {"from pydantic import BaseModel"}
     typing: set[str] = set()
+    use_field = False
     for fields in st.session_state.models.values():
         for f in fields:
             t = f["type"]
+            if f.get("field_expr"):
+                use_field = True
             if t.startswith("Optional["):
                 typing.add("Optional")
                 t = t.removeprefix("Optional[").removesuffix("]")
@@ -70,6 +73,8 @@ def _detect_imports() -> list[str]:
                 typing.update({"list", "dict"})
     if typing:
         imports.add(f"from typing import {', '.join(sorted(typing))}")
+    if use_field:
+        imports.add("from pydantic import Field")
     return sorted(imports)
 
 
@@ -82,7 +87,9 @@ def generate_code() -> str:
         else:
             for f in fields:
                 line = f"    {f['name']}: {f['type']}"
-                if f["type"].startswith("Optional["):
+                if f.get("field_expr"):
+                    line += f" = {f['field_expr']}"
+                elif f["type"].startswith("Optional["):
                     line += " = None"
                 code.append(line)
         code.append("")
@@ -104,10 +111,12 @@ def _parse_models_from_source(source: str) -> dict[str, list[dict[str, Any]]]:
             if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
                 field_name = stmt.target.id
                 field_type = ast.get_source_segment(source, stmt.annotation)
-                if stmt.value is None and field_type:
-                    fields.append({"name": field_name, "type": field_type})
-                elif field_type:
-                    fields.append({"name": field_name, "type": field_type})
+                field_expr = (
+                    ast.get_source_segment(source, stmt.value) if stmt.value else None
+                )
+                fields.append(
+                    {"name": field_name, "type": field_type, "field_expr": field_expr}
+                )
         models[node.name] = fields
     return models
 
@@ -154,73 +163,114 @@ design_tab, code_tab, export_tab = st.tabs(["🔗 Design", "📝 Code", "📅 Ex
 
 with design_tab:
     for model_name in list(st.session_state.models):
-        st.subheader(f"🧰 Define fields for `{model_name}`")
-        cols = st.columns([2, 2, 1])
-        field_name = cols[0].text_input("Field name", key=f"name_{model_name}")
-        field_type = cols[1].selectbox(
-            "Field type",
-            PRIMITIVE_TYPES
-            + SPECIAL_TYPES
-            + [m for m in st.session_state.models if m != model_name],
-            key=f"type_{model_name}",
-        )
-        is_optional = cols[2].checkbox("Optional", key=f"opt_{model_name}")
+        with st.expander(f"🧰 {model_name}", expanded=False):
+            st.markdown(f"### Define fields for `{model_name}`")
 
-        sub_type = literal_vals = None
-        if field_type == "list":
-            sub_type = st.selectbox(
-                "List element type",
-                PRIMITIVE_TYPES + [m for m in st.session_state.models],
-                key=f"subtype_list_{model_name}",
-            )
-        elif field_type == "dict":
-            c1, c2 = st.columns(2)
-            key_type = c1.selectbox(
-                "Key type", PRIMITIVE_TYPES, key=f"key_dict_{model_name}"
-            )
-            val_type = c2.selectbox(
-                "Value type",
-                PRIMITIVE_TYPES + [m for m in st.session_state.models],
-                key=f"val_dict_{model_name}",
-            )
-            sub_type = f"{key_type}:{val_type}"
-        elif field_type == "Literal":
-            literal_vals = st.text_input("Literal values", key=f"lit_{model_name}")
+            cols = st.columns([2, 2, 1])
+            with cols[0]:
+                field_name = st.text_input("Field name", key=f"name_{model_name}")
+            with cols[1]:
+                field_type = st.selectbox(
+                    "Field type",
+                    PRIMITIVE_TYPES
+                    + SPECIAL_TYPES
+                    + [m for m in st.session_state.models if m != model_name],
+                    key=f"type_{model_name}",
+                )
+            with cols[2]:
+                is_optional = st.checkbox("Optional", key=f"opt_{model_name}")
 
-        if st.button("Add field", key=f"add_field_btn_{model_name}"):
-            name = field_name.strip()
-            if not name:
-                st.warning("Enter a field name.")
-            elif any(f["name"] == name for f in st.session_state.models[model_name]):
-                st.warning(f"Field {name} already exists.")
-            elif field_type in {"list", "dict"} and not sub_type:
-                st.warning("Please specify subtype for list or dict.")
-            elif field_type == "Literal" and not literal_vals:
-                st.warning("Please enter values for Literal.")
+            sub_type = literal_vals = None
+            if field_type == "list":
+                sub_type = st.selectbox(
+                    "List element type",
+                    PRIMITIVE_TYPES + [m for m in st.session_state.models],
+                    key=f"subtype_list_{model_name}",
+                )
+            elif field_type == "dict":
+                c1, c2 = st.columns(2)
+                key_type = c1.selectbox(
+                    "Key type", PRIMITIVE_TYPES, key=f"key_dict_{model_name}"
+                )
+                val_type = c2.selectbox(
+                    "Value type",
+                    PRIMITIVE_TYPES + [m for m in st.session_state.models],
+                    key=f"val_dict_{model_name}",
+                )
+                sub_type = f"{key_type}:{val_type}"
+            elif field_type == "Literal":
+                literal_vals = st.text_input("Literal values", key=f"lit_{model_name}")
+
+            # ✅ Toggle instead of nested expander
+            show_advanced = st.checkbox(
+                "Show advanced field options", key=f"adv_{model_name}"
+            )
+            if show_advanced:
+                field_default = st.text_input(
+                    "Default value (raw Python)", key=f"default_{model_name}"
+                )
+                field_desc = st.text_input("Description", key=f"desc_{model_name}")
+                field_extra = st.text_input(
+                    "Extra Field args", key=f"extra_{model_name}"
+                )
             else:
-                final_type = _compose_type(
-                    field_type, subtype=sub_type, lit_vals=literal_vals
-                )
-                if is_optional:
-                    final_type = f"Optional[{final_type}]"
-                st.session_state.models[model_name].append(
-                    {"name": name, "type": final_type}
-                )
-                st.success(f"Added field {name} to {model_name}.")
+                field_default = field_desc = field_extra = ""
 
-        if st.session_state.models[model_name]:
-            st.markdown("#### Fields")
-            for i, field in enumerate(st.session_state.models[model_name]):
-                cols = st.columns([3, 3, 3, 1])
-                cols[0].markdown(f"`{field['name']}`")
-                cols[1].markdown(f"`{field['type']}`")
-                optional = field["type"].startswith("Optional[")
-                cols[2].markdown("🔓 Optional" if optional else "🔒 Required")
-                if cols[3].button("🗑️", key=f"del_{model_name}_{i}"):
-                    del st.session_state.models[model_name][i]
-                    st.rerun()
-        else:
-            st.info("No fields yet.")
+            if st.button("Add field", key=f"add_field_btn_{model_name}"):
+                name = field_name.strip()
+                if not name:
+                    st.warning("Enter a field name.")
+                elif any(
+                    f["name"] == name for f in st.session_state.models[model_name]
+                ):
+                    st.warning(f"Field {name} already exists.")
+                elif field_type in {"list", "dict"} and not sub_type:
+                    st.warning("Please specify subtype for list or dict.")
+                elif field_type == "Literal" and not literal_vals:
+                    st.warning("Please enter values for Literal.")
+                else:
+                    final_type = _compose_type(
+                        field_type, subtype=sub_type, lit_vals=literal_vals
+                    )
+                    if is_optional:
+                        final_type = f"Optional[{final_type}]"
+
+                    # Compose Field(...) expression
+                    field_args = []
+                    if field_desc:
+                        field_args.append(f'description="{field_desc}"')
+                    if field_extra:
+                        field_args.append(field_extra)
+
+                    field_expr = None
+                    if field_default:
+                        field_expr = (
+                            f"Field({field_default}, {', '.join(field_args)})"
+                            if field_args
+                            else f"Field({field_default})"
+                        )
+                    elif field_args:
+                        field_expr = f"Field({', '.join(field_args)})"
+
+                    st.session_state.models[model_name].append(
+                        {"name": name, "type": final_type, "field_expr": field_expr}
+                    )
+                    st.success(f"Added field {name} to {model_name}.")
+
+            if st.session_state.models[model_name]:
+                st.markdown("#### Fields")
+                for i, field in enumerate(st.session_state.models[model_name]):
+                    cols = st.columns([3, 3, 3, 1])
+                    cols[0].markdown(f"`{field['name']}`")
+                    cols[1].markdown(f"`{field['type']}`")
+                    optional = field["type"].startswith("Optional[")
+                    cols[2].markdown("🔓 Optional" if optional else "🔒 Required")
+                    if cols[3].button("🗑️", key=f"del_{model_name}_{i}"):
+                        del st.session_state.models[model_name][i]
+                        st.rerun()
+            else:
+                st.info("No fields yet.")
+
 
 with code_tab:
     st.subheader("📝 Generated Python Code")
