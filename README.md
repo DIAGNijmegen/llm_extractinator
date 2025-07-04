@@ -29,15 +29,21 @@ Download the installer from:
 
 ## 2. **Install the Package**
 
-You have two options:
+Create a fresh conda environment:
 
-### 🔹 Option A – Install from PyPI:
+```bash
+conda create -n dutch-med-hips python=3.11
+conda activate dutch-med-hips
+```
+
+Install the package via pip:
 
 ```bash
 pip install llm_extractinator
 ```
 
-### 🔹 Option B – Install from a Local Clone:
+Or from source:
+
 
 ```bash
 git clone https://github.com/DIAGNijmegen/llm_extractinator.git
