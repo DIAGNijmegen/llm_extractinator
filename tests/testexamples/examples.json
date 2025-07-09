@@ -1,0 +1,22 @@
+[
+    {
+        "input": "Get the latest iPad Pro 12.9-inch for just $1099.00.",
+        "output": "{ \"products\": [ { \"name\": \"iPad Pro 12.9-inch\", \"price\": 1099.00 } ] }"
+    },
+    {
+        "input": "Limited offer: Lenovo ThinkPad X1 Carbon Gen 9 at $1299.99!",
+        "output": "{ \"products\": [ { \"name\": \"Lenovo ThinkPad X1 Carbon Gen 9\", \"price\": 1299.99 } ] }"
+    },
+    {
+        "input": "Sale: Bose QuietComfort 45 for $329 and AirPods Pro at $249.",
+        "output": "{ \"products\": [ { \"name\": \"Bose QuietComfort 45\", \"price\": 329.00 }, { \"name\": \"AirPods Pro\", \"price\": 249.00 } ] }"
+    },
+    {
+        "input": "Buy HP Spectre x360 14 now — only $1,199.00.",
+        "output": "{ \"products\": [ { \"name\": \"HP Spectre x360 14\", \"price\": 1199.00 } ] }"
+    },
+    {
+        "input": "Now in stock: Nintendo Switch OLED at $349.99!",
+        "output": "{ \"products\": [ { \"name\": \"Nintendo Switch OLED\", \"price\": 349.99 } ] }"
+    }
+]

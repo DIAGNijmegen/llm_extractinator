@@ -242,12 +242,16 @@ class TaskRunner:
         """
         Load the training and testing data for the prediction task.
         """
+        if self.config.num_examples == 0:
+            self.config.train_path = None
         self.data_loader = DataLoader(
-            train_path=self.config.train_path, test_path=self.config.test_path
+            examples_path=self.config.train_path, cases_path=self.config.test_path
         )
-        self.train, self.test = self.data_loader.load_data(
-            text_column=self.config.input_field
-        )
+        if self.config.num_examples > 0:
+            self.train = self.data_loader.load_examples()
+        else:
+            self.train = None
+        self.test = self.data_loader.load_cases()
 
     def _split_data(self) -> None:
         """

@@ -84,10 +84,6 @@ class PredictionTask:
             extract_reasoning=self.reasoning_model,
         )
 
-    def _load_examples(self) -> List[Dict]:
-        logger.info("Loading examples from training data.")
-        return self.train[["input", "output"]].to_dict(orient="records")
-
     def _translate_task(self) -> None:
         self.translation_path = Path(self.translation_dir) / f"{self.task_id}.json"
 
@@ -108,11 +104,9 @@ class PredictionTask:
         if self.translate:
             self._translate_task()
 
-        examples = self._load_examples() if self.num_examples > 0 else None
-
         self.predictor.prepare_prompt_ollama(
             embedding_model="nomic-embed-text",
-            examples=examples,
+            examples=self.train,
         )
 
         outpath_list = []

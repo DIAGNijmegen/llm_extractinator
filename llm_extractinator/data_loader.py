@@ -11,85 +11,81 @@ import tiktoken
 logger = logging.getLogger(__name__)
 
 
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import pandas as pd
+import tiktoken
+
+
 class DataLoader:
     def __init__(
-        self, train_path: Optional[str] = None, test_path: Optional[str] = None
+        self,
+        examples_path: Optional[str] = None,
+        cases_path: Optional[str] = None,
     ) -> None:
-        """
-        Initializes the DataLoader with optional paths for training and testing datasets.
+        self.examples_path = Path(examples_path) if examples_path else None
+        self.cases_path = Path(cases_path) if cases_path else None
 
-        Args:
-            train_path (Optional[str]): Path to the training data file. Default is None.
-            test_path (Optional[str]): Path to the testing data file. Default is None.
-        """
-        self.train_path = Path(train_path) if train_path else None
-        self.test_path = Path(test_path) if test_path else None
-
-        # Store data after loading
-        self.train = None
-        self.test = None
+        self.examples_df = None  # full DataFrame
+        self.cases_df = None  # full DataFrame
 
     def validate_file(self, file_path: Path) -> None:
-        """
-        Validates if the file exists and is a supported format.
-
-        Args:
-            file_path (Path): The path to the file to validate.
-
-        Raises:
-            FileNotFoundError: If the file does not exist.
-            ValueError: If the file format is not supported.
-        """
         if not file_path.exists():
             raise FileNotFoundError(f"The file {file_path} does not exist.")
-
         if file_path.suffix.lower() not in {".json", ".csv"}:
             raise ValueError(
                 f"Unsupported file format: {file_path.suffix}. Supported formats are .json, .csv"
             )
 
-    def load_data(
-        self, text_column: str = "text"
-    ) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
-        """
-        Loads the training and testing datasets if paths are provided and valid.
-
-        Returns:
-            Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]: DataFrames for training and testing data.
-        """
-        if self.train_path:
-            self.validate_file(self.train_path)
-            self.train = self._load_file(self.train_path, text_column)
-
-        if self.test_path:
-            self.validate_file(self.test_path)
-            self.test = self._load_file(self.test_path, text_column)
-
-        return self.train, self.test
-
-    def _load_file(
-        self,
-        file_path: Path,
-        text_column: str = "text",
-        token_column: str = "token_count",
-    ) -> pd.DataFrame:
-        """
-        Loads a data file based on its extension.
-
-        Args:
-            file_path (Path): The path to the file to load.
-
-        Returns:
-            pd.DataFrame: Loaded data as a DataFrame.
-        """
+    def _read_file(self, file_path: Path) -> pd.DataFrame:
         if file_path.suffix.lower() == ".json":
-            df = pd.read_json(file_path)
-            return self.add_token_count(df, text_column, token_column)
+            return pd.read_json(file_path)
         elif file_path.suffix.lower() == ".csv":
-            df = pd.read_csv(file_path)
-            return self.add_token_count(df, text_column, token_column)
+            return pd.read_csv(file_path)
         else:
             raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+    def load_examples(self) -> List[Dict[str, str]]:
+        """
+        Loads few-shot examples. Must contain 'input' and 'output'.
+        Adds token count of input.
+        """
+        if not self.examples_path:
+            raise ValueError("No examples path provided.")
+        self.validate_file(self.examples_path)
+
+        df = self._read_file(self.examples_path)
+        if not {"input", "output"}.issubset(df.columns):
+            raise ValueError("Examples must have 'input' and 'output' columns.")
+
+        df = self.add_token_count(df, text_column="input")
+        self.examples_df = df
+        return df[["input", "output"]].dropna().to_dict(orient="records")
+
+    def load_cases(self, text_column: str = "text") -> pd.DataFrame:
+        """
+        Loads test cases and adds token count.
+
+        Args:
+            text_column (str): Column with raw input text.
+
+        Returns:
+            pd.DataFrame with standardized 'input' column and token counts.
+        """
+        if not self.cases_path:
+            raise ValueError("No cases path provided.")
+        self.validate_file(self.cases_path)
+
+        df = self._read_file(self.cases_path)
+        if text_column not in df.columns:
+            raise ValueError(f"'{text_column}' column not found in test cases.")
+
+        df = self.add_token_count(
+            df, text_column=text_column, token_column="token_count"
+        )
+        self.cases_df = df
+        return df.reset_index(drop=True)
 
     def count_tokens(self, text: str, model_name: str = "cl100k_base") -> int:
         """

@@ -48,7 +48,6 @@ class Predictor:
         self.length = self.task_config.get("Length")
         self.description = self.task_config.get("Description")
         self.input_field = self.task_config.get("Input_Field")
-        self.train_path = self.task_config.get("Example_Path")
         self.test_path = self.task_config.get("Data_Path")
         self.parser_format = self.task_config.get("Parser_Format")
 
