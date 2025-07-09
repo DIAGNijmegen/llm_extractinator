@@ -61,7 +61,6 @@ class PredictionTask:
             setattr(self, key, kwargs.get(key, None))
 
         self.output_path_base = Path(self.output_dir) / Path(self.run_name)
-        self.format = "" if self.reasoning_model else "json"
         self.model = self.initialize_model()
 
         self.predictor = Predictor(
@@ -69,7 +68,6 @@ class PredictionTask:
             task_config=self.task_config,
             examples_path=self.example_dir,
             num_examples=self.num_examples,
-            output_format=self.format,
             task_dir=self.task_dir,
         )
 
@@ -79,11 +77,11 @@ class PredictionTask:
             temperature=self.temperature,
             num_predict=self.num_predict,
             num_ctx=self.max_context_len,
-            format=self.format,
             verbose=self.verbose,
             seed=self.seed,
             top_k=self.top_k,
             top_p=self.top_p,
+            extract_reasoning=self.reasoning_model,
         )
 
     def _load_examples(self) -> List[Dict]:

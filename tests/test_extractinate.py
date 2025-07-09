@@ -231,7 +231,7 @@ class TestExtractinator2(unittest.TestCase):
             data_dir=self.basepath / "testdata",
             translation_dir=self.basepath / "testtranslations",
             translate=translate,
-            verbose=False,
+            verbose=True,
             overwrite=True,
             seed=42,
             reasoning_model=reasoning_model,
@@ -313,6 +313,18 @@ class TestExtractinator2(unittest.TestCase):
             reasoning_model=False,
             n_runs=1,
             max_context_len=512,
+            translate=False,
+        )
+
+    def test_extractinate_deepseek_2(self):
+        """Test extractinate with DeepSeek model"""
+        self.run_extractinate_test2(
+            model_name="deepseek-r1:1.5b",
+            run_name="test_run_deepseek",
+            num_predict=1024,
+            reasoning_model=True,
+            n_runs=1,
+            max_context_len="max",
             translate=False,
         )
 

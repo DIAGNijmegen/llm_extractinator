@@ -114,7 +114,13 @@ def load_parser_pydantic(parser_path: Path) -> BaseModel:
         spec.loader.exec_module(module)
 
         if hasattr(module, "OutputParser"):
-            return getattr(module, "OutputParser")
+            model_class = getattr(module, "OutputParser")
+            if issubclass(model_class, BaseModel):
+                return model_class.model_json_schema()
+            else:
+                raise TypeError(
+                    f"'OutputParser' in {parser_path} is not a subclass of BaseModel"
+                )
         else:
             raise ImportError(f"No OutputParser class found in {parser_path}")
 

@@ -21,37 +21,8 @@ def load_template(template_name: str) -> str:
         return f.read()
 
 
-def create_system_prompt(
-    template_base: str, format_instructions: str
-) -> SystemMessagePromptTemplate:
-    """
-    Helper function to create a system prompt template.
-    """
-    return SystemMessagePromptTemplate(
-        prompt=PromptTemplate(
-            template=template_base
-            + "\n**Format instructions:**\n{format_instructions}",
-            input_variables=[],
-            partial_variables={"format_instructions": format_instructions},
-        )
-    )
-
-
-def create_human_prompt(
-    template_name: str, input_vars: List[str]
-) -> HumanMessagePromptTemplate:
-    """
-    Helper function to create a human prompt template.
-    """
-    template = load_template(template_name)
-    return HumanMessagePromptTemplate(
-        prompt=PromptTemplate(template=template, input_variables=input_vars)
-    )
-
-
 def build_zero_shot_prompt(
     description: str,
-    format_instructions: str,
 ) -> ChatPromptTemplate:
     """
     Build a zero-shot prompt without examples.
@@ -61,10 +32,8 @@ def build_zero_shot_prompt(
     )
     system_prompt = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
-            template=system_template
-            + "\n**Format instructions:**\n{format_instructions}",
+            template=system_template,
             input_variables=[],
-            partial_variables={"format_instructions": format_instructions},
         )
     )
 
@@ -80,7 +49,6 @@ def build_zero_shot_prompt(
 
 def build_few_shot_prompt(
     description: str,
-    format_instructions: str,
     example_selector,
 ) -> ChatPromptTemplate:
     """
@@ -91,10 +59,8 @@ def build_few_shot_prompt(
     )
     final_system_prompt = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
-            template=system_template
-            + "\n**Format instructions:**\n{format_instructions}",
+            template=system_template,
             input_variables=[],
-            partial_variables={"format_instructions": format_instructions},
         )
     )
 
@@ -134,31 +100,7 @@ def build_few_shot_prompt(
     )
 
 
-def build_fixing_prompt(format_instructions: str) -> ChatPromptTemplate:
-    """
-    Prepare a prompt for fixing incorrectly formatted JSON output.
-    """
-    system_prompt = SystemMessagePromptTemplate(
-        prompt=PromptTemplate(
-            template=load_template("output_fixing/system_prompt"),
-            input_variables=[],
-        )
-    )
-
-    human_prompt = HumanMessagePromptTemplate(
-        prompt=PromptTemplate(
-            template=load_template("output_fixing/human_prompt"),
-            input_variables=["completion"],
-            partial_variables={"format_instructions": format_instructions},
-        )
-    )
-
-    return ChatPromptTemplate.from_messages([system_prompt, human_prompt])
-
-
-def build_translation_prompt(
-    format_instructions: str,
-) -> ChatPromptTemplate:
+def build_translation_prompt() -> ChatPromptTemplate:
     """
     Prepare a prompt for translating text to English.
     """
@@ -166,7 +108,6 @@ def build_translation_prompt(
         prompt=PromptTemplate(
             template=load_template("translation/system_prompt"),
             input_variables=[],
-            partial_variables={"format_instructions": format_instructions},
         )
     )
 
