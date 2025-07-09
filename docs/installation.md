@@ -45,5 +45,5 @@ pip install -e .
 To be able to run the latest models available, make sure to update the `ollama` package to the latest version:
 
 ```bash
-pip install ollama --upgrade
+pip install --upgrade ollama langchain-ollama
 ```
