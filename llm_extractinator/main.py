@@ -377,7 +377,7 @@ def parse_args() -> TaskConfig:
     parser.add_argument(
         "--max_context_len",
         type=str,
-        default="split",
+        default="max",
         help="Maximum context length; 'split' splits data into short and long cases and does a run for them seperately (good if your dataset distribution has a tail with long reports and a bulk of short ones), 'max' uses the maximum token length of the dataset, or a number sets a fixed length.",
     )
     parser.add_argument(
