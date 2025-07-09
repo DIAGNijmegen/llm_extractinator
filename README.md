@@ -14,13 +14,13 @@ LLM Extractinator enables efficient extraction of structured data from unstructu
 
 ## 1. **Install Ollama**
 
-### On **Linux**:
+### On **Linux**
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-### On **Windows** or **macOS**:
+### On **Windows** or **macOS**
 
 Download the installer from:  
 [https://ollama.com/download](https://ollama.com/download)
@@ -32,8 +32,8 @@ Download the installer from:
 Create a fresh conda environment:
 
 ```bash
-conda create -n dutch-med-hips python=3.11
-conda activate dutch-med-hips
+conda create -n llm_extractinator python=3.11
+conda activate llm_extractinator
 ```
 
 Install the package via pip:
@@ -44,11 +44,16 @@ pip install llm_extractinator
 
 Or from source:
 
-
 ```bash
 git clone https://github.com/DIAGNijmegen/llm_extractinator.git
 cd llm_extractinator
 pip install -e .
+```
+
+To be able to run the latest models available, make sure to update the `ollama` package to the latest version:
+
+```bash
+pip install ollama --upgrade
 ```
 
 ---

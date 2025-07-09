@@ -15,3 +15,4 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 COPY . /app  
 WORKDIR /app
 RUN cd /app && pip install -e .
+RUN pip install ollama --upgrade
