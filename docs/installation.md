@@ -6,13 +6,13 @@ Follow these steps to install and use the tool:
 
 ## 1. **Install Ollama**
 
-### On **Linux**:
+### On **Linux**
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-### On **Windows** or **macOS**:
+### On **Windows** or **macOS**
 
 Download the installer from:  
 [https://ollama.com/download](https://ollama.com/download)
