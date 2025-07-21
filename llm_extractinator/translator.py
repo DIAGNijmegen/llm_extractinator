@@ -37,17 +37,7 @@ class Translator:
         Prepare the translation prompt.
         """
         self.parser_model = load_parser(task_type="Translation", parser_format=None)
-        self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
-        self.format_instructions = self.base_parser.get_format_instructions()
-        self.fixing_parser = OutputFixingParser.from_llm(
-            parser=self.base_parser,
-            llm=self.model,
-            max_retries=3,
-        )
-
-        self.prompt = build_translation_prompt(
-            format_instructions=self.format_instructions,
-        )
+        self.prompt = build_translation_prompt()
 
     def translate(
         self, test_data: pd.DataFrame, savepath: Path
@@ -57,7 +47,8 @@ class Translator:
         """
         logger.info("Starting translation with %d samples.", len(test_data))
         self._prepare_translation_prompt()
-        chain = self.prompt | self.model | self.fixing_parser
+        model = self.model.with_structured_output(schema=self.parser_model).with_retry()
+        chain = self.prompt | model
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
         ]

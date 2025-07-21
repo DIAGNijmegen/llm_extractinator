@@ -242,12 +242,16 @@ class TaskRunner:
         """
         Load the training and testing data for the prediction task.
         """
+        if self.config.num_examples == 0:
+            self.config.train_path = None
         self.data_loader = DataLoader(
-            train_path=self.config.train_path, test_path=self.config.test_path
+            examples_path=self.config.train_path, cases_path=self.config.test_path
         )
-        self.train, self.test = self.data_loader.load_data(
-            text_column=self.config.input_field
-        )
+        if self.config.num_examples > 0:
+            self.train = self.data_loader.load_examples()
+        else:
+            self.train = None
+        self.test = self.data_loader.load_cases()
 
     def _split_data(self) -> None:
         """
@@ -373,7 +377,7 @@ def parse_args() -> TaskConfig:
     parser.add_argument(
         "--max_context_len",
         type=str,
-        default="split",
+        default="max",
         help="Maximum context length; 'split' splits data into short and long cases and does a run for them seperately (good if your dataset distribution has a tail with long reports and a bulk of short ones), 'max' uses the maximum token length of the dataset, or a number sets a fixed length.",
     )
     parser.add_argument(

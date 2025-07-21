@@ -2,5 +2,6 @@
     "Description": "Extract a list of products from the text where each product has a name and a price. The price will be a float representing the cost of the product.",
     "Data_Path": "testdata2.json",
     "Input_Field": "text",
-    "Parser_Format": "output_parser2.py"
+    "Parser_Format": "output_parser2.py",
+    "Example_Path": "examples.json"
 }

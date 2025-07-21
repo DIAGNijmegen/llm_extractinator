@@ -61,7 +61,6 @@ class PredictionTask:
             setattr(self, key, kwargs.get(key, None))
 
         self.output_path_base = Path(self.output_dir) / Path(self.run_name)
-        self.format = "" if self.reasoning_model else "json"
         self.model = self.initialize_model()
 
         self.predictor = Predictor(
@@ -69,7 +68,6 @@ class PredictionTask:
             task_config=self.task_config,
             examples_path=self.example_dir,
             num_examples=self.num_examples,
-            output_format=self.format,
             task_dir=self.task_dir,
         )
 
@@ -79,16 +77,12 @@ class PredictionTask:
             temperature=self.temperature,
             num_predict=self.num_predict,
             num_ctx=self.max_context_len,
-            format=self.format,
             verbose=self.verbose,
             seed=self.seed,
             top_k=self.top_k,
             top_p=self.top_p,
+            extract_reasoning=self.reasoning_model,
         )
-
-    def _load_examples(self) -> List[Dict]:
-        logger.info("Loading examples from training data.")
-        return self.train[["input", "output"]].to_dict(orient="records")
 
     def _translate_task(self) -> None:
         self.translation_path = Path(self.translation_dir) / f"{self.task_id}.json"
@@ -110,11 +104,9 @@ class PredictionTask:
         if self.translate:
             self._translate_task()
 
-        examples = self._load_examples() if self.num_examples > 0 else None
-
         self.predictor.prepare_prompt_ollama(
             embedding_model="nomic-embed-text",
-            examples=examples,
+            examples=self.train,
         )
 
         outpath_list = []

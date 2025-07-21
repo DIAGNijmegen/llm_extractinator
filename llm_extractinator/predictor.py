@@ -29,7 +29,6 @@ class Predictor:
         task_config: Dict[str, Any],
         examples_path: Path,
         num_examples: int,
-        output_format: str = "json",
         task_dir: Path = Path(os.getcwd()) / "tasks",
     ) -> None:
         """
@@ -39,7 +38,6 @@ class Predictor:
         self.task_config = task_config
         self.num_examples = num_examples
         self.examples_path = examples_path
-        self.output_format = output_format
         self.task_dir = task_dir
         self._extract_task_info()
 
@@ -50,7 +48,6 @@ class Predictor:
         self.length = self.task_config.get("Length")
         self.description = self.task_config.get("Description")
         self.input_field = self.task_config.get("Input_Field")
-        self.train_path = self.task_config.get("Example_Path")
         self.test_path = self.task_config.get("Data_Path")
         self.parser_format = self.task_config.get("Parser_Format")
 
@@ -80,7 +77,6 @@ class Predictor:
                 )
                 raise e
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
-        self.format_instructions = self.base_parser.get_format_instructions()
         self.fixing_parser = OutputFixingParser.from_llm(
             parser=self.base_parser,
             llm=self.model,
@@ -100,14 +96,12 @@ class Predictor:
             )
             self.prompt = build_few_shot_prompt(
                 description=self.description,
-                format_instructions=self.format_instructions,
                 example_selector=self.example_selector,
             )
         else:
             logger.info("Creating zero-shot prompt.")
             self.prompt = build_zero_shot_prompt(
                 description=self.description,
-                format_instructions=self.format_instructions,
             )
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
@@ -115,7 +109,10 @@ class Predictor:
         Make predictions on the test data.
         """
         logger.info("Starting prediction on test data with %d samples.", len(test_data))
-        chain = self.prompt | self.model | self.fixing_parser
+        model = self.model.with_structured_output(
+            self.parser_model, method="json_schema"
+        ).with_retry()
+        chain = self.prompt | model
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
         ]

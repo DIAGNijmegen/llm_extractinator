@@ -12,7 +12,7 @@ class BatchCallBack(BaseCallbackHandler):
     def __init__(self, total: int):
         super().__init__()
         self.count = 0
-        self.progress_bar = tqdm(total=total)
+        self.progress_bar = tqdm(total=total, ascii=True, dynamic_ncols=False)
 
     def on_llm_end(
         self,

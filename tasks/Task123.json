@@ -1,0 +1,6 @@
+{
+    "Description": "Extract the required information",
+    "Data_Path": "testdata2.json",
+    "Input_Field": "text",
+    "Parser_Format": "output_parser2.py"
+}

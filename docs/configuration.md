@@ -27,7 +27,7 @@ This file is usually created using the `build-parser` tool. It must contain a cl
 
 You may define other nested models to keep the schema organized, but `OutputParser` is the root that the system will rely on.
 
-#### Example:
+#### Example
 
 ```json
 "Parser_Format": "product_parser.py"
