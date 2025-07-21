@@ -5,10 +5,11 @@ theme:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Data Structure: data-structure.md
-  - Configuration: configuration.md
+  - Extractinator Studio: gui.md
   - Parser: parser.md
+  - Data Structure: data-structure.md
+  - Manual Configuration: configuration.md
   - CLI Usage: cli-usage.md
-  - Running: running.md
+  - Manual Running: running.md
   - Citation: citation.md
   - Contributing: contributing.md
