@@ -1,23 +1,14 @@
-"""
-LLM Extractinator Studio – streamlined wizard edition (v2-c)
------------------------------------------------------------
-
-• **Quick-start**: unchanged – jump straight to the Runner if a Task exists.
-• **Cleaner Model Settings**:
-  – Grouped into tabs *General* vs *Sampling & limits* inside the expander.
-  – Help-bubbles on every control for instant guidance.
-  – Temperature / top-p now use sliders for friendlier interaction.
-• **API modernisation**: swapped `st.experimental_rerun()` ➜ `st.rerun()`.
-
--------------------------------- DO NOT DELETE ABOVE --------------------------------
-"""
-
 from __future__ import annotations
+
+"""
+LLM Extractinator Studio
+---------------------------------------------------------
+A streamlined GUI for creating, managing, and running information extraction tasks using LLM Extractinator.
+"""
 
 import json
 import re
 import subprocess
-import time
 from pathlib import Path
 
 import pandas as pd
@@ -26,7 +17,9 @@ import streamlit as st
 try:
     from schema_builder import render_schema_builder  # type: ignore
 except ImportError:  # pragma: no cover
-    render_schema_builder = lambda **_: st.info("`schema_builder` missing – install or remove this call.")  # type: ignore[arg-type]
+    render_schema_builder = lambda **_: st.info(
+        "`schema_builder` missing – install or remove this call."
+    )  # type: ignore[arg-type]
 
 # ──────────────────── Global paths ───────────────────────────────
 BASE_DIR = Path.cwd()
@@ -35,98 +28,140 @@ EX_DIR = BASE_DIR / "examples"
 TASK_DIR = BASE_DIR / "tasks"
 PAR_DIR = TASK_DIR / "parsers"
 
-# Ensure folders exist
 for _d in (DATA_DIR, EX_DIR, TASK_DIR, PAR_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
-
 # ──────────────────── Streamlit config ───────────────────────────
-st.set_page_config("LLM Extractinator Studio", "🧩", layout="wide")
-PAGE = st.session_state.get("page", "wizard")  # wizard | builder
+st.set_page_config(
+    page_title="LLM Extractinator Studio",
+    page_icon="🧩",
+    layout="wide",
+    menu_items={
+        "Get help": "https://github.com/your‑org/llm‑extractinator",
+        "About": "Built with ❤️  &  Streamlit",
+    },
+)
+PAGE = st.session_state.get("page", "studio")  # studio | builder
 
-# Sidebar – page switcher
+# ──────────────────── Sidebar – navigation ───────────────────────
 with st.sidebar:
     st.title("🧩 Studio")
-    if PAGE == "wizard":
-        if st.button("🛠️  Open Schema / Parser Builder"):
+
+    if PAGE == "studio":
+        if st.button(
+            "🛠️ Open Parser Builder", help="Switch to the visual parser‑schema builder"
+        ):
             st.session_state["page"] = "builder"
             st.rerun()
     else:
-        if st.button("← Back to Wizard"):
-            st.session_state["page"] = "wizard"
+        if st.button("← Back to Studio", help="Return to the main Studio page"):
+            st.session_state["page"] = "studio"
             st.rerun()
+
+    if st.button("🔄 Reset Session", help="Clear cache & reload with fresh state"):
+        for k in list(st.session_state.keys()):
+            if k.startswith("task_") or k in {
+                "data_path",
+                "examples_path",
+                "parser_path",
+                "input_field",
+                "task_ready",
+                "task_choice",
+            }:
+                del st.session_state[k]
+        st.rerun()
+
     st.markdown("---")
     st.caption(f"📁 Working directory: `{BASE_DIR}`")
 
-# ──────────────────── Page: Schema / Parser Builder ──────────────
-if PAGE == "builder":
-    st.header("🛠️  Schema / Parser Builder")
-    render_schema_builder(embed=True)
-    st.stop()
+    st.divider()
+    st.caption("Built with ❤️ & Streamlit • Luc Builtjes 2025")
+
 
 # ──────────────────── Helpers ────────────────────────────────────
 
 
 def preview_file(path: Path, n_rows: int = 5) -> None:
-    """Quick tabular/code peek at CSV, JSON or Python files."""
+    """Render a lightweight preview of the given file inside the app."""
     if not path.exists():
         return
     try:
         match path.suffix.lower():
             case ".csv":
-                df = pd.read_csv(path)
-                st.dataframe(df.head(n_rows), use_container_width=True)
+                st.dataframe(pd.read_csv(path).head(n_rows), use_container_width=True)
             case ".json":
-                df = pd.read_json(path, lines=False)
-                st.dataframe(df.head(n_rows), use_container_width=True)
+                st.dataframe(pd.read_json(path).head(n_rows), use_container_width=True)
             case ".py":
                 st.code(path.read_text(), language="python")
     except Exception as exc:  # pragma: no cover
         st.warning(f"Could not preview file → {exc}")
 
 
-def code_block(cmd_list: list[str]) -> None:
-    st.code(" ".join(map(str, cmd_list)), language="bash")
+def bash(cmd: list[str]):
+    """Pretty‑print a bash command."""
+    st.code(" ".join(map(str, cmd)), language="bash")
 
 
 def pick_or_upload(
-    label: str, dir_path: Path, suffixes: tuple[str, ...]
-) -> Path | None:
+    label: str,
+    dir_path: Path,
+    suffixes: tuple[str, ...],
+    *,
+    optional: bool = False,
+):
+    """Reusable widget to pick an existing file or upload a new one."""
+
     st.markdown(f"**{label}**")
+    modes = ["Use existing", "Upload new"] + (["Skip"] if optional else [])
     mode = st.radio(
-        "",
-        ["Use existing file", "Upload new file"],
+        label,
+        modes,
         horizontal=True,
         key=f"{label}_mode",
+        label_visibility="collapsed",
+        help="Choose whether to select an existing file, upload a new one, or skip this input.",
     )
-    if mode == "Use existing file":
-        existing = [f.name for f in dir_path.iterdir() if f.suffix.lower() in suffixes]
-        if not existing:
-            st.info("No files found in this folder.")
+
+    if mode == "Use existing":
+        files = [f.name for f in dir_path.iterdir() if f.suffix.lower() in suffixes]
+        if not files:
+            st.info("No matching files in folder.")
             return None
-        choice = st.selectbox("Choose file:", existing, key=f"{label}_select")
+        choice = st.selectbox(
+            "Choose file",
+            files,
+            key=f"{label}_select",
+            help="Pick a file from the project folder",
+        )
         path = dir_path / choice
         preview_file(path)
         return path
-    upload = st.file_uploader(
-        "Drag a file here:",
-        type=[s.strip(".") for s in suffixes],
-        key=f"{label}_uploader",
-    )
-    if upload is None:
-        return None
-    path = dir_path / upload.name
-    path.write_bytes(upload.getbuffer())
-    st.success(f"Saved → `{path.relative_to(BASE_DIR)}`")
-    preview_file(path)
-    return path
+
+    if mode == "Upload new":
+        upload = st.file_uploader(
+            "Drag a file",
+            type=[s.strip(".") for s in suffixes],
+            key=f"{label}_uploader",
+            help="Drop a local file to add it to the project",
+        )
+        if upload is None:
+            return None
+        path = dir_path / upload.name
+        path.write_bytes(upload.getbuffer())
+        st.toast(f"Saved → {path.relative_to(BASE_DIR)}")
+        preview_file(path)
+        return path
+
+    return None  # Skip
 
 
 def next_free_task_id() -> str:
+    """Return the next available 3‑digit Task ID (as a string)."""
+
     used = {
         int(m.group(1))
-        for m in (re.match(r"Task(\d{3})", p.name) for p in TASK_DIR.glob("Task*.json"))
-        if m
+        for p in TASK_DIR.glob("Task*.json")
+        if (m := re.match(r"Task(\d{3})", p.name))
     }
     for i in range(1000):
         if i not in used:
@@ -134,120 +169,141 @@ def next_free_task_id() -> str:
     raise RuntimeError("All 1000 Task IDs are taken!")
 
 
-# ──────────────────── 0 • Quick-start ────────────────────────────
-st.title("🧩 LLM Extractinator Studio · Wizard")
+# ──────────────────── Parser Builder page ───────────────────────
+if PAGE == "builder":
+    st.header("🛠️ Parser Builder")
+    render_schema_builder(embed=True)
+    st.stop()
 
-st.header("0️⃣  Quick-start with an existing Task (optional)")
-all_tasks = sorted(TASK_DIR.glob("Task*.json"))
-if all_tasks:
-    task_names = [p.name for p in all_tasks]
-    existing_choice = st.selectbox("Select a Task to run/edit:", ["—"] + task_names)
-    if existing_choice != "—":
-        existing_path = TASK_DIR / existing_choice
-        st.success(f"Loaded `{existing_choice}` → ready to go!")
-        st.json(json.loads(existing_path.read_text()), expanded=False)
-        if st.button("🚀 Run this Task now"):
-            st.session_state.update(
-                {
-                    "task_choice": existing_choice,
-                    "task_ready": True,
-                    "skip_wizard": True,
-                }
-            )
-            st.rerun()
-else:
-    st.info("No Task files found yet – use the wizard below to create one.")
+# ──────────────────── Main Studio page ───────────────────────────
 
-st.divider()
+tab_qs, tab_build, tab_run = st.tabs(["🚀 Quick‑start", "🛠️ Build Task", "▶️ Run"])
 
-# ──────────────────── Setup for wizard/skipping ------------------
-skip_wizard = bool(st.session_state.get("skip_wizard"))
-steps = ["Files", "Description", "Task JSON", "Run"]
-status = {s: True for s in steps} if skip_wizard else {s: False for s in steps}
+# 1️⃣ QUICK‑START TAB
+with tab_qs:
+    st.header("🚀 Quick‑start with an existing Task")
+    tasks = sorted(TASK_DIR.glob("Task*.json"))
+    if tasks:
+        task_labels = [p.name for p in tasks]
+        task_choice = st.selectbox(
+            "Select a Task JSON",
+            ["—"] + task_labels,
+            index=0,
+            help="Pick a pre‑configured Task file to load",
+        )
+        if task_choice != "—":
+            path = TASK_DIR / task_choice
+            st.json(json.loads(path.read_text()), expanded=False)
+            if st.button(
+                "✅ Use this Task", help="Load the selected Task into the Run tab"
+            ):
+                st.session_state.update(
+                    {"task_choice": task_choice, "task_ready": True}
+                )
+                st.toast("Task selected → switch to ▶️ Run tab", icon="🎉")
+    else:
+        st.info("No Task files found. Build one in the next tab →")
 
-# ──────────────────── Wizard steps 1-3 (hidden if skipped) ——
-if not skip_wizard:
-    # STEP 1 • Files
-    st.header("1️⃣  Select or upload your files 🗂️")
+# 2️⃣ BUILD‑TASK TAB
+with tab_build:
+    st.header("🛠️ Build a new Task file")
+
+    files_complete = False
+
+    # ─── Files sub‑step ──
+    st.subheader("Step 1 • Select or upload your files")
     data_path = pick_or_upload("Dataset (.csv / .json)", DATA_DIR, (".csv", ".json"))
-    examples_path = pick_or_upload("Examples (optional .json)", EX_DIR, (".json",))
-    parser_path = pick_or_upload("Parser (optional .py)", PAR_DIR, (".py",))
 
-    input_field = st.text_input(
-        "Name of text column in the dataset",
-        value="",
-        placeholder="e.g. passage",
-        disabled=data_path is None,
-        help="Column containing the text passages you want to extract info from.",
+    input_field = None
+    if data_path:
+        try:
+            df = (
+                pd.read_csv(data_path)
+                if data_path.suffix == ".csv"
+                else pd.read_json(data_path)
+            )
+            text_cols = [c for c in df.columns if df[c].dtype == "object"]
+            if text_cols:
+                input_field = st.selectbox(
+                    "Text column",
+                    text_cols,
+                    help="Which column contains the raw text the model should parse?",
+                )
+            else:
+                st.error("No text columns detected.")
+        except Exception as e:
+            st.error(f"Failed to read dataset: {e}")
+
+    parser_path = pick_or_upload("Output parser (.py)", PAR_DIR, (".py",))
+
+    examples_path = pick_or_upload(
+        "Examples (.json) [optional]",
+        EX_DIR,
+        (".json",),
+        optional=True,
     )
 
-    if data_path and input_field.strip():
-        status["Files"] = True
-        st.session_state.update(
-            {
-                "data_path": data_path,
-                "examples_path": examples_path,
-                "parser_path": parser_path,
-                "input_field": input_field.strip(),
-            }
-        )
-        st.success("✓ Files step complete!")
+    if data_path and parser_path and input_field:
+        files_complete = True
+        st.success("✓ Files ready")
 
-    st.divider()
-
-    # STEP 2 • Description
-    if status["Files"]:
-        st.header("2️⃣  Describe the task ✍️")
+    # ─── Description sub‑step ──
+    if files_complete:
+        st.subheader("Step 2 • Describe the task")
         desc = st.text_area(
-            "Task description (Markdown supported)",
-            value=st.session_state.get("task_description", ""),
-            help="Explain in plain language what you want the model to extract.",
+            "Task description",
+            st.session_state.get("task_description", ""),
+            help="Explain in plain language what this Task should accomplish.",
         )
         task_id = st.text_input(
-            "3-digit Task ID",
-            value=st.session_state.get("task_id", next_free_task_id()),
+            "3‑digit Task ID",
+            st.session_state.get("task_id", next_free_task_id()),
             max_chars=3,
-            help="Unique numeric id (000-999) for the Task file.",
+            help="Unique identifier (000‑999) – auto‑suggested if left blank.",
         )
         if desc.strip() and task_id.isdigit() and int(task_id) < 1000:
             st.session_state.update(
                 {"task_description": desc.strip(), "task_id": f"{int(task_id):03d}"}
             )
-            status["Description"] = True
-            st.success("✓ Description step complete!")
+            st.success("✓ Description captured")
 
-    st.divider()
-
-    # STEP 3 • Task JSON
-    if status["Description"]:
-        st.header("3️⃣  Review & save Task file 💾")
-        task_obj: dict[str, str] = {
+    # ─── Review & save sub‑step ──
+    if files_complete and "task_description" in st.session_state:
+        st.subheader("Step 3 • Review & save")
+        task_json_obj: dict[str, str] = {
             "Description": st.session_state["task_description"],
-            "Data_Path": Path(st.session_state["data_path"]).name,
-            "Input_Field": st.session_state["input_field"],
+            "Data_Path": Path(data_path).name,
+            "Input_Field": input_field,
+            "Parser_Format": Path(parser_path).name,
         }
-        if st.session_state.get("examples_path"):
-            task_obj["Example_Path"] = Path(st.session_state["examples_path"]).name
-        if st.session_state.get("parser_path"):
-            task_obj["Parser_Format"] = Path(st.session_state["parser_path"]).name
+        if examples_path:
+            task_json_obj["Example_Path"] = Path(examples_path).name
 
-        st.json(task_obj, expanded=False)
-        task_json = TASK_DIR / f"Task{st.session_state['task_id']}.json"
+        st.json(task_json_obj, expanded=False)
+
+        task_json_path = TASK_DIR / f"Task{st.session_state['task_id']}.json"
         needs_write = (
-            not task_json.exists() or json.loads(task_json.read_text()) != task_obj
+            not task_json_path.exists()
+            or json.loads(task_json_path.read_text()) != task_json_obj
         )
-        if st.button("💾 Create / update Task file", disabled=not needs_write):
-            task_json.write_text(json.dumps(task_obj, indent=4))
-            st.toast(f"Saved → {task_json.relative_to(BASE_DIR)}")
-            st.session_state.update({"task_ready": True, "task_choice": task_json.name})
-            status["Task JSON"] = True
-        elif not needs_write:
-            status["Task JSON"] = True
-    st.divider()
+        if st.button(
+            "💾 Save Task", disabled=not needs_write, help="Write the Task JSON to disk"
+        ):
+            task_json_path.write_text(json.dumps(task_json_obj, indent=4))
+            st.toast(f"Saved → {task_json_path.relative_to(BASE_DIR)}", icon="💾")
+            st.session_state.update(
+                {"task_choice": task_json_path.name, "task_ready": True}
+            )
 
-# ──────────────────── STEP 4 • Run (always available once task_ready) ——
-if st.session_state.get("task_ready"):
-    st.header("4️⃣  Run the Extractinator 🚀")
+# 3️⃣ RUN‑TASK TAB
+with tab_run:
+    st.header("▶️ Run Extractinator")
+
+    if not st.session_state.get("task_ready"):
+        st.info("Choose a Task in 🛠️ Build Task or 🚀 Quick‑start first.")
+        st.stop()
+
+    # ─── Task selection ──
     task_files = sorted(TASK_DIR.glob("Task*.json"))
     default_idx = next(
         (
@@ -258,122 +314,121 @@ if st.session_state.get("task_ready"):
         0,
     )
     task_choice = st.selectbox(
-        "Choose a Task file",
+        "Task file",
         [p.name for p in task_files],
         index=default_idx,
         key="task_choice",
-        help="Task JSON controls what to extract and how to parse the results.",
+        help="Select which Task configuration to execute",
     )
 
-    # ——— Model Settings form ———
-    with st.form("runner_form"):
-        st.subheader("🧠 Model Settings")
-        model_name = st.text_input(
-            "Model name",
-            value="phi4",
-            help="Model id recognised by the backend (HuggingFace name or local path)",
-        )
-        reasoning = st.toggle(
-            "Reasoning model?",
-            value=False,
-            help="Adds the --reasoning_model flag for chain-of-thought capable variants.",
-        )
+    # ─── Model & sampling settings ──
+    st.subheader("🧠 Model settings")
+    model_name = st.text_input(
+        "Model name",
+        value="phi4",
+        help="Name or path of the language model to run. For hosted services, use the provider‑specific ID.",
+    )
+    reasoning = st.toggle(
+        "Reasoning model?",
+        value=False,
+        help="Enable chain‑of‑thought or other reasoning‑enhanced variants. May impact speed.",
+    )
 
-        with st.expander("⚙️ Advanced flags"):
-            general_tab, sampling_tab = st.tabs(["General", "Sampling & limits"])
+    with st.expander("⚙️ Advanced flags"):
+        general_tab, sampling_tab = st.tabs(["General", "Sampling & limits"])
 
-            # — General tab
-            with general_tab:
-                col1, col2 = st.columns(2)
-                run_name = col1.text_input(
-                    "--run_name",
-                    value="run",
-                    help="Folder name for outputs (inside results directory)",
-                )
-                n_runs = col2.number_input(
-                    "--n_runs",
-                    min_value=1,
-                    step=1,
-                    value=1,
-                    help="How many times to repeat the extraction job.",
-                )
-                col3, col4 = st.columns(2)
-                verbose = col3.checkbox(
-                    "--verbose", help="Print per-example details to console"
-                )
-                overwrite = col3.checkbox(
-                    "--overwrite", help="Overwrite previous run with same name"
-                )
-                seed_on = col4.checkbox(
-                    "Set --seed?", help="Fix random seed for reproducibility"
-                )
-                seed = col4.number_input(
-                    "--seed",
-                    min_value=0,
-                    step=1,
-                    value=0,
-                    disabled=not seed_on,
-                    help="Integer RNG seed (only used if checkbox above is ticked)",
-                )
+        # — General flags —
+        with general_tab:
+            run_name = st.text_input(
+                "Run Name",
+                value="run",
+                help="Folder prefix where outputs will be saved.",
+            )
+            n_runs = st.number_input(
+                "Number of Runs",
+                min_value=1,
+                value=1,
+                step=1,
+                help="Repeat the Task multiple times with identical settings.",
+            )
+            colA, colB = st.columns(2)
+            verbose = colA.checkbox(
+                "Verbose output",
+                help="Stream full raw model output & debug logs to the UI.",
+            )
+            overwrite = colA.checkbox(
+                "Overwrite existing files",
+                help="If the run folder already exists, delete & recreate it.",
+            )
+            seed_enabled = colB.checkbox(
+                "Set seed", help="Fix RNG seed for reproducible generation."
+            )
+            seed = colB.number_input(
+                "Seed",
+                min_value=0,
+                value=0,
+                disabled=not seed_enabled,
+                help="Integer seed to initialise random generators.",
+            )
 
-            # — Sampling & limits tab
-            with sampling_tab:
-                col5, col6 = st.columns(2)
-                temperature = col5.slider(
-                    "--temperature",
-                    min_value=0.0,
-                    max_value=1.0,
-                    value=0.0,
-                    step=0.05,
-                    help="Higher values ⇒ more diverse output (0 = deterministic)",
-                )
-                num_predict = col6.number_input(
-                    "--num_predict",
-                    min_value=1,
-                    value=512,
-                    step=1,
-                    help="Max new tokens to generate (model-specific upper bound)",
-                )
-                col7, col8 = st.columns(2)
-                topk_on = col7.checkbox(
-                    "Set --top_k?", help="Activate top-k sampling filter"
-                )
-                top_k = col7.number_input(
-                    "--top_k",
-                    min_value=1,
-                    value=40,
-                    step=1,
-                    disabled=not topk_on,
-                    help="Restrict sampling to k most-probable tokens",
-                )
-                topp_on = col8.checkbox(
-                    "Set --top_p?", help="Activate nucleus sampling filter"
-                )
-                top_p = col8.slider(
-                    "--top_p",
-                    min_value=0.0,
-                    max_value=1.0,
-                    value=0.9,
-                    step=0.05,
-                    disabled=not topp_on,
-                    help="Cumulative probability threshold for nucleus sampling",
-                )
-                max_ctx = sampling_tab.text_input(
-                    "--max_context_len",
-                    value="max",
-                    help='Override model\'s default context window ("max") = leave unchanged',
-                )
-                num_examples = sampling_tab.number_input(
-                    "--num_examples",
-                    min_value=0,
-                    value=0,
-                    step=1,
-                    help="If >0: few-shot prompt with that many dataset examples",
-                )
+        # — Sampling flags —
+        with sampling_tab:
+            temperature = st.slider(
+                "Temperature",
+                0.0,
+                1.0,
+                0.0,
+                0.05,
+                help="0.0 = deterministic; 1.0 = very diverse output.",
+            )
+            num_predict = st.number_input(
+                "Number of tokens to predict",
+                min_value=1,
+                value=512,
+                help="Maximum generation length per response (before stop tokens).",
+            )
+            colC, colD = st.columns(2)
+            topk_on = colC.checkbox(
+                "Top‑k", help="Restrict sampling to the k most probable tokens."
+            )
+            top_k = colC.number_input(
+                "Top‑k value",
+                min_value=1,
+                value=40,
+                disabled=not topk_on,
+            )
+            topp_on = colD.checkbox(
+                "Top‑p",
+                help="Nucleus sampling – dynamic token pool based on cumulative probability.",
+            )
+            top_p = colD.slider(
+                "Top‑p value",
+                0.0,
+                1.0,
+                0.9,
+                0.05,
+                disabled=not topp_on,
+            )
+            max_ctx = st.text_input(
+                "Context Length",
+                "max",
+                help="Force a custom context window size integer – or leave as 'max' for automatic calculation. Set as 'split' for a dataset with some high variability of report length.",
+            )
+            num_examples = st.number_input(
+                "Number of Examples",
+                min_value=0,
+                value=0,
+                help="Few‑shot examples to prepend to each prompt.",
+            )
 
-        launch = st.form_submit_button("🚀 Run")
+    # ─── Launch button ──
+    launch = st.button(
+        "🚀 Run",
+        type="primary",
+        help="Start the extractinate process with the above settings",
+    )
 
-    # ——— Launch handler ———
+    # ─── Execute CLI when launched ──
     if launch:
         cmd = [
             "extractinate",
@@ -392,7 +447,7 @@ if st.session_state.get("task_ready"):
             cmd.append("--verbose")
         if overwrite:
             cmd.append("--overwrite")
-        if seed_on:
+        if seed_enabled:
             cmd += ["--seed", str(seed)]
         if temperature:
             cmd += ["--temperature", str(temperature)]
@@ -408,43 +463,27 @@ if st.session_state.get("task_ready"):
             cmd += ["--num_examples", str(num_examples)]
 
         st.markdown("##### Final command")
-        code_block(cmd)
+        bash(cmd)
 
-        with st.spinner("Running llm_extractinator…"):
+        with st.spinner("Running extractinate…"):
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1,
-                universal_newlines=True,
                 encoding="utf-8",
-                errors="replace",
             )
-
             output_box = st.empty()
             output_lines = []
 
-            for line in process.stdout:
-                output_lines.append(line)
-                output_box.code("".join(output_lines), language="bash")
-                time.sleep(0.05)
+            ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
-            process.stdout.close()
+            output_lines = []
+            for line in process.stdout:
+                clean_line = ansi_escape.sub("", line)
+                output_lines.append(clean_line)
+                output_box.code("".join(output_lines), language="bash")
+
             return_code = process.wait()
 
-        if return_code == 0:
-            st.success("llm_extractinator finished successfully ✅")
-        else:
-            st.error("llm_extractinator failed ❌")
-
-        status["Run"] = True
-
-# ──────────────────── Sidebar progress tracker ───────────────────
-with st.sidebar:
-    st.header("Progress")
-    for _s in steps:
-        st.markdown(f"{'✅' if status[_s] else '⬜️'}  {_s}")
-    st.markdown("---")
-    st.caption("Built with ❤️  &  Streamlit • v2-c")
-    st.caption("2025 Luc Builtjes • Apache-2.0 License")
+        st.success("Finished successfully ✅" if return_code == 0 else "Failed ❌")
