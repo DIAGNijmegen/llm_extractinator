@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../data-structure/">
+        <link rel="prev" href="../parser/">
       
       
-        <link rel="next" href="../parser/">
+        <link rel="next" href="../cli-usage/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Configuration - LLM Extractinator</title>
+        <title>Manual Configuration - LLM Extractinator</title>
       
     
     
@@ -98,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configuration
+              Manual Configuration
             
           </span>
         </div>
@@ -238,12 +238,56 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-structure/" class="md-nav__link">
+      <a href="../preparing-data/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Data Structure
+    Preparing Data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LLM Extractinator Studio
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Parser
     
   </span>
   
@@ -274,7 +318,7 @@
   
   
   <span class="md-ellipsis">
-    Configuration
+    Manual Configuration
     
   </span>
   
@@ -287,7 +331,7 @@
   
   
   <span class="md-ellipsis">
-    Configuration
+    Manual Configuration
     
   </span>
   
@@ -332,7 +376,7 @@
           <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      Example:
+      Example
     </span>
   </a>
   
@@ -372,28 +416,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../parser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Parser
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../cli-usage/" class="md-nav__link">
         
   
@@ -421,7 +443,7 @@
   
   
   <span class="md-ellipsis">
-    Running
+    Manual Running
     
   </span>
   
@@ -524,7 +546,7 @@
           <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      Example:
+      Example
     </span>
   </a>
   
@@ -583,7 +605,7 @@
 <p>This field should reference a Python file located in <code>tasks/parsers/</code> which defines a Pydantic model called <code>OutputParser</code>.</p>
 <p>This file is usually created using the <code>build-parser</code> tool. It must contain a class named <code>OutputParser</code>, which will be used by the LLM to structure its response into a valid JSON object.</p>
 <p>You may define other nested models to keep the schema organized, but <code>OutputParser</code> is the root that the system will rely on.</p>
-<h4 id="example">Example:</h4>
+<h4 id="example">Example</h4>
 <pre><code class="language-json">&quot;Parser_Format&quot;: &quot;product_parser.py&quot;
 </code></pre>
 <p>The file <code>tasks/parsers/product_parser.py</code> might look like:</p>

@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../parser/">
+        <link rel="prev" href="../configuration/">
       
       
         <link rel="next" href="../running/">
@@ -238,12 +238,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-structure/" class="md-nav__link">
+      <a href="../preparing-data/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Data Structure
+    Preparing Data
     
   </span>
   
@@ -260,12 +260,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../gui/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Configuration
+    LLM Extractinator Studio
     
   </span>
   
@@ -288,6 +288,28 @@
   
   <span class="md-ellipsis">
     Parser
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manual Configuration
     
   </span>
   
@@ -445,7 +467,7 @@
   
   
   <span class="md-ellipsis">
-    Running
+    Manual Running
     
   </span>
   
@@ -831,9 +853,10 @@
 <hr />
 <h2 id="notes">📝 Notes</h2>
 <ul>
-<li>Flags like <code>--top_k</code> and <code>--top_p</code> are optional but useful for controlling model creativity.</li>
-<li><code>--num_examples</code> and <code>--chunk_size</code> can help manage memory and execution time on large tasks.</li>
-<li>If <code>--seed</code> is set, runs will be deterministic (assuming the model allows it).</li>
+<li><code>num_examples</code> is optional; if set to <code>0</code>, no examples will be used. If greater than <code>0</code>, a file with examples must be provided in the <code>Example_Path</code> field of the task JSON.</li>
+<li>Flags like <code>--temperature</code>, <code>--top_k</code> and <code>--top_p</code> are optional but useful for controlling model creativity.</li>
+<li><code>--chunk_size</code> can help manage memory and execution time on large tasks.</li>
+<li>If <code>--seed</code> is set, runs will be deterministic and reproducible.</li>
 </ul>
 
 

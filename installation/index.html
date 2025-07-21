@@ -12,7 +12,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../data-structure/">
+        <link rel="next" href="../preparing-data/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -278,7 +278,7 @@
           <li class="md-nav__item">
   <a href="#on-linux" class="md-nav__link">
     <span class="md-ellipsis">
-      On Linux:
+      On Linux
     </span>
   </a>
   
@@ -287,7 +287,7 @@
           <li class="md-nav__item">
   <a href="#on-windows-or-macos" class="md-nav__link">
     <span class="md-ellipsis">
-      On Windows or macOS:
+      On Windows or macOS
     </span>
   </a>
   
@@ -304,30 +304,6 @@
       2. Install the Package
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="2. Install the Package">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-install-from-pypi" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option A – Install from PyPI:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-install-from-a-local-clone" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option B – Install from a Local Clone:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -346,12 +322,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-structure/" class="md-nav__link">
+      <a href="../preparing-data/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Data Structure
+    Preparing Data
     
   </span>
   
@@ -368,12 +344,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../gui/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Configuration
+    LLM Extractinator Studio
     
   </span>
   
@@ -396,6 +372,28 @@
   
   <span class="md-ellipsis">
     Parser
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manual Configuration
     
   </span>
   
@@ -439,7 +437,7 @@
   
   
   <span class="md-ellipsis">
-    Running
+    Manual Running
     
   </span>
   
@@ -532,7 +530,7 @@
           <li class="md-nav__item">
   <a href="#on-linux" class="md-nav__link">
     <span class="md-ellipsis">
-      On Linux:
+      On Linux
     </span>
   </a>
   
@@ -541,7 +539,7 @@
           <li class="md-nav__item">
   <a href="#on-windows-or-macos" class="md-nav__link">
     <span class="md-ellipsis">
-      On Windows or macOS:
+      On Windows or macOS
     </span>
   </a>
   
@@ -558,30 +556,6 @@
       2. Install the Package
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="2. Install the Package">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-install-from-pypi" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option A – Install from PyPI:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-install-from-a-local-clone" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Option B – Install from a Local Clone:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -605,22 +579,28 @@
 <p>Follow these steps to install and use the tool:</p>
 <hr />
 <h2 id="1-install-ollama">1. <strong>Install Ollama</strong></h2>
-<h3 id="on-linux">On <strong>Linux</strong>:</h3>
+<h3 id="on-linux">On <strong>Linux</strong></h3>
 <pre><code class="language-bash">curl -fsSL https://ollama.com/install.sh | sh
 </code></pre>
-<h3 id="on-windows-or-macos">On <strong>Windows</strong> or <strong>macOS</strong>:</h3>
+<h3 id="on-windows-or-macos">On <strong>Windows</strong> or <strong>macOS</strong></h3>
 <p>Download the installer from:<br />
 <a href="https://ollama.com/download">https://ollama.com/download</a></p>
 <hr />
 <h2 id="2-install-the-package">2. <strong>Install the Package</strong></h2>
-<p>You have two options:</p>
-<h3 id="option-a-install-from-pypi">🔹 Option A – Install from PyPI:</h3>
+<p>Create a fresh conda environment:</p>
+<pre><code class="language-bash">conda create -n llm_extractinator python=3.11
+conda activate llm_extractinator
+</code></pre>
+<p>Install the package via pip:</p>
 <pre><code class="language-bash">pip install llm_extractinator
 </code></pre>
-<h3 id="option-b-install-from-a-local-clone">🔹 Option B – Install from a Local Clone:</h3>
+<p>Or from source:</p>
 <pre><code class="language-bash">git clone https://github.com/DIAGNijmegen/llm_extractinator.git
 cd llm_extractinator
 pip install -e .
+</code></pre>
+<p>To be able to run the latest models available, make sure to update the <code>ollama</code> package to the latest version:</p>
+<pre><code class="language-bash">pip install --upgrade ollama langchain-ollama
 </code></pre>
 
 

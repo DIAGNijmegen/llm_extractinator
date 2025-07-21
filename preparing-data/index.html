@@ -9,20 +9,22 @@
       
       
       
+        <link rel="prev" href="../installation/">
       
-        <link rel="next" href="installation/">
+      
+        <link rel="next" href="../gui/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
-        <title>LLM Extractinator</title>
+        <title>Preparing Data - LLM Extractinator</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
       
       
 
@@ -41,7 +43,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#llm-extractinator" class="md-skip">
+        <a href="#preparing-your-data-for-extractinator" class="md-skip">
           Skip to content
         </a>
       
@@ -76,7 +78,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="LLM Extractinator" class="md-header__button md-logo" aria-label="LLM Extractinator" data-md-component="logo">
+    <a href=".." title="LLM Extractinator" class="md-header__button md-logo" aria-label="LLM Extractinator" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -96,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Preparing Data
             
           </span>
         </div>
@@ -174,7 +176,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="LLM Extractinator" class="md-nav__button md-logo" aria-label="LLM Extractinator" data-md-component="logo">
+    <a href=".." title="LLM Extractinator" class="md-nav__button md-logo" aria-label="LLM Extractinator" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -189,19 +191,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -212,7 +205,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -224,7 +216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -243,10 +235,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="preparing-data/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Preparing Data
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -257,6 +271,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#supported-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✅ Supported Formats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧾 Dataset Requirements
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-examples-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧪 Adding Examples (Optional)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧰 Output Parser
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -268,7 +338,7 @@
   
   
     <li class="md-nav__item">
-      <a href="gui/" class="md-nav__link">
+      <a href="../gui/" class="md-nav__link">
         
   
   
@@ -290,7 +360,7 @@
   
   
     <li class="md-nav__item">
-      <a href="parser/" class="md-nav__link">
+      <a href="../parser/" class="md-nav__link">
         
   
   
@@ -312,7 +382,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -334,7 +404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cli-usage/" class="md-nav__link">
+      <a href="../cli-usage/" class="md-nav__link">
         
   
   
@@ -356,7 +426,7 @@
   
   
     <li class="md-nav__item">
-      <a href="running/" class="md-nav__link">
+      <a href="../running/" class="md-nav__link">
         
   
   
@@ -378,7 +448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="citation/" class="md-nav__link">
+      <a href="../citation/" class="md-nav__link">
         
   
   
@@ -400,7 +470,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   
@@ -435,6 +505,50 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#supported-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✅ Supported Formats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧾 Dataset Requirements
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-examples-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧪 Adding Examples (Optional)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧰 Output Parser
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -449,14 +563,52 @@
 
 
 
-<h1 id="llm-extractinator">🧠 LLM Extractinator</h1>
-<p><img alt="Overview of the LLM Data Extractor" src="images/doofenshmirtz.jpg" /></p>
-<blockquote>
-<p>⚠️ <strong>Prototype Warning:</strong> This tool is in active development and may change significantly. Always verify results!</p>
-</blockquote>
-<p><strong>LLM Extractinator</strong> enables efficient extraction of structured data from unstructured text using large language models (LLMs).<br />
-It supports flexible configuration, task setup, and can be used via the <strong>LLM Extractinator Studio</strong> GUI as well as the <strong>CLI</strong> or <strong>Python interface</strong>.</p>
-<p><img alt="Workflow Diagram" src="images/overview.png" /></p>
+<h1 id="preparing-your-data-for-extractinator">📂 Preparing Your Data for Extractinator</h1>
+<p>To run extraction tasks smoothly, your data needs to follow a simple, structured format.</p>
+<hr />
+<h2 id="supported-formats">✅ Supported Formats</h2>
+<p>Your dataset must be in <strong>CSV</strong> or <strong>JSON</strong> format.</p>
+<hr />
+<h2 id="dataset-requirements">🧾 Dataset Requirements</h2>
+<p>Each record should include a <strong>single column or key</strong> containing the text you want the model to extract from.</p>
+<p><strong>Requirements</strong>:</p>
+<ul>
+<li>A column/key with <strong>raw text</strong></li>
+<li>This must contain <strong>only strings</strong></li>
+<li>You’ll reference this column name in your Task file under the <code>Input_Field</code> field</li>
+</ul>
+<p>Any other columns/keys can be included but are not processed by the model. They will be passed through as-is in the output.</p>
+<hr />
+<h2 id="adding-examples-optional">🧪 Adding Examples (Optional)</h2>
+<p>Few-shot examples help guide the model’s output.</p>
+<p>Create a separate <strong>CSV</strong> or <strong>JSON</strong> file with the following columns:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input</code></td>
+<td>The example input text</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td>The expected output for that input</td>
+</tr>
+</tbody>
+</table>
+<p>These examples will be shown to the model during extraction if the <code>num_examples</code> parameter is set to a non-zero value. Beware that adding examples increases the prompt size which can significantly impact the inference speed.</p>
+<hr />
+<h2 id="output-parser">🧰 Output Parser</h2>
+<p>You must define a <strong>Pydantic class</strong> to describe the structure of the expected output.</p>
+<ul>
+<li>This is called the <strong>OutputParser</strong></li>
+<li>You’ll import it in your Task file via the <code>Parser_Format</code> field</li>
+</ul>
+<p>For details on building one visually or by code, see <a href="../parser/">parser.md</a>.</p>
 
 
 
@@ -505,10 +657,10 @@ It supports flexible configuration, task setup, and can be used via the <strong>
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
     
   </body>
