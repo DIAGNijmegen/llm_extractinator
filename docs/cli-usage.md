@@ -89,6 +89,7 @@ extractinate --task_id 1 --model_name "deepseek-r1:8b" --reasoning_model --run_n
 
 ## 📝 Notes
 
-- Flags like `--top_k` and `--top_p` are optional but useful for controlling model creativity.
-- `--num_examples` and `--chunk_size` can help manage memory and execution time on large tasks.
-- If `--seed` is set, runs will be deterministic (assuming the model allows it).
+- `num_examples` is optional; if set to `0`, no examples will be used. If greater than `0`, a file with examples must be provided in the `Example_Path` field of the task JSON.
+- Flags like `--temperature`, `--top_k` and `--top_p` are optional but useful for controlling model creativity.
+- `--chunk_size` can help manage memory and execution time on large tasks.
+- If `--seed` is set, runs will be deterministic and reproducible.

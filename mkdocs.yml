@@ -5,9 +5,9 @@ theme:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Extractinator Studio: gui.md
+  - Preparing Data: preparing-data.md
+  - LLM Extractinator Studio: gui.md
   - Parser: parser.md
-  - Data Structure: data-structure.md
   - Manual Configuration: configuration.md
   - CLI Usage: cli-usage.md
   - Manual Running: running.md

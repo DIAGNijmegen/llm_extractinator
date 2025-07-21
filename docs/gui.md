@@ -1,141 +1,127 @@
-# 📊 Extractinator Studio GUI
 
-A point‑and‑click interface for **designing, testing and running extraction tasks** without writing a single line of code. Built with Streamlit, the Studio wraps the entire Extractinator workflow—dataset selection, parser creation, task definition and execution—into one coherent web app.
+# 📊 LLM Extractinator Studio
 
-> **URL:** [http://localhost:8501](http://localhost:8501) (opened automatically by the launcher)
+A simple, point-and-click interface to **design, test, and run extraction tasks**—no coding required. Built with Streamlit, the Studio lets you go from dataset to results in minutes.
 
 ---
 
-## 🚀 Launching the GUI
+## 🚀 How to Launch
+
+Once installed, open your terminal and run:
 
 ```bash
-# From any activated environment where llm‑extractinator is installed
 launch-extractinator
 ```
 
-The command starts a local Streamlit server and opens a browser tab. You can safely keep the terminal open; all interactions happen in the web UI.
+This starts the app locally and opens it in your browser.
 
-### Command‑line flags (optional)
-
-| Flag           | Default | Description                               |                                     |
-| -------------- | ------- | ----------------------------------------- | ----------------------------------- |
-| `--port`       | `8501`  | Change the port if 8501 is busy.          |                                     |
-| `--wide`       | off     | Force *wide* layout on ultrawide screens. |                                     |
-| `--theme dark` | `light` | auto                                      | Override Streamlit theme detection. |
+> 💡 By default, it runs on port `8501`. Use `--port` to choose a different one:
+> 
+> ```bash
+> launch-extractinator --port 8502
+> ```
 
 ---
 
-## 🗺️ UI Layout at a Glance
+## 🧭 What You Can Do
 
-```bash
-┌───────────────────────────────┐
-│ Sidebar                       │  ← navigation & global actions
-├───────────────────────────────┤
-│   Tabs                        │  ← Quick‑start | Build Task | Run
-│ ───────────────────────────── │
-│   Active page content         │
-└───────────────────────────────┘
-```
-
-### Sidebar
-
-* **Studio / Builder switch** – jump between the main Studio and the stand‑alone *Parser Builder*.
-* **Reset Session** – clears cached file paths and widget state.
-* **Working directory** – shows where the app is reading and writing files.
+The Studio is organized into three main tabs:
 
 ---
 
-## 1️⃣ Quick‑start Tab
+## 1️⃣ Quick‑start
 
-Load an **existing Task JSON** and run it immediately.
+Run an existing Task JSON with a few clicks.
 
-1. **Select Task** – dropdown of all `tasks/TaskXXX*.json` files.
-2. *Preview* – collapsible JSON view for a sanity check.
-3. **✅ Use this Task** – sets the session and highlights the ▶️ Run tab.
+- **Select Task** – Dropdown shows all saved tasks in `tasks/`
+- **Preview** – Expand to review the JSON
+- **✅ Use this Task** – Loads the task and highlights the ▶️ Run tab
 
-> **Tip:** Store sample Tasks in *version control* so colleagues can reproduce your results.
-
----
-
-## 2️⃣ Build Task Tab
-
-A three‑step wizard that guarantees a valid Task file.
-
-| Step              | Purpose                                                 | Key widgets                         |
-| ----------------- | ------------------------------------------------------- | ----------------------------------- |
-| 1 ‑ Files         | Point to **dataset**, **parser**, optional **examples** | file picker / uploader with preview |
-| 2 ‑ Description   | Human‑readable summary & chosen **text column**         | textarea, dropdown                  |
-| 3 ‑ Review & Save | Inspect assembled JSON → **💾 Save Task**               | JSON viewer, save button            |
-
-### File pickers
-
-* Works for CSV, JSON, or Python files.
-* Supports drag‑and‑drop upload **and** browsing existing project files.
-* Each picker has its own help bubble and renders a tiny preview (first 5 rows for tables, syntax‑highlight for code).
+> 📝 Tip: Save and version-control tasks to share or rerun later.
 
 ---
 
-## 3️⃣ Run Tab
+## 2️⃣ Build Task
 
-Where the magic (extraction) happens.
+Create a new task in 3 guided steps:
 
-### Task selection
+### 🪄 Step-by-step Wizard
 
-Switch between any saved Task without leaving the tab—the config widgets update instantly.
+| Step             | What it Does                                           |
+|------------------|--------------------------------------------------------|
+| **1. Files**     | Pick your **dataset**, **parser**, and optional **examples** |
+| **2. Description** | Add a title and choose which column has the input text |
+| **3. Review & Save** | Preview the full JSON and save it to `tasks/`         |
 
-### Model settings
+**✨ Features:**
 
-* **Model name** – anything supported by Ollama or your local library.
-* **Reasoning model?** – toggles the `--reasoning_model` CLI flag.
-
-### ⚙️ Advanced flags
-
-Split into *General* and *Sampling & limits* subtabs. Ticking a checkbox instantly enables the associated input (no more greyed‑out frustration!).
-
-* **General** – run name, repetitions, RNG seed, verbosity, overwrite.
-* **Sampling** – temperature, top‑k/nucleus, context window, example count.
-
-### Launch & live logs
-
-* **🚀 Run** generates the exact CLI command.
-* A Streamlit spinner wraps the process; stdout/stderr are streamed line‑by‑line into a live code block for real‑time monitoring.
-* Success or failure is reported when the subprocess exits.
+- ✅ Supports CSV and JSON datasets
+- ✅ Drag and drop or browse files from your project
+- ✅ Auto-preview for tables and code
 
 ---
 
-## 🔧 Parser Builder (embedded or stand‑alone)
+## 🔧 Parser Builder
 
-Click **🛠️ Open Parser Builder** in the sidebar—or run `build-parser` from the CLI—to open a full‑screen visual Pydantic schema designer. Build nested models, set field types, and export a ready‑to‑import `OutputParser` Python file.
+Still need to build your `OutputParser`? Click **🛠️ Open Parser Builder** in the sidebar.
 
-> Once exported, place the .py file in `tasks/parsers/` and reference it inside your Task JSON’s `Parser_Format`.
+- Design a Pydantic schema visually
+- Set types and nesting
+- Export as a ready-to-use `OutputParser` file
 
+Once saved, place it in `tasks/parsers/` and reference it in your Task JSON.
 For more details, see the [Parser documentation](parser.md).
 
 ---
 
-## 📂 Project Structure Cheatsheet
+## 3️⃣ Run
 
-```bash
-.
-├── data/            # raw datasets (.csv/.json)
-├── examples/        # few‑shot example files (optional)
+The final step—run your task and see live output.
+
+### Key Features
+
+- **Switch Tasks** easily without leaving the tab
+- **Choose Model** – Any model supported by Ollama or your local setup
+- **Enable Reasoning Mode** – Toggle special model settings if needed
+
+### Advanced Settings (Optional)
+
+Split into two subtabs:  
+- **General** – run name, repetitions, seed, verbosity
+- **Sampling & Limits** – temperature, top-k, context length, examples
+
+### Run & Monitor
+
+- Click **🚀 Run** to start
+- Logs stream live in real-time
+- Success or failure reported at the end
+
+---
+
+## 📁 Project Structure Overview
+
+```
+project-root/
+├── data/            # Datasets (.csv/.json)
+├── examples/        # Few-shot examples (optional)
 ├── tasks/
-│   ├── Task001.json # each task config lives here
+│   ├── Task001.json # Task configs
 │   └── parsers/
-│       └── product_parser.py
-
+│       └── your_parser.py  # OutputParser files
 ```
 
 ---
 
-## 💡 Tips & Tricks
+## 💡 Tips
 
-* **Dark mode** – toggle in Streamlit settings ( ☰ → Settings → Theme ).
-* **Fast reload** – GUI watches for file changes; hit *Reset Session* if widgets get out of sync.
-* **Remote servers** – run on a headless box with `launch-extractinator --server.address 0.0.0.0` and SSH tunnel port 8501.
+- **Dark Mode** – Enable via ☰ → Settings → Theme
+- **Reset Session** – Use the sidebar button to clear everything
 
 ---
 
-## 📣 Feedback & Contributions
+## 🙌 Feedback & Contributions
 
-Found a bug, have an idea, or built a killer feature? Open an issue or PR on GitHub. The GUI lives in `llm_extractinator/studio/`; contributions welcome! 🎉
+Spotted a bug or want to help improve the Studio?  
+Open an issue or PR on GitHub—code lives in `llm_extractinator/gui.py`.
+
+We welcome all contributions! 🎉
