@@ -251,7 +251,7 @@ class TaskRunner:
             self.train = self.data_loader.load_examples()
         else:
             self.train = None
-        self.test = self.data_loader.load_cases()
+        self.test = self.data_loader.load_cases(text_column=self.config.input_field)
 
     def _split_data(self) -> None:
         """
