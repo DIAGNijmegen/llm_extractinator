@@ -1,6 +1,6 @@
 [
     {
-        "text": "The new Apple iPhone 15 is available for $999.99.",
+        "case": "The new Apple iPhone 15 is available for $999.99.",
         "expected_output": {
             "products": [
                 {
@@ -11,7 +11,7 @@
         }
     },
     {
-        "text": "We have Samsung Galaxy S22 for $849.50 and the Pixel 7 at just $599.00.",
+        "case": "We have Samsung Galaxy S22 for $849.50 and the Pixel 7 at just $599.00.",
         "expected_output": {
             "products": [
                 {
@@ -26,7 +26,7 @@
         }
     },
     {
-        "text": "Buy a MacBook Air M2 for $1199 or a Dell XPS 13 starting from $999.",
+        "case": "Buy a MacBook Air M2 for $1199 or a Dell XPS 13 starting from $999.",
         "expected_output": {
             "products": [
                 {
@@ -41,7 +41,7 @@
         }
     },
     {
-        "text": "Today's deals: Amazon Echo Dot - $49.99, Google Nest Hub - $89.00.",
+        "case": "Today's deals: Amazon Echo Dot - $49.99, Google Nest Hub - $89.00.",
         "expected_output": {
             "products": [
                 {
@@ -56,7 +56,7 @@
         }
     },
     {
-        "text": "Grab the Sony WH-1000XM5 headphones for $399.99 now!",
+        "case": "Grab the Sony WH-1000XM5 headphones for $399.99 now!",
         "expected_output": {
             "products": [
                 {
