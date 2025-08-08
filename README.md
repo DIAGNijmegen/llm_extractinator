@@ -64,6 +64,8 @@ Starting with **v0.5**, Extractinator ships with a Streamlit‑based Studio for 
 
 ![Studio screenshot](docs/images/GUI.gif)
 
+🚀 To run:
+
 ```bash
 launch-extractinator  # opens http://localhost:8501 in your browser
 ```
