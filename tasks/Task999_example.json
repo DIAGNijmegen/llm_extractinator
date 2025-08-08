@@ -1,7 +1,6 @@
 {
-    "Description": "Detailed description of the task",
-    "Data_Path": "data.json (given that the data is in the /data directory)",
-    "Example_Path": "examples.json (given that the examples are in the /examples directory)",
+    "Description": "Extract the required information",
+    "Data_Path": "example_data.json",
     "Input_Field": "text",
-    "Parser_Format": "parser1.py"
+    "Parser_Format": "example_output_parser.py"
 }
