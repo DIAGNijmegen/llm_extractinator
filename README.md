@@ -58,11 +58,11 @@ pip install -e .
 
 ---
 
-## 🖥️ Interactive Studio GUI *(beta)*
+## 🖥️ Interactive Studio GUI 
 
-Starting with **v 0.4**, Extractinator ships with a Streamlit‑based Studio for designing, running and monitoring extraction tasks with zero code:
+Starting with **v0.5**, Extractinator ships with a Streamlit‑based Studio for designing, running and monitoring extraction tasks with zero code:
 
-![Studio screenshot](docs/images/studio_screenshot.png)
+![Studio screenshot](docs/images/GUI.gif)
 
 ```bash
 launch-extractinator  # opens http://localhost:8501 in your browser
