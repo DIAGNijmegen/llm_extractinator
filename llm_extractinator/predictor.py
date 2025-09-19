@@ -109,9 +109,7 @@ class Predictor:
         Make predictions on the test data.
         """
         logger.info("Starting prediction on test data with %d samples.", len(test_data))
-        model = self.model.with_structured_output(
-            self.parser_model, method="json_schema"
-        ).with_retry()
+        model = self.model.with_structured_output(self.parser_model).with_retry()
         chain = self.prompt | model
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
