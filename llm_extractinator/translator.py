@@ -1,12 +1,8 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-import ollama
 import pandas as pd
-from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
-from langchain_chroma import Chroma
-from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser
