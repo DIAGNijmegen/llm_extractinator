@@ -5,7 +5,12 @@ from typing import Any, Dict, List, Optional
 
 import ollama
 import pandas as pd
-from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
+
+try:
+    from langchain.output_parsers import PydanticOutputParser
+except Exception:
+    from langchain_core.output_parsers import PydanticOutputParser
+
 from langchain_chroma import Chroma
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
@@ -77,11 +82,6 @@ class Predictor:
                 )
                 raise e
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
-        self.fixing_parser = OutputFixingParser.from_llm(
-            parser=self.base_parser,
-            llm=self.model,
-            max_retries=3,
-        )
 
         if examples:
             logger.info("Creating few-shot prompt.")

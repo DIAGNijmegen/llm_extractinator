@@ -12,7 +12,11 @@ from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
-from langchain.globals import set_debug
+
+try:
+    from langchain.globals import set_debug
+except Exception:
+    from langchain_core.globals import set_debug
 
 from llm_extractinator.data_loader import DataLoader, TaskLoader
 from llm_extractinator.ollama_server import OllamaServerManager
