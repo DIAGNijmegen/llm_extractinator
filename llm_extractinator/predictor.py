@@ -95,14 +95,11 @@ class Predictor:
                 examples, self.embedding_model, Chroma, k=self.num_examples
             )
             self.prompt = build_few_shot_prompt(
-                description=self.description,
                 example_selector=self.example_selector,
-            )
+            ).partial(description=self.description)
         else:
             logger.info("Creating zero-shot prompt.")
-            self.prompt = build_zero_shot_prompt(
-                description=self.description,
-            )
+            self.prompt = build_zero_shot_prompt().partial(description=self.description)
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """
