@@ -61,6 +61,8 @@ pip install -e .
 
 ### A. Studio (recommended)
 
+![Overview of the Studio](docs/images/GUI.gif)
+
 Run the interactive UI:
 
 ```bash

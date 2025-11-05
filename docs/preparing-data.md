@@ -1,50 +1,51 @@
+# Preparing Data
 
-# 📂 Preparing Your Data for Extractinator
+LLM Extractinator expects that each **row (CSV)** or **item (JSON)** contains the text you want to extract from.
 
-To run extraction tasks smoothly, your data needs to follow a simple, structured format.
+The extractor needs to know **which field/column** to read — you’ll tell it that in the **task JSON** (`"Input_Field": "text"`).
 
----
+## CSV example
 
-## ✅ Supported Formats
+```text
+id,text
+1,"This is the first report..."
+2,"This is the second report..."
+```
 
-Your dataset must be in **CSV** or **JSON** format.
+- `text` is the column we will extract from
+- you can have more columns; they will be carried through if the task supports it
 
----
+## JSON example
 
-## 🧾 Dataset Requirements
+```json
+[
+  {
+    "id": 1,
+    "text": "This is the first report..."
+  },
+  {
+    "id": 2,
+    "text": "This is the second report..."
+  }
+]
+```
 
-Each record should include a **single column or key** containing the text you want the model to extract from.
+Again, `text` is the field we will extract from.
 
-**Requirements**:
+## Data path
 
-- A column/key with **raw text**
-- This must contain **only strings**
-- You’ll reference this column name in your Task file under the `Input_Field` field
-  
-Any other columns/keys can be included but are not processed by the model. They will be passed through as-is in the output.
+In your task JSON you will refer to the data:
 
----
+```json
+{
+  "Data_Path": "reports.csv",
+  "Input_Field": "text"
+}
+```
 
-## 🧪 Adding Examples (Optional)
+- `Data_Path` is relative to the data directory you pass to the CLI (`--data_dir`)
+- `Input_Field` must match the column/key name exactly
 
-Few-shot examples help guide the model’s output.
+## Parsers and data
 
-Create a separate **CSV** or **JSON** file with the following columns:
-
-| Column   | Description                         |
-|----------|-------------------------------------|
-| `input`  | The example input text              |
-| `output` | The expected output for that input  |
-
-These examples will be shown to the model during extraction if the `num_examples` parameter is set to a non-zero value. Beware that adding examples increases the prompt size which can significantly impact the inference speed.
-
----
-
-## 🧰 Output Parser
-
-You must define a **Pydantic class** to describe the structure of the expected output.
-
-- This is called the **OutputParser**
-- You’ll import it in your Task file via the `Parser_Format` field
-
-For details on building one visually or by code, see [parser.md](parser.md).
+Once your data is ready, you must **also** define a parser (the output structure). See the **Parser** page for that.
