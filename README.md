@@ -2,47 +2,52 @@
 
 ![Overview of the LLM Data Extractor](docs/images/doofenshmirtz.jpg)
 
-> ⚠️ This tool is a prototype in active development and may change significantly. Always verify results!
+> ⚠️ **Prototype**: this project is under active development. Interfaces, task formats, and directory names may change. Always inspect and validate the generated output before using it downstream.
 
-LLM Extractinator enables efficient extraction of structured data from unstructured text using large language models (LLMs). It supports configurable task definitions, CLI or Python usage, a point‑and‑click GUI Studio, and flexible data input/output formats.
+LLM Extractinator lets you turn unstructured text (reports, notes, CSV text columns) into **structured, Pydantic-validated data** using local LLMs (via **Ollama**). It comes with:
 
-📘 **Full documentation**: [https://DIAGNijmegen.github.io/llm\_extractinator/](https://DIAGNijmegen.github.io/llm_extractinator/)
+- a **Studio** (Streamlit app) for no-code configuration
+- a **CLI** (`extractinate`) for repeatable runs
+- a **parser builder** (`build-parser`) to generate Pydantic models
+- **task JSON files** to describe what to extract and from where
 
----
-
-## 🔧 Installation
-
-### 1. Install **Ollama**
-
-#### On **Linux**
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-#### On **Windows** or **macOS**
-
-Download the installer from:
-[https://ollama.com/download](https://ollama.com/download)
+📚 **Docs**: https://diagnijmegen.github.io/llm_extractinator/
 
 ---
 
-### 2. Install the Package
+## 1. Prerequisites
 
-Create a fresh conda environment:
+This project expects a local LLM endpoint, currently **Ollama**.
+
+### Install Ollama
+
+   **Linux:**
+   ```bash
+   curl -fsSL https://ollama.com/install.sh | sh
+   ```
+
+   **Windows / macOS:** download from https://ollama.com/download
+
+Make sure the Ollama service is running before you try to extract.
+
+---
+
+## 2. Installation
+
+We recommend using a fresh environment:
 
 ```bash
 conda create -n llm_extractinator python=3.11
 conda activate llm_extractinator
 ```
 
-Install the package via pip:
+Install from PyPI:
 
 ```bash
 pip install llm_extractinator
 ```
 
-Or from source:
+Or install from source:
 
 ```bash
 git clone https://github.com/DIAGNijmegen/llm_extractinator.git
@@ -50,109 +55,131 @@ cd llm_extractinator
 pip install -e .
 ```
 
-> **Tip:** to be able to run the latest models, update the Ollama client regularly:
->
-> ```bash
-> pip install --upgrade ollama langchain-ollama
-> ```
+---
+
+## 3. Quick start
+
+### A. Studio (recommended)
+
+Run the interactive UI:
+
+```bash
+launch-extractinator
+```
+
+This starts the Streamlit-based Studio (usually at http://localhost:8501) where you can:
+
+- create/select datasets
+- design a parser/output model
+- create task JSON files
+- run tasks and view logs
+
+Anything you configure here can also be run from the CLI.
 
 ---
 
-## 🖥️ Interactive Studio GUI 
+### B. CLI
 
-Starting with **v0.5**, Extractinator ships with a Streamlit‑based Studio for designing, running and monitoring extraction tasks with zero code:
-
-![Studio screenshot](docs/images/GUI.gif)
-
-🚀 To run:
+Run a task by ID:
 
 ```bash
-launch-extractinator  # opens http://localhost:8501 in your browser
+extractinate --task_id 1 --model_name "phi4"
 ```
 
-Features
+Common options:
 
-|                            |                                                                  |
-| -------------------------- | ---------------------------------------------------------------- |
-| 🗂️ Project Manager        | Create / select datasets, parsers and tasks with file previews   |
-| 🔧 Parser Builder          | Visual Pydantic schema designer (nested models supported)        |
-| 🚀 One‑click Runs          | Configure model, sampling & advanced flags, then watch live logs |
-| 🛠️ Task JSON Wizard       | Step‑by‑step helper to generate valid `TaskXXX.json` files       |
-| 🆘 Help bubbles everywhere | Inline docs so you never lose context                            |
+- `--task_dir tasks/` — where your task JSON files live
+- `--data_dir data/` — where your CSV/JSON input lives
+- `--output_dir output/` — where to write extracted results
+- `--run_name my_first_run` — for easier tracking
 
-The Studio is fully optional: anything you configure here can still be executed from the CLI or Python API.
+See `docs/cli.md` for the full reference.
 
 ---
 
-## 🚀 Quick Usage
+### C. Python
 
-### GUI
-
-```bash
-launch-extractinator  # recommended for new users
-```
-
-### CLI
-
-```bash
-extractinate --task_id 001 --model_name "phi4"
-```
-
-### Python
+You can also call it from Python:
 
 ```python
 from llm_extractinator import extractinate
 
-extractinate(task_id=1, model_name="phi4")
+extractinate(
+    task_id=1,
+    model_name="phi4",
+    output_dir="output/",
+)
 ```
 
 ---
 
-## 📁 Task Files
+## 4. Tasks
 
-Each task is defined by a JSON file stored in `tasks/`.
+Tasks describe **what** to extract and **from where**. By convention they live in `tasks/` and are named:
 
-Filename format:
-
-```bash
-TaskXXX_name.json
+```text
+Task001_products.json
+Task002_reports.json
+...
 ```
 
-Example:
+A minimal task might look like:
 
 ```json
 {
-  "Description": "Extract product data from text.",
+  "Description": "Extract product data from CSV",
   "Data_Path": "products.csv",
   "Input_Field": "text",
   "Parser_Format": "product_parser.py"
 }
 ```
 
-`Parser_Format` points to a `.py` file in `tasks/parsers/` that implements a Pydantic `OutputParser` model used to structure the LLM output.
+- `Data_Path`: relative to your data directory
+- `Input_Field`: column/key that contains the text
+- `Parser_Format`: Python file in `tasks/parsers/` that defines the Pydantic model
+
+You can author these in Studio or by hand.
 
 ---
 
-## 🛠️ Visual Schema Builder (optional)
+## 5. Parser builder
 
-If you prefer a graphical approach to designing parsers, run:
+If you don’t want to write Pydantic models by hand:
 
 ```bash
 build-parser
 ```
 
-This starts the same builder embedded in the Studio, letting you assemble nested Pydantic models visually. Save the resulting `.py` file in `tasks/parsers/` and reference it via `Parser_Format`.
+Export the generated model to:
 
-👉 Read the [parser docs](https://DIAGNijmegen.github.io/llm_extractinator/parser) for full details.
+```text
+tasks/parsers/<name>.py
+```
 
----
-
-## 📄 Citation
-
-If you use this tool, please cite: [https://doi.org/10.5281/zenodo.15089764](https://doi.org/10.5281/zenodo.15089764)
+Then reference that filename in the task JSON.
 
 ---
 
-## 🤝 Contributing
+## 6. Documentation
 
-We welcome pull requests! See the [contributing guide](https://DIAGNijmegen.github.io/llm_extractinator/contributing/) for details.
+See the `docs/` directory (or the published site) for:
+
+- data preparation
+- parser UI
+- CLI flags and examples
+- Studio walkthrough
+- manual/advanced running
+
+---
+
+## 7. Contributing
+
+Pull requests are welcome. Please keep the CLI and the docs in sync (especially task naming and required fields).
+
+---
+
+## 8. Citation
+
+If you use this tool, please cite:
+
+https://doi.org/10.1093/jamiaopen/ooaf109
