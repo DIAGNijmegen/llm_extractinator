@@ -9,14 +9,14 @@
       
       
       
-        <link rel="prev" href="../gui/">
+        <link rel="prev" href="../preparing-data/">
       
       
-        <link rel="next" href="../configuration/">
+        <link rel="next" href="../cli/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
       
       
 
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#build-parser-interactive-pydantic-model-builder" class="md-skip">
+        <a href="#parser" class="md-skip">
           Skip to content
         </a>
       
@@ -151,6 +151,18 @@
       
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/DIAGNijmegen/llm_extractinator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -184,6 +196,18 @@
     </a>
     LLM Extractinator
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DIAGNijmegen/llm_extractinator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -257,28 +281,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../gui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    LLM Extractinator Studio
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -332,120 +334,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
+  <a href="#1-visual-builder" class="md-nav__link">
     <span class="md-ellipsis">
-      🚀 Getting Started
+      1. Visual builder
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#outputparser-root-model" class="md-nav__link">
+  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
     <span class="md-ellipsis">
-      📦 OutputParser Root Model
+      2. Structure of the generated file
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interface-overview" class="md-nav__link">
+  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
     <span class="md-ellipsis">
-      🧱 Interface Overview
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🧱 Interface Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model-manager-sidebar" class="md-nav__link">
-    <span class="md-ellipsis">
-      🧭 Model Manager (Sidebar)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-is-this-useful" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why is this useful?
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Why is this useful?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#how-to-use-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to use it:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#design-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      🏗️ Design Tab
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      📝 Code Tab
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#export-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      💾 Export Tab
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      🧪 Example
+      3. Using the parser in a task
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-location" class="md-nav__link">
+  <a href="#4-good-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      📁 Output Location
+      4. Good practices
     </span>
   </a>
   
@@ -466,29 +384,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Manual Configuration
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cli-usage/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -510,56 +406,56 @@
   
   
     <li class="md-nav__item">
-      <a href="../running/" class="md-nav__link">
+      <a href="../studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LLM Extractinator Studio
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manual Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual-running/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Manual Running
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../citation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Citation
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Contributing
     
   </span>
   
@@ -596,120 +492,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
+  <a href="#1-visual-builder" class="md-nav__link">
     <span class="md-ellipsis">
-      🚀 Getting Started
+      1. Visual builder
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#outputparser-root-model" class="md-nav__link">
+  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
     <span class="md-ellipsis">
-      📦 OutputParser Root Model
+      2. Structure of the generated file
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interface-overview" class="md-nav__link">
+  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
     <span class="md-ellipsis">
-      🧱 Interface Overview
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🧱 Interface Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model-manager-sidebar" class="md-nav__link">
-    <span class="md-ellipsis">
-      🧭 Model Manager (Sidebar)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-is-this-useful" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why is this useful?
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Why is this useful?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#how-to-use-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to use it:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#design-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      🏗️ Design Tab
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      📝 Code Tab
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#export-tab" class="md-nav__link">
-    <span class="md-ellipsis">
-      💾 Export Tab
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      🧪 Example
+      3. Using the parser in a task
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-location" class="md-nav__link">
+  <a href="#4-good-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      📁 Output Location
+      4. Good practices
     </span>
   </a>
   
@@ -730,90 +542,59 @@
                   
 
 
+  
+  
 
-<h1 id="build-parser-interactive-pydantic-model-builder">🛠️ <code>build-parser</code> – Interactive Pydantic Model Builder</h1>
-<p>The <code>build-parser</code> command launches an intuitive <strong>web-based tool</strong> to visually create <a href="https://docs.pydantic.dev/latest/">Pydantic v2</a> models—without writing a single line of code. It's great for designing <strong>OutputParser formats</strong>, structured data schemas, or simply organizing typed data models.</p>
-<hr />
-<h2 id="getting-started">🚀 Getting Started</h2>
-<p>Make sure your Python package is installed in an environment where the CLI is available. Then, simply run:</p>
-<pre><code class="language-bash">build-parser
-</code></pre>
-<p>This command launches a local Streamlit app in your browser.</p>
-<hr />
-<h2 id="outputparser-root-model">📦 OutputParser Root Model</h2>
-<p>At the core of this tool is the <strong><code>OutputParser</code></strong> class. This is the primary model used by the LLM in your framework to parse outputs into structured JSON.</p>
-<p>You always start with the <code>OutputParser</code> model, and build its fields just like any Pydantic model. You can then create <strong>additional models</strong> to use as nested types or components within <code>OutputParser</code>.</p>
-<p>This approach supports building <strong>complex, hierarchical schemas</strong> using composition and reuse.</p>
-<hr />
-<h2 id="interface-overview">🧱 Interface Overview</h2>
-<h3 id="model-manager-sidebar">🧭 Model Manager (Sidebar)</h3>
-<p>The Model Manager allows you to create additional models beyond <code>OutputParser</code>.</p>
-<h3 id="why-is-this-useful">Why is this useful?</h3>
-<p>Often, structured outputs require <strong>nested objects</strong> or repeated elements. Instead of defining everything flatly in <code>OutputParser</code>, you can:</p>
-<ul>
-<li>Break down your schema into logical subcomponents</li>
-<li>Reuse those components across multiple fields</li>
-<li>Keep your data models clean, readable, and maintainable</li>
-</ul>
-<h4 id="example">Example:</h4>
-<p>You could define a <code>Product</code> model and use it as a field in <code>OutputParser</code> like:</p>
-<pre><code class="language-python">class OutputParser(BaseModel):
-    products: list[Product]
-</code></pre>
-<h4 id="how-to-use-it">How to use it:</h4>
-<ul>
-<li>Enter a model name (e.g., <code>Product</code>, <code>Metadata</code>)</li>
-<li>Click ➕ Add model</li>
-<li>Names must begin with a capital letter and be valid Python identifiers</li>
-</ul>
-<hr />
-<h3 id="design-tab">🏗️ Design Tab</h3>
-<p>Use this section to add fields to <code>OutputParser</code> and any other models you've created.</p>
-<ul>
-<li>Field name</li>
-<li>Field type (primitive, special type, or reference to another model)</li>
-<li>Mark as <code>Optional</code> if needed</li>
-<li>Provide subtypes for <code>list</code>/<code>dict</code>, or values for <code>Literal</code></li>
-</ul>
-<hr />
-<h3 id="code-tab">📝 Code Tab</h3>
-<p>This shows the full generated code using <a href="https://docs.pydantic.dev/latest/">Pydantic v2</a>:</p>
-<ul>
-<li>Starts with the <code>OutputParser</code> model</li>
-<li>Includes any additional models you’ve defined</li>
-</ul>
-<hr />
-<h3 id="export-tab">💾 Export Tab</h3>
-<p>Choose to either:</p>
-<ul>
-<li><strong>Download</strong> the generated code as a <code>.py</code> file</li>
-<li>Or <strong>save directly</strong> to <code>tasks/parsers/</code> inside your project</li>
-</ul>
-<hr />
-<h2 id="example_1">🧪 Example</h2>
-<p>Let’s say you want to extract a list of products from LLM output:</p>
+
+<h1 id="parser">Parser<a class="headerlink" href="#parser" title="Permanent link">&para;</a></h1>
+<p>The parser defines the <strong>output shape</strong>: the fields, their types, and nesting. Internally this is a <strong>Pydantic</strong> model.</p>
+<p>You can create it in two ways:</p>
 <ol>
-<li>Define a model called <code>Product</code> with fields like:</li>
-<li><code>name</code>: <code>str</code></li>
-<li><code>price</code>: <code>float</code></li>
-<li>In <code>OutputParser</code>, add:</li>
-<li><code>products</code>: <code>list[Product]</code></li>
+<li>using the <strong>visual builder</strong> (recommended): <code>build-parser</code></li>
+<li>writing the Pydantic model by hand</li>
 </ol>
-<p>Resulting code:</p>
-<pre><code class="language-python">from pydantic import BaseModel
+<h2 id="1-visual-builder">1. Visual builder<a class="headerlink" href="#1-visual-builder" title="Permanent link">&para;</a></h2>
+<p>Run:</p>
+<div class="codehilite"><pre><span></span><code>build-parser
+</code></pre></div>
 
-class Product(BaseModel):
-    name: str
-    price: float
+<p>This opens the UI where you can:</p>
+<ul>
+<li>add fields (string, int, float, list, nested model)</li>
+<li>rename the model</li>
+<li>preview the generated Python</li>
+<li>export it</li>
+</ul>
+<p>When you export, save the file to:</p>
+<div class="codehilite"><pre><span></span><code>tasks/parsers/&lt;name&gt;.py
+</code></pre></div>
 
-class OutputParser(BaseModel):
-    products: list[Product]
-</code></pre>
-<hr />
-<h2 id="output-location">📁 Output Location</h2>
-<p>If you choose <strong>"Save to <code>tasks/parsers/</code>"</strong>, your file will be saved at:</p>
-<pre><code class="language-bash">&lt;project-root&gt;/tasks/parsers/&lt;filename&gt;.py
-</code></pre>
+<h2 id="2-structure-of-the-generated-file">2. Structure of the generated file<a class="headerlink" href="#2-structure-of-the-generated-file" title="Permanent link">&para;</a></h2>
+<p>A generated parser file usually looks like:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Report</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">patient_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">findings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">measurements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+<p>You can edit this file manually if you want to add validators or docstrings.</p>
+<h2 id="3-using-the-parser-in-a-task">3. Using the parser in a task<a class="headerlink" href="#3-using-the-parser-in-a-task" title="Permanent link">&para;</a></h2>
+<p>In your task JSON:</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;Parser_Format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;report.py&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The extractor will load the Python model from <code>tasks/parsers/report.py</code> and tell the LLM to return JSON that matches it.</p>
+<h2 id="4-good-practices">4. Good practices<a class="headerlink" href="#4-good-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li>keep field names lowercase and descriptive</li>
+<li>prefer <code>Optional[...]</code> for fields that might not be present in the text</li>
+<li>start with a small model and expand it once the LLM returns consistent data</li>
+</ul>
 
 
 
@@ -833,6 +614,12 @@ class OutputParser(BaseModel):
           
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
@@ -862,10 +649,10 @@ class OutputParser(BaseModel):
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
     
   </body>
