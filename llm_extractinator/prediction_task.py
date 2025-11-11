@@ -81,7 +81,7 @@ class PredictionTask:
             seed=self.seed,
             top_k=self.top_k,
             top_p=self.top_p,
-            extract_reasoning=self.reasoning_model,
+            reasoning=self.reasoning_model,
         )
 
     def _translate_task(self) -> None:
