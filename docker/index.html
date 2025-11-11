@@ -9,10 +9,8 @@
       
       
       
-        <link rel="prev" href="../studio/">
+        <link rel="prev" href="../manual-running/">
       
-      
-        <link rel="next" href="../manual-running/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +18,7 @@
     
     
       
-        <title>Manual Configuration - LLM Extractinator</title>
+        <title>Docker - LLM Extractinator</title>
       
     
     
@@ -62,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#manual-configuration" class="md-skip">
+        <a href="#running-with-docker" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Manual Configuration
+              Docker
             
           </span>
         </div>
@@ -347,32 +345,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Manual Configuration
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../manual-configuration/" class="md-nav__link">
         
   
   
@@ -383,53 +359,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#directory-layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      Directory layout
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-json-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Task JSON fields
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#naming" class="md-nav__link">
-    <span class="md-ellipsis">
-      Naming
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -460,10 +389,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../docker/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -474,6 +425,104 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-what-is-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What is Docker?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-install-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Install Docker
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-create-local-folders" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Create local folders
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-run-the-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Run the container
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Run the container">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-windows-powershell-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Windows / PowerShell example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-linux-macos-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Linux / macOS variant
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-the-two-modes-from-the-dockerfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. The two modes (from the Dockerfile)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -505,27 +554,78 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#directory-layout" class="md-nav__link">
+  <a href="#1-what-is-docker" class="md-nav__link">
     <span class="md-ellipsis">
-      Directory layout
+      1. What is Docker?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-json-fields" class="md-nav__link">
+  <a href="#2-install-docker" class="md-nav__link">
     <span class="md-ellipsis">
-      Task JSON fields
+      2. Install Docker
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#naming" class="md-nav__link">
+  <a href="#3-create-local-folders" class="md-nav__link">
     <span class="md-ellipsis">
-      Naming
+      3. Create local folders
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-run-the-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Run the container
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Run the container">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-windows-powershell-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Windows / PowerShell example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-linux-macos-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Linux / macOS variant
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-the-two-modes-from-the-dockerfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. The two modes (from the Dockerfile)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Notes
     </span>
   </a>
   
@@ -550,44 +650,114 @@
   
 
 
-<h1 id="manual-configuration">Manual Configuration<a class="headerlink" href="#manual-configuration" title="Permanent link">&para;</a></h1>
-<p>This page is for users who want to create task files and parsers <strong>by hand</strong> without the Studio.</p>
-<h2 id="directory-layout">Directory layout<a class="headerlink" href="#directory-layout" title="Permanent link">&para;</a></h2>
-<p>A common layout is:</p>
-<div class="codehilite"><pre><span></span><code>.
-├── data/
-│   └── reports.csv
-├── tasks/
-│   ├── Task001_reports.json
-│   └── parsers/
-│       └── report.py
-└── output/
+<h1 id="running-with-docker">Running with Docker<a class="headerlink" href="#running-with-docker" title="Permanent link">&para;</a></h1>
+<p>This project ships with a GPU-ready Docker image so you can run everything in a consistent environment without installing all dependencies on your host.</p>
+<p>Below is how to:</p>
+<ol>
+<li>understand what Docker is,</li>
+<li>install Docker,</li>
+<li>create the local folders that will be mounted into the container,</li>
+<li>run the container (Windows/PowerShell and Linux/macOS),</li>
+<li>switch between the two modes the image supports (<code>app</code> and <code>shell</code>).</li>
+</ol>
+<hr />
+<h2 id="1-what-is-docker">1. What is Docker?<a class="headerlink" href="#1-what-is-docker" title="Permanent link">&para;</a></h2>
+<p>Docker lets you run apps in <em>containers</em>: lightweight, isolated environments that bundle the OS libraries and dependencies your app needs. You get the same setup everywhere (your laptop, CI, a server), so “it works on my machine” stops being a problem.</p>
+<p>In this repo, the image is built on top of an NVIDIA CUDA runtime image and already contains:</p>
+<ul>
+<li>Python 3.11</li>
+<li>your package (installed with <code>pip install -e .</code>)</li>
+<li>Ollama (started automatically in the container)</li>
+<li>an entrypoint script that can start the Streamlit app <strong>or</strong> drop you into a shell</li>
+</ul>
+<hr />
+<h2 id="2-install-docker">2. Install Docker<a class="headerlink" href="#2-install-docker" title="Permanent link">&para;</a></h2>
+<p><strong>Desktop users (Windows / macOS):</strong></p>
+<ul>
+<li>Install <strong>Docker Desktop</strong> from the official Docker site.</li>
+<li>On Windows, make sure you can run <code>docker</code> from PowerShell.</li>
+<li>If you want <strong>GPU</strong> support on Windows, you also need a recent NVIDIA driver and the Docker + WSL2 stack that supports GPU.</li>
+</ul>
+<p><strong>Linux users (Ubuntu, etc.):</strong></p>
+<ul>
+<li>Install the Docker Engine from your distro or from Docker’s official docs.</li>
+<li>For <strong>GPU</strong> support, install the <strong>NVIDIA Container Toolkit</strong> so <code>--gpus all</code> works.</li>
+</ul>
+<blockquote>
+<p>If <code>--gpus all</code> fails, check your driver/toolkit install.</p>
+</blockquote>
+<hr />
+<h2 id="3-create-local-folders">3. Create local folders<a class="headerlink" href="#3-create-local-folders" title="Permanent link">&para;</a></h2>
+<p>The container expects to <strong>mount</strong> several folders from your host into <code>/app/...</code> inside the container. Create them once:</p>
+<div class="codehilite"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>data<span class="w"> </span>examples<span class="w"> </span>tasks<span class="w"> </span>output
 </code></pre></div>
 
+<p>These will map to:</p>
 <ul>
-<li><code>data/</code> — your source CSV/JSON</li>
-<li><code>tasks/</code> — your task JSONs</li>
-<li><code>tasks/parsers/</code> — Python files with Pydantic models</li>
-<li><code>output/</code> — where extraction results go</li>
+<li><code>./data</code> → <code>/app/data</code></li>
+<li><code>./examples</code> → <code>/app/examples</code></li>
+<li><code>./tasks</code> → <code>/app/tasks</code></li>
+<li><code>./output</code> → <code>/app/output</code></li>
 </ul>
-<h2 id="task-json-fields">Task JSON fields<a class="headerlink" href="#task-json-fields" title="Permanent link">&para;</a></h2>
-<p>Minimum viable task:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Extract structured info from radiology reports&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;Data_Path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data/reports.csv&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;Input_Field&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;Parser_Format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;report.py&quot;</span>
-<span class="p">}</span>
+<p>Anything the app writes there will persist on your machine.</p>
+<hr />
+<h2 id="4-run-the-container">4. Run the container<a class="headerlink" href="#4-run-the-container" title="Permanent link">&para;</a></h2>
+<h3 id="41-windows-powershell-example">4.1 Windows / PowerShell example<a class="headerlink" href="#41-windows-powershell-example" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">docker</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="p">-</span><span class="n">-gpus</span> <span class="n">all</span> <span class="p">`</span>
+  <span class="n">-p</span> <span class="n">127</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">1</span><span class="p">:</span><span class="n">8501</span><span class="p">:</span><span class="n">8501</span> <span class="p">`</span>
+  <span class="n">-p</span> <span class="n">11434</span><span class="p">:</span><span class="n">11434</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">data</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">data</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">examples</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">examples</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">tasks</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">tasks</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">output</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">output</span> <span class="p">`</span>
+  <span class="n">lmmasters</span><span class="p">/</span><span class="n">llm_extractinator</span><span class="p">:</span><span class="n">latest</span>
 </code></pre></div>
 
-<p>The only additional field you may want is <code>Example_Path</code> if you intend to use example-based prompting.</p>
-<h2 id="naming">Naming<a class="headerlink" href="#naming" title="Permanent link">&para;</a></h2>
-<p>Use the <code>TaskXXX_name.json</code> style so the CLI can pick task IDs reliably:</p>
+<h3 id="42-linux-macos-variant">4.2 Linux / macOS variant<a class="headerlink" href="#42-linux-macos-variant" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w">   </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w">   </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w">   </span>lmmasters/llm_extractinator:latest
+</code></pre></div>
+
+<p>Open: <a href="http://127.0.0.1:8501">http://127.0.0.1:8501</a></p>
+<hr />
+<h2 id="5-the-two-modes-from-the-dockerfile">5. The two modes (from the Dockerfile)<a class="headerlink" href="#5-the-two-modes-from-the-dockerfile" title="Permanent link">&para;</a></h2>
+<p>Your Dockerfile defines an entrypoint script:</p>
 <ul>
-<li><code>Task001_reports.json</code> → <code>--task_id 1</code></li>
-<li><code>Task010_products.json</code> → <code>--task_id 10</code></li>
+<li>it <strong>always starts Ollama</strong> in the background: <code>ollama serve ...</code></li>
+<li>it then looks at the <strong>first argument</strong> to decide the mode</li>
 </ul>
-<p>Stick to <strong>integers</strong> in the CLI to avoid confusion.</p>
+<div class="codehilite"><pre><span></span><code>/entrypoint.sh<span class="w"> </span>app<span class="w">   </span><span class="c1"># default</span>
+/entrypoint.sh<span class="w"> </span>shell<span class="w"> </span><span class="c1"># drop into a shell</span>
+</code></pre></div>
+
+<p>So, by default, when you run:</p>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>...<span class="w"> </span>lmmasters/llm_extractinator:latest
+</code></pre></div>
+
+<p>it uses <code>CMD ["app"]</code> → starts the Streamlit “extractinator”.</p>
+<p>If you want to drop into the container and poke around (with the package already installed and Ollama running), just pass <code>shell</code> at the end:</p>
+<p><strong>Windows / PowerShell:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">docker</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="p">-</span><span class="n">-gpus</span> <span class="n">all</span> <span class="p">`</span>
+  <span class="n">-p</span> <span class="n">127</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">1</span><span class="p">:</span><span class="n">8501</span><span class="p">:</span><span class="n">8501</span> <span class="p">`</span>
+  <span class="n">-p</span> <span class="n">11434</span><span class="p">:</span><span class="n">11434</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">data</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">data</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">examples</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">examples</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">tasks</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">tasks</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">output</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">output</span> <span class="p">`</span>
+  <span class="n">lmmasters</span><span class="p">/</span><span class="n">llm_extractinator</span><span class="p">:</span><span class="n">latest</span> <span class="n">shell</span>
+</code></pre></div>
+
+<p><strong>Linux / macOS:</strong></p>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w">   </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w">   </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w">   </span>lmmasters/llm_extractinator:latest<span class="w"> </span>shell
+</code></pre></div>
+
+<p>That will <strong>not</strong> start the Streamlit UI; instead you’ll get a bash shell inside the container with <code>llm_extractinator</code> installed.</p>
+<hr />
+<h2 id="6-notes">6. Notes<a class="headerlink" href="#6-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The image exposes <strong>two ports</strong>: <code>8501</code> (Streamlit) and <code>11434</code> (Ollama).</li>
+<li>If you don’t have a GPU, you can try omitting <code>--gpus all</code>, but the image is CUDA-based, so GPU is the intended path.</li>
+<li>If your Docker Desktop uses different volume mappings (e.g., Windows drive letters), adjust the <code>-v</code> paths accordingly.</li>
+</ul>
 
 
 
