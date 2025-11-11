@@ -21,12 +21,12 @@ This project expects a local LLM endpoint, currently **Ollama**.
 
 ### Install Ollama
 
-   **Linux:**
-   ```bash
-   curl -fsSL https://ollama.com/install.sh | sh
-   ```
+**Linux:**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
 
-   **Windows / macOS:** download from https://ollama.com/download
+**Windows / macOS:** download from https://ollama.com/download
 
 Make sure the Ollama service is running before you try to extract.
 
@@ -59,7 +59,44 @@ pip install -e .
 
 ## 3. Quick start
 
-### A. Studio (recommended)
+### A. Run with Docker (recommended for GPU systems)
+
+You can run LLM Extractinator entirely via **Docker**, which includes Python, Ollama, and the Streamlit app in one container.
+
+Make sure [Docker](https://docs.docker.com/get-docker/) is installed.  
+For GPU acceleration, also install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
+Create local directories that will be mounted inside the container:
+
+```bash
+mkdir -p data examples tasks output
+```
+
+**Windows / PowerShell:**
+```powershell
+docker run --rm --gpus all `
+  -p 127.0.0.1:8501:8501 `
+  -p 11434:11434 `
+  -v ${PWD}/data:/app/data `
+  -v ${PWD}/examples:/app/examples `
+  -v ${PWD}/tasks:/app/tasks `
+  -v ${PWD}/output:/app/output `
+  lmmasters/llm_extractinator:latest
+```
+
+**Linux / macOS:**
+```bash
+docker run --rm --gpus all   -p 127.0.0.1:8501:8501   -p 11434:11434   -v $(pwd)/data:/app/data   -v $(pwd)/examples:/app/examples   -v $(pwd)/tasks:/app/tasks   -v $(pwd)/output:/app/output   lmmasters/llm_extractinator:latest
+```
+
+This launches the **Streamlit Studio** on [http://127.0.0.1:8501](http://127.0.0.1:8501).  
+To open an interactive shell instead of the app, append `shell` to the command.
+
+See [docs/docker.md](docs/docker.md) for full details.
+
+---
+
+### B. Studio (local install)
 
 ![Overview of the Studio](docs/images/GUI.gif)
 
@@ -80,7 +117,7 @@ Anything you configure here can also be run from the CLI.
 
 ---
 
-### B. CLI
+### C. CLI
 
 Run a task by ID:
 
@@ -99,7 +136,7 @@ See `docs/cli.md` for the full reference.
 
 ---
 
-### C. Python
+### D. Python
 
 You can also call it from Python:
 

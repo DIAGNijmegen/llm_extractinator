@@ -1,10 +1,20 @@
-FROM python:3.11-slim
+# Start from your GPU-ready base
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 
-# system deps
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.11 + pip + common tools
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    curl ca-certificates bash && \
+    apt-get install -y --no-install-recommends \
+    software-properties-common curl ca-certificates bash && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-distutils python3-pip && \
+    ln -s /usr/bin/python3.11 /usr/bin/python && \
+    python -m pip install --upgrade pip && \
     rm -rf /var/lib/apt/lists/*
+
 
 # install ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh
@@ -13,8 +23,9 @@ WORKDIR /app
 COPY . /app
 
 # install your package + python client
-RUN pip install --no-cache-dir -e . && \
-    pip install --no-cache-dir --upgrade ollama
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --ignore-installed -e . && \
+    pip install --no-cache-dir --ignore-installed --upgrade ollama
 
 # streamlit settings (used in app mode)
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0

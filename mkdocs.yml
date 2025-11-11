@@ -15,6 +15,7 @@ nav:
   - LLM Extractinator Studio: studio.md
   - Manual Configuration: manual-configuration.md
   - Manual Running: manual-running.md
+  - Docker: docker.md
 markdown_extensions:
   - admonition
   - codehilite
