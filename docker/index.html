@@ -756,7 +756,14 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 </code></pre></div>
 
 <p><strong>Linux / macOS:</strong></p>
-<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w">   </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w">   </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w">   </span>lmmasters/llm_extractinator:latest<span class="w"> </span>shell
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>lmmasters/llm_extractinator:latest<span class="w"> </span>shell
 </code></pre></div>
 
 <p>That will <strong>not</strong> start the Streamlit UI; instead you’ll get a bash shell inside the container with <code>llm_extractinator</code> installed.</p>
