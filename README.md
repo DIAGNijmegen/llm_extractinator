@@ -74,6 +74,7 @@ mkdir -p data examples tasks output
 
 **Windows / PowerShell:**
 ```powershell
+# Remove `--gpus all` if you don't have a GPU
 docker run --rm --gpus all `
   -p 127.0.0.1:8501:8501 `
   -p 11434:11434 `
