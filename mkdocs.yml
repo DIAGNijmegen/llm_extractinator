@@ -1,15 +1,23 @@
 site_name: LLM Extractinator
+repo_url: https://github.com/DIAGNijmegen/llm_extractinator
 theme:
   name: material
-
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
 nav:
   - Home: index.md
   - Installation: installation.md
   - Preparing Data: preparing-data.md
-  - LLM Extractinator Studio: gui.md
   - Parser: parser.md
-  - Manual Configuration: configuration.md
-  - CLI Usage: cli-usage.md
-  - Manual Running: running.md
-  - Citation: citation.md
-  - Contributing: contributing.md
+  - CLI Usage: cli.md
+  - LLM Extractinator Studio: studio.md
+  - Manual Configuration: manual-configuration.md
+  - Manual Running: manual-running.md
+  - Docker: docker.md
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true

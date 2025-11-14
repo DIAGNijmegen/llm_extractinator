@@ -1,34 +1,21 @@
-# 🚀 Installation Guide
+# Installation
 
-Follow these steps to install and use the tool:
+## Requirements
 
----
+- Python 3.11 (recommended)
+- A running [Ollama](https://ollama.com) instance
+- (Optional) Conda or venv for isolation
 
-## 1. **Install Ollama**
-
-### On **Linux**
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-### On **Windows** or **macOS**
-
-Download the installer from:  
-[https://ollama.com/download](https://ollama.com/download)
-
----
-
-## 2. **Install the Package**
-
-Create a fresh conda environment:
+## 1. Create environment
 
 ```bash
 conda create -n llm_extractinator python=3.11
 conda activate llm_extractinator
 ```
 
-Install the package via pip:
+(You can use `python -m venv venv` instead.)
+
+## 2. Install the package
 
 ```bash
 pip install llm_extractinator
@@ -42,8 +29,11 @@ cd llm_extractinator
 pip install -e .
 ```
 
-To be able to run the latest models available, make sure to update the `ollama` package to the latest version:
+## 3. Make sure Ollama is running
 
-```bash
-pip install --upgrade ollama langchain-ollama
-```
+Start the Ollama service first; the extractor will call it when you run a task. If Ollama is not running or the model name is wrong, extraction will fail.
+
+## Next
+
+- go to **Preparing Data** to see how your CSV/JSON should look
+- or run `launch-extractinator` to explore the Studio
