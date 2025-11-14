@@ -472,17 +472,36 @@ with tab_run:
                 stderr=subprocess.STDOUT,
                 text=True,
                 encoding="utf-8",
+                bufsize=1,  # line-buffered
             )
-            output_box = st.empty()
-            output_lines = []
+
+            # One box for the full log, one for the current progress line
+            log_box = st.empty()
+            status_box = st.empty()
 
             ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+            log_lines: list[str] = []
 
-            output_lines = []
-            for line in process.stdout:
-                clean_line = ansi_escape.sub("", line)
-                output_lines.append(clean_line)
-                output_box.code("".join(output_lines), language="bash")
+            # heuristics for "ephemeral" progress lines (Ollama)
+            progress_re = re.compile(
+                r"^(pulling|downloading|transferring)\b", re.IGNORECASE
+            )
+
+            for raw_line in process.stdout:
+                # strip ANSI and trailing newline
+                clean_line = ansi_escape.sub("", raw_line.rstrip("\n"))
+
+                if not clean_line.strip():
+                    continue
+
+                # If this looks like a progress bar line, show it only in status_box
+                if progress_re.match(clean_line):
+                    status_box.write(clean_line)
+                else:
+                    log_lines.append(clean_line)
+                    # keep the log bounded
+                    tail = log_lines[-200:]
+                    log_box.code("\n".join(tail), language="bash")
 
             return_code = process.wait()
 

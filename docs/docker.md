@@ -66,6 +66,7 @@ Anything the app writes there will persist on your machine.
 ### 4.1 Windows / PowerShell example
 
 ```powershell
+# Remove `--gpus all` if you don't have a GPU
 docker run --rm --gpus all `
   -p 127.0.0.1:8501:8501 `
   -p 11434:11434 `
@@ -79,7 +80,15 @@ docker run --rm --gpus all `
 ### 4.2 Linux / macOS variant
 
 ```bash
-docker run --rm --gpus all   -p 127.0.0.1:8501:8501   -p 11434:11434   -v $(pwd)/data:/app/data   -v $(pwd)/examples:/app/examples   -v $(pwd)/tasks:/app/tasks   -v $(pwd)/output:/app/output   lmmasters/llm_extractinator:latest
+# Remove `--gpus all` if you don't have a GPU
+docker run --rm --gpus all \
+  -p 127.0.0.1:8501:8501 \
+  -p 11434:11434 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/examples:/app/examples \
+  -v $(pwd)/tasks:/app/tasks \
+  -v $(pwd)/output:/app/output \
+  lmmasters/llm_extractinator:latest
 ```
 
 Open: <http://127.0.0.1:8501>
@@ -124,7 +133,14 @@ docker run --rm --gpus all `
 **Linux / macOS:**
 
 ```bash
-docker run --rm --gpus all   -p 127.0.0.1:8501:8501   -p 11434:11434   -v $(pwd)/data:/app/data   -v $(pwd)/examples:/app/examples   -v $(pwd)/tasks:/app/tasks   -v $(pwd)/output:/app/output   lmmasters/llm_extractinator:latest shell
+docker run --rm --gpus all \
+  -p 127.0.0.1:8501:8501 \
+  -p 11434:11434 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/examples:/app/examples \
+  -v $(pwd)/tasks:/app/tasks \
+  -v $(pwd)/output:/app/output \
+  lmmasters/llm_extractinator:latest shell
 ```
 
 That will **not** start the Streamlit UI; instead you’ll get a bash shell inside the container with `llm_extractinator` installed.
