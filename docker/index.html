@@ -703,7 +703,8 @@
 <hr />
 <h2 id="4-run-the-container">4. Run the container<a class="headerlink" href="#4-run-the-container" title="Permanent link">&para;</a></h2>
 <h3 id="41-windows-powershell-example">4.1 Windows / PowerShell example<a class="headerlink" href="#41-windows-powershell-example" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="n">docker</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="p">-</span><span class="n">-gpus</span> <span class="n">all</span> <span class="p">`</span>
+<div class="codehilite"><pre><span></span><code><span class="c"># Remove `--gpus all` if you don&#39;t have a GPU</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="p">-</span><span class="n">-gpus</span> <span class="n">all</span> <span class="p">`</span>
   <span class="n">-p</span> <span class="n">127</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">1</span><span class="p">:</span><span class="n">8501</span><span class="p">:</span><span class="n">8501</span> <span class="p">`</span>
   <span class="n">-p</span> <span class="n">11434</span><span class="p">:</span><span class="n">11434</span> <span class="p">`</span>
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">data</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">data</span> <span class="p">`</span>
@@ -714,7 +715,15 @@
 </code></pre></div>
 
 <h3 id="42-linux-macos-variant">4.2 Linux / macOS variant<a class="headerlink" href="#42-linux-macos-variant" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w">   </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w">   </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w">   </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w">   </span>lmmasters/llm_extractinator:latest
+<div class="codehilite"><pre><span></span><code><span class="c1"># Remove `--gpus all` if you don&#39;t have a GPU</span>
+docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>lmmasters/llm_extractinator:latest
 </code></pre></div>
 
 <p>Open: <a href="http://127.0.0.1:8501">http://127.0.0.1:8501</a></p>
