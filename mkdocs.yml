@@ -14,10 +14,16 @@ nav:
   - CLI Usage: cli.md
   - LLM Extractinator Studio: studio.md
   - Manual Configuration: manual-configuration.md
-  - Manual Running: manual-running.md
+  - Python: python.md
   - Docker: docker.md
+  - Settings: settings-reference.md
+  - Few-Shot Prompting: examples.md
 markdown_extensions:
   - admonition
   - codehilite
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - tables
   - toc:
       permalink: true

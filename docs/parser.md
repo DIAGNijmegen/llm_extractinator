@@ -36,13 +36,16 @@ A generated parser file usually looks like:
 from pydantic import BaseModel
 from typing import Optional, List
 
-class Report(BaseModel):
+class OutputParser(BaseModel):
     patient_id: str
     findings: Optional[str] = None
     measurements: Optional[List[float]] = None
 ```
 
 You can edit this file manually if you want to add validators or docstrings.
+
+!!! tip
+    You can also write your own Pydantic models from scratch. Just make sure they inherit from `BaseModel` and the top level class is named `OutputParser`. You can ask your favorite LLM to help you with setting it up for your specific use case!
 
 ## 3. Using the parser in a task
 
