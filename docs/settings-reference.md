@@ -72,7 +72,7 @@ Prints additional diagnostic information during execution.
 ### `--overwrite`
 **Type:** `bool`  
 **Default:** `False`  
-If enabled, existing run results in the output folder will be overwritten.
+If enabled, existing run results in the output folder will be overwritten. If disabled, the tool will skip processing if output already exists.
 
 ---
 
@@ -133,8 +133,8 @@ Controls context length policy:
 ### `--reasoning_model`
 **Type:** `bool`  
 **Default:** `False`  
-Enable this for models like DeepSeek‑R1 that output chain‑of‑thought before JSON.  
-Extractinator will search the output for valid JSON instead of expecting pure JSON.
+Enable this for models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON.  
+Enabling this flag allows the model to emit reasoning steps prior to the final answer extraction.
 
 ---
 
@@ -149,15 +149,14 @@ Requires setting `Example_Path` inside the task JSON file.
 ### `--chunk_size`
 **Type:** `int`  
 **Default:** `None`  
-Splits long inputs into chunks before processing.  
-Useful for very long medical reports or documents.
+Splits the dataset into chunks of this many documents for processing. Useful for very large datasets as the chunks are saved incrementally. If a crash occurs, only the current chunk needs to be reprocessed.
 
 ---
 
 ### `--translate`
 **Type:** `bool`  
 **Default:** `False`  
-If enabled, input is translated to English before extraction—adds an extra model step.
+If enabled, input is translated to English before extraction—adds an extra model step. **Not recommended!**
 
 ---
 
