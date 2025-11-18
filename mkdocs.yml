@@ -18,6 +18,7 @@ nav:
   - Docker: docker.md
   - Settings: settings-reference.md
   - Few-Shot Prompting: examples.md
+  - CPU only: cpu-only.md
 markdown_extensions:
   - admonition
   - codehilite
