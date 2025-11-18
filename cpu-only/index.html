@@ -9,10 +9,8 @@
       
       
       
-        <link rel="prev" href="../preparing-data/">
+        <link rel="prev" href="../examples/">
       
-      
-        <link rel="next" href="../cli/">
       
       
         
@@ -23,7 +21,7 @@
     
     
       
-        <title>Parser - LLM Extractinator</title>
+        <title>CPU only - LLM Extractinator</title>
       
     
     
@@ -64,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#parser" class="md-skip">
+        <a href="#running-on-cpu-only-hardware" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Parser
+              CPU only
             
           </span>
         </div>
@@ -298,37 +296,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Parser
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../parser/" class="md-nav__link">
         
   
   
@@ -344,70 +315,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-visual-builder" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Visual builder
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Structure of the generated file
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Using the parser in a task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-good-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Good practices
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -605,10 +512,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../cpu-only/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CPU only
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -624,6 +558,148 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-core-idea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Core idea
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-choosing-a-cpu-friendly-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Choosing a CPU-friendly model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-docker-gpu-vs-cpu-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Docker: GPU vs CPU-only
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Docker: GPU vs CPU-only">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-run-cpu-only-in-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Run CPU-only in Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-local-installation-cpu-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Local installation: CPU-only
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-tweaking-settings-for-cpu-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tweaking settings for CPU runs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Tweaking settings for CPU runs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-limit-generation-length" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Limit generation length
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-limit-context-length" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Limit context length
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-use-fewer-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Use fewer examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-quick-cpu-only-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Quick CPU-only checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -655,10 +731,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-visual-builder" class="md-nav__link">
+  <a href="#1-core-idea" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Visual builder
+        1. Core idea
       
     </span>
   </a>
@@ -666,10 +742,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
+  <a href="#2-choosing-a-cpu-friendly-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Structure of the generated file
+        2. Choosing a CPU-friendly model
       
     </span>
   </a>
@@ -677,10 +753,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
+  <a href="#3-docker-gpu-vs-cpu-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Using the parser in a task
+        3. Docker: GPU vs CPU-only
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Docker: GPU vs CPU-only">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-run-cpu-only-in-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Run CPU-only in Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-local-installation-cpu-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Local installation: CPU-only
       
     </span>
   </a>
@@ -688,10 +792,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-good-practices" class="md-nav__link">
+  <a href="#5-tweaking-settings-for-cpu-runs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Good practices
+        5. Tweaking settings for CPU runs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Tweaking settings for CPU runs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-limit-generation-length" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Limit generation length
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-limit-context-length" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Limit context length
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-use-fewer-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Use fewer examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-quick-cpu-only-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Quick CPU-only checklist
       
     </span>
   </a>
@@ -718,55 +872,124 @@
   
 
 
-<h1 id="parser">Parser<a class="headerlink" href="#parser" title="Permanent link">&para;</a></h1>
-<p>The parser defines the <strong>output shape</strong>: the fields, their types, and nesting. Internally this is a <strong>Pydantic</strong> model.</p>
-<p>You can create it in two ways:</p>
-<ol>
-<li>using the <strong>visual builder</strong> (recommended): <code>build-parser</code></li>
-<li>writing the Pydantic model by hand</li>
-</ol>
-<h2 id="1-visual-builder">1. Visual builder<a class="headerlink" href="#1-visual-builder" title="Permanent link">&para;</a></h2>
-<p>Run:</p>
-<div class="highlight"><pre><span></span><code>build-parser
-</code></pre></div>
-<p>This opens the UI where you can:</p>
+<h1 id="running-on-cpu-only-hardware">Running on CPU-only Hardware<a class="headerlink" href="#running-on-cpu-only-hardware" title="Permanent link">&para;</a></h1>
+<p>LLM Extractinator works fine on machines <strong>without a GPU</strong> – as long as you pick a small enough model and are okay with slower runtimes.</p>
+<p>This page explains:</p>
 <ul>
-<li>add fields (string, int, float, list, nested model)</li>
-<li>rename the model</li>
-<li>preview the generated Python</li>
-<li>export it</li>
+<li>What to change (Docker / local)</li>
+<li>How to run with <strong>CPU-only</strong></li>
+<li>Why you should <strong>pick a smaller model</strong>, e.g. <code>qwen3:8b</code></li>
 </ul>
-<p>When you export, save the file to:</p>
-<div class="highlight"><pre><span></span><code>tasks/parsers/&lt;name&gt;.py
-</code></pre></div>
-<h2 id="2-structure-of-the-generated-file">2. Structure of the generated file<a class="headerlink" href="#2-structure-of-the-generated-file" title="Permanent link">&para;</a></h2>
-<p>A generated parser file usually looks like:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">OutputParser</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">patient_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">findings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">measurements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-</code></pre></div>
-<p>You can edit this file manually if you want to add validators or docstrings.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>You can also write your own Pydantic models from scratch. Just make sure they inherit from <code>BaseModel</code> and the top level class is named <code>OutputParser</code>. You can ask your favorite LLM to help you with setting it up for your specific use case!</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using a GPU is <strong>strongly recommended</strong>, as it allows you to run larger models which generally perform better.</p>
 </div>
-<h2 id="3-using-the-parser-in-a-task">3. Using the parser in a task<a class="headerlink" href="#3-using-the-parser-in-a-task" title="Permanent link">&para;</a></h2>
-<p>In your task JSON:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Parser_Format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;report.py&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>The extractor will load the Python model from <code>tasks/parsers/report.py</code> and tell the LLM to return JSON that matches it.</p>
-<h2 id="4-good-practices">4. Good practices<a class="headerlink" href="#4-good-practices" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="1-core-idea">1. Core idea<a class="headerlink" href="#1-core-idea" title="Permanent link">&para;</a></h2>
+<p>LLM Extractinator itself doesn’t “talk” to your GPU. It just talks to <strong>Ollama</strong>.</p>
+<p>Whether inference runs on <strong>GPU or CPU</strong> is controlled by:</p>
 <ul>
-<li>keep field names lowercase and descriptive</li>
-<li>prefer <code>Optional[...]</code> for fields that might not be present in the text</li>
-<li>start with a small model and expand it once the LLM returns consistent data</li>
+<li>How Ollama is installed/configured</li>
+<li>Whether your Docker container is started with GPU access</li>
 </ul>
+<p>So to go CPU-only you mainly need to:</p>
+<ol>
+<li>Start Ollama without GPU access, and</li>
+<li>Use a <strong>small model</strong> such as <code>qwen3:8b</code>.</li>
+</ol>
+<p>Everything else (tasks, parsers, CLI flags) stays the same.</p>
+<hr />
+<h2 id="2-choosing-a-cpu-friendly-model">2. Choosing a CPU-friendly model<a class="headerlink" href="#2-choosing-a-cpu-friendly-model" title="Permanent link">&para;</a></h2>
+<p>For larger models, Ollama will throw an error if no compatible GPU is found. These errors can be seen by running the model using the <code>verbose</code> flag.</p>
+<p>Therefore for CPU-only hardware:</p>
+<ul>
+<li>Prefer models smaller than <strong>10B parameters</strong></li>
+<li>Use the default <strong>quantized</strong> variants from Ollama</li>
+<li>Good starting point:</li>
+<li><code>qwen3:8b</code></li>
+</ul>
+<p>Example CLI call:</p>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;qwen3:8b&quot;</span><span class="w"> </span>--reasoning_model
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We use the <code>--reasoning_model</code> flag here because <code>qwen3</code> is a reasoning-capable model. If you use a different model that does not emit intermediate reasoning, you can omit this flag.</p>
+</div>
+<p>If this still throws an error or inference is too slow, you can choose an even smaller model such as <code>qwen3:4b</code>, <code>qwen3:1.7b</code>, or even <code>qwen3:0.6b</code>. Alternatively, you can further tune <code>--num_predict</code>, <code>--max_context_len</code>, and <code>--num_examples</code> (see below).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Very small models may struggle to follow complex instructions or produce high-quality outputs. Always spot-check the results to ensure they meet your requirements.</p>
+</div>
+<hr />
+<h2 id="3-docker-gpu-vs-cpu-only">3. Docker: GPU vs CPU-only<a class="headerlink" href="#3-docker-gpu-vs-cpu-only" title="Permanent link">&para;</a></h2>
+<p>When running LLM Extractinator via Docker, GPU access is controlled by the <code>--gpus</code> flag in the <code>docker run</code> command.</p>
+<h3 id="31-run-cpu-only-in-docker">3.1 Run <strong>CPU-only</strong> in Docker<a class="headerlink" href="#31-run-cpu-only-in-docker" title="Permanent link">&para;</a></h3>
+<p>To run on CPU only, simply <strong>omit</strong> the GPU flag:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+-p<span class="w"> </span><span class="m">127</span>.0.0.1:8501:8501<span class="w"> </span><span class="se">\</span>
+-p<span class="w"> </span><span class="m">11434</span>:11434<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/app/data<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w"> </span><span class="se">\</span>
+lmmasters/llm_extractinator:latest
+</code></pre></div>
+<p>Inside the container:</p>
+<ul>
+<li>Ollama will run in CPU mode.</li>
+<li>The Studio (<code>launch-extractinator</code>) and CLI (<code>extractinate</code>) work exactly the same.</li>
+<li>The main difference is <strong>speed</strong>, so use a smaller model such as <code>qwen3:8b</code>.</li>
+</ul>
+<hr />
+<h2 id="4-local-installation-cpu-only">4. Local installation: CPU-only<a class="headerlink" href="#4-local-installation-cpu-only" title="Permanent link">&para;</a></h2>
+<p>If you run everything directly on your machine instead of Docker:</p>
+<ol>
+<li>Install <strong>Ollama</strong>.</li>
+<li>Make sure the Ollama service is running.</li>
+<li>Pull a small model:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>ollama<span class="w"> </span>pull<span class="w"> </span>qwen3:8b
+</code></pre></div>
+<ol>
+<li>Run Extractinator with that model:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;qwen3:8b&quot;</span><span class="w"> </span>--reasoning_model
+</code></pre></div>
+<p>On a machine without a compatible GPU, Ollama will automatically fall back to CPU-only.</p>
+<p>If you <em>do</em> have a GPU but want to force CPU, check Ollama’s configuration (e.g. setting GPU usage to 0) so it does not try to use the GPU.</p>
+<hr />
+<h2 id="5-tweaking-settings-for-cpu-runs">5. Tweaking settings for CPU runs<a class="headerlink" href="#5-tweaking-settings-for-cpu-runs" title="Permanent link">&para;</a></h2>
+<p>On CPU you pay more dearly for every token, so it’s worth dialling a few knobs back.</p>
+<h3 id="51-limit-generation-length">5.1 Limit generation length<a class="headerlink" href="#51-limit-generation-length" title="Permanent link">&para;</a></h3>
+<p>Use a smaller <code>--num_predict</code>:</p>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w">   </span>--model_name<span class="w"> </span><span class="s2">&quot;qwen3:8b&quot;</span><span class="w">   </span>--num_predict<span class="w"> </span><span class="m">256</span><span class="w"> </span>--reasoning_model
+</code></pre></div>
+<p>This caps how long the model’s response can be.</p>
+<h3 id="52-limit-context-length">5.2 Limit context length<a class="headerlink" href="#52-limit-context-length" title="Permanent link">&para;</a></h3>
+<p>If your inputs are very long, you can reduce the effective context via <code>--max_context_len</code>:</p>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w">   </span>--model_name<span class="w"> </span><span class="s2">&quot;qwen3:8b&quot;</span><span class="w">   </span>--max_context_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span>--reasoning_model
+</code></pre></div>
+<p>This can significantly reduce compute on very long texts.</p>
+<h3 id="53-use-fewer-examples">5.3 Use fewer examples<a class="headerlink" href="#53-use-fewer-examples" title="Permanent link">&para;</a></h3>
+<p>Each example you add with <code>--num_examples</code> increases prompt size and compute.</p>
+<p>For CPU-only runs:</p>
+<ul>
+<li>Prefer <code>--num_examples 0</code></li>
+</ul>
+<hr />
+<h2 id="6-quick-cpu-only-checklist">6. Quick CPU-only checklist<a class="headerlink" href="#6-quick-cpu-only-checklist" title="Permanent link">&para;</a></h2>
+<p>If you only have a CPU and want a sane setup:</p>
+<ol>
+<li><strong>Pick a small model</strong>, e.g. <code>qwen3:8b</code>.</li>
+<li>If using Docker, <strong>remove <code>--gpus all</code></strong> from the run command.</li>
+<li>If running locally, make sure Ollama is installed and running; pull the CPU-friendly model.</li>
+<li>Start with:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;qwen3:8b&quot;</span><span class="w"> </span>--num_predict<span class="w"> </span><span class="m">256</span><span class="w"> </span>--max_context_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span>--num_examples<span class="w"> </span><span class="m">0</span><span class="w"> </span>--reasoning_model
+</code></pre></div>
+<ol>
+<li>If that’s fast enough, you can gradually increase <code>--num_predict</code> or context length as needed.</li>
+</ol>
 
 
 

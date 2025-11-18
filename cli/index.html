@@ -15,8 +15,11 @@
         <link rel="next" href="../studio/">
       
       
+        
+      
+      
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
       
@@ -24,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
       
       
 
@@ -47,7 +50,6 @@
     
       
 
-    
     
     
   </head>
@@ -223,9 +225,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -245,9 +252,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Installation
+  
+
     
   </span>
+  
   
 
       </a>
@@ -267,9 +279,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Preparing Data
+  
+
     
   </span>
+  
   
 
       </a>
@@ -289,9 +306,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Parser
+  
+
     
   </span>
+  
   
 
       </a>
@@ -320,9 +342,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     CLI Usage
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -333,9 +360,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     CLI Usage
+  
+
     
   </span>
+  
   
 
       </a>
@@ -356,9 +388,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#required-common-options" class="md-nav__link">
+  <a href="#required-options" class="md-nav__link">
     <span class="md-ellipsis">
-      Required / common options
+      
+        Required options
+      
     </span>
   </a>
   
@@ -367,7 +401,9 @@
         <li class="md-nav__item">
   <a href="#reasoning-models" class="md-nav__link">
     <span class="md-ellipsis">
-      Reasoning models
+      
+        Reasoning models
+      
     </span>
   </a>
   
@@ -376,7 +412,9 @@
         <li class="md-nav__item">
   <a href="#output" class="md-nav__link">
     <span class="md-ellipsis">
-      Output
+      
+        Output
+      
     </span>
   </a>
   
@@ -402,9 +440,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     LLM Extractinator Studio
+  
+
     
   </span>
+  
   
 
       </a>
@@ -424,9 +467,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Manual Configuration
+  
+
     
   </span>
+  
   
 
       </a>
@@ -441,14 +489,19 @@
   
   
     <li class="md-nav__item">
-      <a href="../manual-running/" class="md-nav__link">
+      <a href="../python/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Manual Running
+    
+  
+    Python
+  
+
     
   </span>
+  
   
 
       </a>
@@ -468,9 +521,95 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Docker
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Few-Shot Prompting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpu-only/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CPU only
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -505,9 +644,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#required-common-options" class="md-nav__link">
+  <a href="#required-options" class="md-nav__link">
     <span class="md-ellipsis">
-      Required / common options
+      
+        Required options
+      
     </span>
   </a>
   
@@ -516,7 +657,9 @@
         <li class="md-nav__item">
   <a href="#reasoning-models" class="md-nav__link">
     <span class="md-ellipsis">
-      Reasoning models
+      
+        Reasoning models
+      
     </span>
   </a>
   
@@ -525,7 +668,9 @@
         <li class="md-nav__item">
   <a href="#output" class="md-nav__link">
     <span class="md-ellipsis">
-      Output
+      
+        Output
+      
     </span>
   </a>
   
@@ -541,6 +686,7 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
@@ -553,51 +699,18 @@
 <h1 id="cli-usage">CLI Usage<a class="headerlink" href="#cli-usage" title="Permanent link">&para;</a></h1>
 <p>The CLI is called <code>extractinate</code>.</p>
 <p>Basic run:</p>
-<div class="codehilite"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;phi4&quot;</span>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;phi4&quot;</span>
 </code></pre></div>
-
-<h2 id="required-common-options">Required / common options<a class="headerlink" href="#required-common-options" title="Permanent link">&para;</a></h2>
+<h2 id="required-options">Required options<a class="headerlink" href="#required-options" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p><code>--task_id &lt;int&gt;</code><br />
-  ID part of the task file. For <code>Task001_products.json</code>, the ID is <code>1</code>.</p>
-</li>
-<li>
-<p><code>--task_dir &lt;path&gt;</code><br />
-  Directory that contains your task JSON files. Defaults to <code>tasks/</code>.</p>
-</li>
-<li>
-<p><code>--data_dir &lt;path&gt;</code><br />
-  Directory that contains your input CSV/JSON. Defaults to <code>data/</code>.</p>
-</li>
-<li>
-<p><code>--output_dir &lt;path&gt;</code><br />
-  Where to write the extracted results. Defaults to <code>output/</code>.</p>
-</li>
-<li>
-<p><code>--model_name &lt;name&gt;</code><br />
-  Name of the Ollama model to use, e.g. <code>"phi4"</code>, <code>"llama3"</code>, …</p>
-</li>
-<li>
-<p><code>--run_name &lt;string&gt;</code><br />
-  Optional label for this run, useful in logs.</p>
-</li>
+<li><code>--task_id &lt;int&gt;</code><br />
+  ID part of the task file. For <code>Task001_products.json</code>, the ID is <code>1</code>.</li>
 </ul>
-<p>Example with all dirs:</p>
-<div class="codehilite"><pre><span></span><code>extractinate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--task_dir<span class="w"> </span>tasks/<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--data_dir<span class="w"> </span>data/<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output_dir<span class="w"> </span>output/<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--model_name<span class="w"> </span><span class="s2">&quot;phi4&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--run_name<span class="w"> </span><span class="s2">&quot;baseline&quot;</span>
-</code></pre></div>
-
+<p>For a complete list of options, check out <a href="../settings-reference/">Settings Reference</a>.</p>
 <h2 id="reasoning-models">Reasoning models<a class="headerlink" href="#reasoning-models" title="Permanent link">&para;</a></h2>
-<p>If you use a model that emits intermediate reasoning (e.g. DeepSeek R1), you can tell the tool to try to extract the final JSON:</p>
-<div class="codehilite"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;deepseek-r1&quot;</span><span class="w"> </span>--reasoning_model
+<p>If you use a model that emits intermediate reasoning (e.g. DeepSeek R1, Qwen3, etc.), you can tell the tool to try to extract the final JSON:</p>
+<div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;deepseek-r1&quot;</span><span class="w"> </span>--reasoning_model
 </code></pre></div>
-
 <h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
 <p>Typical outputs:</p>
 <ul>
@@ -660,10 +773,11 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
     
   </body>
