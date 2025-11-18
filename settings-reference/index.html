@@ -1604,7 +1604,7 @@ Prints additional diagnostic information during execution.</p>
 <h3 id="-overwrite"><code>--overwrite</code><a class="headerlink" href="#-overwrite" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>bool</code><br />
 <strong>Default:</strong> <code>False</code><br />
-If enabled, existing run results in the output folder will be overwritten.</p>
+If enabled, existing run results in the output folder will be overwritten. If disabled, the tool will skip processing if output already exists.</p>
 <hr />
 <h3 id="-seed"><code>--seed</code><a class="headerlink" href="#-seed" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
@@ -1649,8 +1649,8 @@ Controls context length policy:
 <h3 id="-reasoning_model"><code>--reasoning_model</code><a class="headerlink" href="#-reasoning_model" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>bool</code><br />
 <strong>Default:</strong> <code>False</code><br />
-Enable this for models like DeepSeek‑R1 that output chain‑of‑thought before JSON.<br />
-Extractinator will search the output for valid JSON instead of expecting pure JSON.</p>
+Enable this for models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON.<br />
+Enabling this flag allows the model to emit reasoning steps prior to the final answer extraction.</p>
 <hr />
 <h3 id="-num_examples"><code>--num_examples</code><a class="headerlink" href="#-num_examples" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
@@ -1661,13 +1661,12 @@ Requires setting <code>Example_Path</code> inside the task JSON file.</p>
 <h3 id="-chunk_size"><code>--chunk_size</code><a class="headerlink" href="#-chunk_size" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
 <strong>Default:</strong> <code>None</code><br />
-Splits long inputs into chunks before processing.<br />
-Useful for very long medical reports or documents.</p>
+Splits the dataset into chunks of this many documents for processing. Useful for very large datasets as the chunks are saved incrementally. If a crash occurs, only the current chunk needs to be reprocessed.</p>
 <hr />
 <h3 id="-translate"><code>--translate</code><a class="headerlink" href="#-translate" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>bool</code><br />
 <strong>Default:</strong> <code>False</code><br />
-If enabled, input is translated to English before extraction—adds an extra model step.</p>
+If enabled, input is translated to English before extraction—adds an extra model step. <strong>Not recommended!</strong></p>
 <hr />
 <h3 id="-output_dir"><code>--output_dir</code><a class="headerlink" href="#-output_dir" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>Path</code><br />
