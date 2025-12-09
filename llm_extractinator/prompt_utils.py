@@ -3,7 +3,6 @@ from pathlib import Path
 from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
-    PromptTemplate,
 )
 
 
@@ -38,17 +37,11 @@ def build_few_shot_prompt(example_selector) -> ChatPromptTemplate:
         input_variables=["input"],
     )
 
-    # final human turn
-    human_prompt = PromptTemplate(
-        template=load_template("data_extraction/human_prompt"),
-        input_variables=["input"],
-    )
-
     return ChatPromptTemplate.from_messages(
         [
             ("system", system_text),
             few_shot,
-            ("human", human_prompt),
+            ("human", "{input}"),
         ]
     )
 

@@ -18,6 +18,7 @@ class PredictionTask:
     REQUIRED_PARAMS = {
         "task_id",
         "model_name",
+        "embedding_model",
         "output_dir",
         "task_dir",
         "num_examples",
@@ -104,9 +105,19 @@ class PredictionTask:
         if self.translate:
             self._translate_task()
 
+        # Validate and prepare examples
+        examples = None
+        if self.train is not None:
+            if isinstance(self.train, list) and len(self.train) > 0:
+                examples = self.train
+            elif hasattr(self.train, '__len__') and len(self.train) > 0:
+                examples = self.train
+            else:
+                logger.warning("Training data is empty. Using zero-shot prompting.")
+
         self.predictor.prepare_prompt_ollama(
-            embedding_model="nomic-embed-text",
-            examples=self.train,
+            embedding_model=self.embedding_model,
+            examples=examples,
         )
 
         outpath_list = []
