@@ -526,6 +526,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3. Create local folders">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#persisting-ollama-models-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persisting Ollama models (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -735,6 +752,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3. Create local folders">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#persisting-ollama-models-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persisting Ollama models (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -857,7 +891,7 @@
 <hr />
 <h2 id="3-create-local-folders">3. Create local folders<a class="headerlink" href="#3-create-local-folders" title="Permanent link">&para;</a></h2>
 <p>The container expects to <strong>mount</strong> several folders from your host into <code>/app/...</code> inside the container. Create them once:</p>
-<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>data<span class="w"> </span>examples<span class="w"> </span>tasks<span class="w"> </span>output
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>data<span class="w"> </span>examples<span class="w"> </span>tasks<span class="w"> </span>output<span class="w"> </span>ollama_models
 </code></pre></div>
 <p>These will map to:</p>
 <ul>
@@ -865,8 +899,15 @@
 <li><code>./examples</code> → <code>/app/examples</code></li>
 <li><code>./tasks</code> → <code>/app/tasks</code></li>
 <li><code>./output</code> → <code>/app/output</code></li>
+<li><code>./ollama_models</code> → <code>/root/.ollama</code> (optional, but recommended)</li>
 </ul>
 <p>Anything the app writes there will persist on your machine.</p>
+<h3 id="persisting-ollama-models-recommended">Persisting Ollama models (recommended)<a class="headerlink" href="#persisting-ollama-models-recommended" title="Permanent link">&para;</a></h3>
+<p>By default, Ollama models are stored inside the container at <code>/root/.ollama</code>. This means <strong>every time you start a new container, you'll need to pull the models again</strong>.</p>
+<p>To avoid this, mount a local directory to persist the Ollama models between container runs:</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>ollama_models
+</code></pre></div>
+<p>Then add <code>-v ${PWD}/ollama_models:/root/.ollama</code> (Windows/PowerShell) or <code>-v $(pwd)/ollama_models:/root/.ollama</code> (Linux/macOS) to your <code>docker run</code> command (see examples in section 4).</p>
 <hr />
 <h2 id="4-run-the-container">4. Run the container<a class="headerlink" href="#4-run-the-container" title="Permanent link">&para;</a></h2>
 <h3 id="41-windows-powershell-example">4.1 Windows / PowerShell example<a class="headerlink" href="#41-windows-powershell-example" title="Permanent link">&para;</a></h3>
@@ -878,6 +919,7 @@
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">examples</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">examples</span> <span class="p">`</span>
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">tasks</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">tasks</span> <span class="p">`</span>
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">output</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">output</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">ollama_models</span><span class="p">:/</span><span class="n">root</span><span class="p">/.</span><span class="n">ollama</span> <span class="p">`</span>
   <span class="n">lmmasters</span><span class="p">/</span><span class="n">llm_extractinator</span><span class="p">:</span><span class="n">latest</span>
 </code></pre></div>
 <h3 id="42-linux-macos-variant">4.2 Linux / macOS variant<a class="headerlink" href="#42-linux-macos-variant" title="Permanent link">&para;</a></h3>
@@ -889,6 +931,7 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/ollama_models:/root/.ollama<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>lmmasters/llm_extractinator:latest
 </code></pre></div>
 <p>Open: <a href="http://127.0.0.1:8501">http://127.0.0.1:8501</a></p>
@@ -915,6 +958,7 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">examples</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">examples</span> <span class="p">`</span>
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">tasks</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">tasks</span> <span class="p">`</span>
   <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">output</span><span class="p">:/</span><span class="n">app</span><span class="p">/</span><span class="n">output</span> <span class="p">`</span>
+  <span class="n">-v</span> <span class="p">${</span><span class="n">PWD</span><span class="p">}/</span><span class="n">ollama_models</span><span class="p">:/</span><span class="n">root</span><span class="p">/.</span><span class="n">ollama</span> <span class="p">`</span>
   <span class="n">lmmasters</span><span class="p">/</span><span class="n">llm_extractinator</span><span class="p">:</span><span class="n">latest</span> <span class="n">shell</span>
 </code></pre></div>
 <p><strong>Linux / macOS:</strong></p>
@@ -925,6 +969,7 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/examples:/app/examples<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/tasks:/app/tasks<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/output:/app/output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/ollama_models:/root/.ollama<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>lmmasters/llm_extractinator:latest<span class="w"> </span>shell
 </code></pre></div>
 <p>That will <strong>not</strong> start the Streamlit UI; instead you’ll get a bash shell inside the container with <code>llm_extractinator</code> installed.</p>

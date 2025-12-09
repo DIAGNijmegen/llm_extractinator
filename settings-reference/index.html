@@ -623,6 +623,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-embedding_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --embedding_model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-temperature" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1120,6 +1131,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-embedding_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --embedding_model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-temperature" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1502,6 +1524,11 @@
 <td>Model used via Ollama.</td>
 </tr>
 <tr>
+<td><code>--embedding_model</code></td>
+<td><code>"nomic-embed-text"</code></td>
+<td>Embedding model for few‑shot selection.</td>
+</tr>
+<tr>
 <td><code>--temperature</code></td>
 <td><code>0.0</code></td>
 <td>Sampling randomness.</td>
@@ -1612,12 +1639,17 @@ If enabled, existing run results in the output folder will be overwritten. If di
 Random seed for reproducible behavior where possible.</p>
 <hr />
 <h3 id="-model_name"><code>--model_name</code><a class="headerlink" href="#-model_name" title="Permanent link">&para;</a></h3>
-<p><strong>Type:</strong> <code>str</code><br />
-<strong>Default:</strong> <code>"phi4"</code><br />
+<p><strong>Type:</strong> <code>str</code>
+<strong>Default:</strong> <code>"phi4"</code>
 Name of the Ollama model to use (e.g., <code>"phi4"</code>, <code>"llama3.3"</code>, <code>"deepseek-r1:8b"</code>). See <a href="https://ollama.com/models">Ollama models</a> for available options.</p>
 <hr />
+<h3 id="-embedding_model"><code>--embedding_model</code><a class="headerlink" href="#-embedding_model" title="Permanent link">&para;</a></h3>
+<p><strong>Type:</strong> <code>str</code>
+<strong>Default:</strong> <code>"nomic-embed-text"</code>
+Name of the embedding model to use for few-shot example selection via semantic similarity. Only used when <code>--num_examples &gt; 0</code>. See <a href="https://ollama.com/models">Ollama models</a> for available embedding models (e.g., <code>"mxbai-embed-large"</code>, <code>"nomic-embed-text"</code>).</p>
+<hr />
 <h3 id="-temperature"><code>--temperature</code><a class="headerlink" href="#-temperature" title="Permanent link">&para;</a></h3>
-<p><strong>Type:</strong> <code>float</code><br />
+<p><strong>Type:</strong> <code>float</code>
 <strong>Default:</strong> <code>0.0</code><br />
 Controls randomness in generation:
 - <code>0.0</code> = deterministic<br />
