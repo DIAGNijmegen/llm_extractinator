@@ -69,7 +69,7 @@ For GPU acceleration, also install the [NVIDIA Container Toolkit](https://docs.n
 Create local directories that will be mounted inside the container:
 
 ```bash
-mkdir -p data examples tasks output
+mkdir -p data examples tasks output ollama_models
 ```
 
 **Windows / PowerShell:**
@@ -82,6 +82,7 @@ docker run --rm --gpus all `
   -v ${PWD}/examples:/app/examples `
   -v ${PWD}/tasks:/app/tasks `
   -v ${PWD}/output:/app/output `
+  -v ${PWD}/ollama_models:/root/.ollama `
   lmmasters/llm_extractinator:latest
 ```
 
@@ -94,8 +95,11 @@ docker run --rm --gpus all \
   -v $(pwd)/examples:/app/examples \
   -v $(pwd)/tasks:/app/tasks \
   -v $(pwd)/output:/app/output \
+  -v $(pwd)/ollama_models:/root/.ollama \
   lmmasters/llm_extractinator:latest
 ```
+
+> **Note:** The `-v ${PWD}/ollama_models:/root/.ollama` mount persists Ollama models between container runs, so you don't need to re-pull models each time. You can omit this mount if you don't mind re-downloading models.
 
 This launches the **Streamlit Studio** on [http://127.0.0.1:8501](http://127.0.0.1:8501).  
 To open an interactive shell instead of the app, append `shell` to the command.

@@ -47,7 +47,7 @@ In this repo, the image is built on top of an NVIDIA CUDA runtime image and alre
 The container expects to **mount** several folders from your host into `/app/...` inside the container. Create them once:
 
 ```bash
-mkdir -p data examples tasks output
+mkdir -p data examples tasks output ollama_models
 ```
 
 These will map to:
@@ -56,8 +56,21 @@ These will map to:
 - `./examples` → `/app/examples`
 - `./tasks` → `/app/tasks`
 - `./output` → `/app/output`
+- `./ollama_models` → `/root/.ollama` (optional, but recommended)
 
 Anything the app writes there will persist on your machine.
+
+### Persisting Ollama models (recommended)
+
+By default, Ollama models are stored inside the container at `/root/.ollama`. This means **every time you start a new container, you'll need to pull the models again**.
+
+To avoid this, mount a local directory to persist the Ollama models between container runs:
+
+```bash
+mkdir -p ollama_models
+```
+
+Then add `-v ${PWD}/ollama_models:/root/.ollama` (Windows/PowerShell) or `-v $(pwd)/ollama_models:/root/.ollama` (Linux/macOS) to your `docker run` command (see examples in section 4).
 
 ---
 
@@ -74,6 +87,7 @@ docker run --rm --gpus all `
   -v ${PWD}/examples:/app/examples `
   -v ${PWD}/tasks:/app/tasks `
   -v ${PWD}/output:/app/output `
+  -v ${PWD}/ollama_models:/root/.ollama `
   lmmasters/llm_extractinator:latest
 ```
 
@@ -88,6 +102,7 @@ docker run --rm --gpus all \
   -v $(pwd)/examples:/app/examples \
   -v $(pwd)/tasks:/app/tasks \
   -v $(pwd)/output:/app/output \
+  -v $(pwd)/ollama_models:/root/.ollama \
   lmmasters/llm_extractinator:latest
 ```
 
@@ -127,6 +142,7 @@ docker run --rm --gpus all `
   -v ${PWD}/examples:/app/examples `
   -v ${PWD}/tasks:/app/tasks `
   -v ${PWD}/output:/app/output `
+  -v ${PWD}/ollama_models:/root/.ollama `
   lmmasters/llm_extractinator:latest shell
 ```
 
@@ -140,6 +156,7 @@ docker run --rm --gpus all \
   -v $(pwd)/examples:/app/examples \
   -v $(pwd)/tasks:/app/tasks \
   -v $(pwd)/output:/app/output \
+  -v $(pwd)/ollama_models:/root/.ollama \
   lmmasters/llm_extractinator:latest shell
 ```
 

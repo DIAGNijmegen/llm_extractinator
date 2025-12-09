@@ -67,20 +67,37 @@ class Predictor:
                 self.parser_model = load_parser(
                     task_type="Extraction", parser_format=self.parser_format
                 )
+            except KeyError as e:
+                logger.error(
+                    f"Missing required key in parser format dictionary: {e}"
+                )
+                raise ValueError(f"Invalid parser format dictionary: {e}") from e
             except Exception as e:
                 logger.error(
-                    "Failed to load parser model. Ensure the parser format is correct."
+                    f"Failed to load parser model from dictionary format: {type(e).__name__}: {e}"
                 )
-                raise e
+                raise
         else:
+            parser_path = self.task_dir / "parsers" / self.parser_format
             try:
-                parser_path = self.task_dir / "parsers" / self.parser_format
+                if not parser_path.exists():
+                    raise FileNotFoundError(f"Parser file not found: {parser_path}")
                 self.parser_model = load_parser_pydantic(parser_path=parser_path)
+            except FileNotFoundError as e:
+                logger.error(str(e))
+                raise
+            except (ImportError, AttributeError, SyntaxError) as e:
+                logger.error(
+                    f"Failed to import parser from {parser_path}: {type(e).__name__}: {e}"
+                )
+                raise ValueError(
+                    f"Parser file '{self.parser_format}' has invalid Python code or structure"
+                ) from e
             except Exception as e:
                 logger.error(
-                    "Failed to load parser model. Ensure the parser format is correct."
+                    f"Failed to load parser model from {parser_path}: {type(e).__name__}: {e}"
                 )
-                raise e
+                raise
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
 
         if examples:

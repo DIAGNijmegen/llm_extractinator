@@ -60,6 +60,7 @@ class TaskConfig:
 
     # Model Configuration
     model_name: str = "phi4"
+    embedding_model: str = "nomic-embed-text"
     temperature: float = 0.0
     max_context_len: Union[int, str] = "max"
     quantile: float = 0.8
@@ -371,6 +372,12 @@ def parse_args() -> TaskConfig:
         type=str,
         default="phi4",
         help="Name of the model to use. Follows Ollama naming scheme.",
+    )
+    parser.add_argument(
+        "--embedding_model",
+        type=str,
+        default="nomic-embed-text",
+        help="Name of the embedding model to use for few-shot example selection. Follows Ollama naming scheme.",
     )
     parser.add_argument(
         "--temperature",

@@ -20,6 +20,7 @@ It follows a professional documentation pattern:
 | `--overwrite` | `False` | Overwrites existing outputs if enabled. |
 | `--seed` | `None` | Random seed for reproducibility. |
 | `--model_name` | `"phi4"` | Model used via Ollama. |
+| `--embedding_model` | `"nomic-embed-text"` | Embedding model for few‑shot selection. |
 | `--temperature` | `0.0` | Sampling randomness. |
 | `--top_k` | `None` | Top‑K sampling. |
 | `--top_p` | `None` | Nucleus sampling. |
@@ -84,14 +85,24 @@ Random seed for reproducible behavior where possible.
 ---
 
 ### `--model_name`
-**Type:** `str`  
-**Default:** `"phi4"`  
+
+**Type:** `str`
+**Default:** `"phi4"`
 Name of the Ollama model to use (e.g., `"phi4"`, `"llama3.3"`, `"deepseek-r1:8b"`). See [Ollama models](https://ollama.com/models) for available options.
 
 ---
 
+### `--embedding_model`
+
+**Type:** `str`
+**Default:** `"nomic-embed-text"`
+Name of the embedding model to use for few-shot example selection via semantic similarity. Only used when `--num_examples > 0`. See [Ollama models](https://ollama.com/models) for available embedding models (e.g., `"mxbai-embed-large"`, `"nomic-embed-text"`).
+
+---
+
 ### `--temperature`
-**Type:** `float`  
+
+**Type:** `float`
 **Default:** `0.0`  
 Controls randomness in generation:
 - `0.0` = deterministic  
