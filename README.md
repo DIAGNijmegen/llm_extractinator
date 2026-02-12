@@ -1,4 +1,4 @@
-![Overview of the LLM Data Extractor](docs/images/logo.jpg)
+![Overview of the LLM Data Extractor](docs/images/logo.png)
 
 > ⚠️ **Prototype**: this project is under active development. Interfaces, task formats, and directory names may change. Always inspect and validate the generated output before using it downstream.
 
