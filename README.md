@@ -1,4 +1,21 @@
-![Overview of the LLM Data Extractor](docs/images/logo.png)
+<p align="center">
+  <img src="docs/images/logo.png" width="260" alt="LLM Extractinator logo">
+</p>
+
+<h1 align="center">LLM Extractinator</h1>
+
+<p align="center">
+Turn unstructured text into <b>Pydantic-validated structured data</b> using local LLMs via Ollama.
+</p>
+
+<p align="center">
+
+![Python](https://img.shields.io/badge/python-3.10+-blue)
+![License](https://img.shields.io/github/license/diagnijmegen/llm_extractinator)
+![Docs](https://img.shields.io/badge/docs-online-brightgreen)
+
+</p>
+
 
 > ⚠️ **Prototype**: this project is under active development. Interfaces, task formats, and directory names may change. Always inspect and validate the generated output before using it downstream.
 
