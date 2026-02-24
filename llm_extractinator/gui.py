@@ -27,8 +27,9 @@ DATA_DIR = BASE_DIR / "data"
 EX_DIR = BASE_DIR / "examples"
 TASK_DIR = BASE_DIR / "tasks"
 PAR_DIR = TASK_DIR / "parsers"
+OUT_DIR = BASE_DIR / "output" / "run"
 
-for _d in (DATA_DIR, EX_DIR, TASK_DIR, PAR_DIR):
+for _d in (DATA_DIR, EX_DIR, TASK_DIR, PAR_DIR, OUT_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 # ──────────────────── Streamlit config ───────────────────────────
@@ -169,6 +170,31 @@ def next_free_task_id() -> str:
     raise RuntimeError("All 1000 Task IDs are taken!")
 
 
+def list_output_runs() -> list[Path]:
+    """Return sorted list of run folders that contain a predictions file."""
+    if not OUT_DIR.exists():
+        return []
+    return sorted(
+        p
+        for p in OUT_DIR.iterdir()
+        if p.is_dir() and (p / "nlp-predictions-dataset.json").exists()
+    )
+
+
+def classify_fields(record: dict) -> tuple[dict, dict]:
+    """Split a record into scalar (input/meta) fields and structured (output) fields."""
+    scalar: dict = {}
+    structured: dict = {}
+    for k, v in record.items():
+        if k == "status":
+            continue
+        if isinstance(v, (list, dict)):
+            structured[k] = v
+        else:
+            scalar[k] = v
+    return scalar, structured
+
+
 # ──────────────────── Parser Builder page ───────────────────────
 if PAGE == "builder":
     st.header("🛠️ Parser Builder")
@@ -177,7 +203,9 @@ if PAGE == "builder":
 
 # ──────────────────── Main Studio page ───────────────────────────
 
-tab_qs, tab_build, tab_run = st.tabs(["🚀 Quick‑start", "🛠️ Build Task", "▶️ Run"])
+tab_qs, tab_build, tab_run, tab_inspect = st.tabs(
+    ["🚀 Quick‑start", "🛠️ Build Task", "▶️ Run", "🔍 Inspect"]
+)
 
 # 1️⃣ QUICK‑START TAB
 with tab_qs:
@@ -339,11 +367,6 @@ with tab_run:
 
         # — General flags —
         with general_tab:
-            run_name = st.text_input(
-                "Run Name",
-                value="run",
-                help="Folder prefix where outputs will be saved.",
-            )
             n_runs = st.number_input(
                 "Number of Runs",
                 min_value=1,
@@ -439,8 +462,6 @@ with tab_run:
         ]
         if reasoning:
             cmd.append("--reasoning_model")
-        if run_name != "run":
-            cmd += ["--run_name", run_name]
         if n_runs != 1:
             cmd += ["--n_runs", str(n_runs)]
         if verbose:
@@ -484,7 +505,7 @@ with tab_run:
 
             # heuristics for "ephemeral" progress lines (Ollama)
             progress_re = re.compile(
-                r"^(pulling|downloading|transferring)\b", re.IGNORECASE
+                r"^(pulling|downloading|transferring|verifying)\b", re.IGNORECASE
             )
 
             for raw_line in process.stdout:
@@ -506,3 +527,129 @@ with tab_run:
             return_code = process.wait()
 
         st.success("Finished successfully ✅" if return_code == 0 else "Failed ❌")
+
+# 4️⃣ INSPECT TAB
+with tab_inspect:
+    st.header("🔍 Inspect Outputs")
+
+    runs = list_output_runs()
+    if not runs:
+        st.info("No output runs found yet. Run a task first to generate results.")
+        st.stop()
+
+    run_labels = [p.name for p in runs]
+    selected_run = st.selectbox(
+        "Select a run",
+        run_labels,
+        help="Choose an output run folder to inspect",
+    )
+    run_path = OUT_DIR / selected_run
+    records: list[dict] = json.loads(
+        (run_path / "nlp-predictions-dataset.json").read_text(encoding="utf-8")
+    )
+
+    # ─── Summary metrics ──
+    total = len(records)
+    n_ok = sum(1 for r in records if r.get("status") == "success")
+    n_fail = total - n_ok
+    col_total, col_ok, col_fail = st.columns(3)
+    col_total.metric("Total records", total)
+    col_ok.metric("✅ Successes", n_ok)
+    col_fail.metric("❌ Failures", n_fail)
+
+    # ─── Filters ──
+    filt_col, search_col = st.columns([1, 2])
+    status_filter = filt_col.radio(
+        "Status",
+        ["All", "Successes only", "Failures only"],
+        horizontal=True,
+    )
+    search_text = search_col.text_input(
+        "Search text", placeholder="Filter by any text in the record…"
+    )
+
+    # Apply filters
+    filtered = records
+    if status_filter == "Successes only":
+        filtered = [r for r in filtered if r.get("status") == "success"]
+    elif status_filter == "Failures only":
+        filtered = [r for r in filtered if r.get("status") != "success"]
+    if search_text.strip():
+        q = search_text.strip().lower()
+        filtered = [
+            r
+            for r in filtered
+            if any(q in str(v).lower() for v in r.values())
+        ]
+
+    if not filtered:
+        st.warning("No records match the current filters.")
+        st.stop()
+
+    # ─── Build summary dataframe ──
+    # Find a representative record to determine columns
+    sample = filtered[0]
+    scalar_sample, structured_sample = classify_fields(sample)
+
+    rows = []
+    for r in filtered:
+        sc, st_ = classify_fields(r)
+        status_val = r.get("status", "")
+        status_icon = "✅" if status_val == "success" else "❌"
+        # Truncate the longest scalar string as the "text" preview
+        text_preview = ""
+        for v in sc.values():
+            s = str(v)
+            if len(s) > len(text_preview):
+                text_preview = s
+        row: dict = {
+            "status": f"{status_icon} {status_val}",
+            "text": text_preview[:120] + ("…" if len(text_preview) > 120 else ""),
+        }
+        for k, v in st_.items():
+            if isinstance(v, list):
+                row[k] = f"{len(v)} item{'s' if len(v) != 1 else ''}"
+            elif isinstance(v, dict):
+                row[k] = f"{len(v)} key{'s' if len(v) != 1 else ''}"
+            else:
+                row[k] = str(v)
+        rows.append(row)
+
+    summary_df = pd.DataFrame(rows)
+
+    # ─── Interactive table ──
+    st.subheader(f"Records ({len(filtered)} shown)")
+    event = st.dataframe(
+        summary_df,
+        use_container_width=True,
+        hide_index=False,
+        on_select="rerun",
+        selection_mode="single-row",
+    )
+
+    # ─── Detail panel ──
+    selected_rows = event.selection.rows if event else []
+    if selected_rows:
+        idx = selected_rows[0]
+        record = filtered[idx]
+        scalar_fields, structured_fields = classify_fields(record)
+        status_val = record.get("status", "")
+
+        st.divider()
+        st.subheader(f"Record {idx} — {'✅ success' if status_val == 'success' else '❌ failure'}")
+
+        left, right = st.columns([2, 3])
+        with left:
+            st.markdown("**📄 Input / metadata**")
+            for k, v in scalar_fields.items():
+                st.markdown(f"**{k}**")
+                st.markdown(str(v))
+
+        with right:
+            st.markdown("**📦 Extracted fields**")
+            if structured_fields:
+                for k, v in structured_fields.items():
+                    st.markdown(f"**{k}**")
+                    st.json(v, expanded=True)
+            else:
+                st.info("No structured output fields in this record.")
