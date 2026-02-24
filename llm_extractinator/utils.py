@@ -36,13 +36,3 @@ def save_json(
             time.sleep(delay)
     else:
         logger.error(f"Failed to save data to {path} after {retries} attempts.")
-
-
-def extract_json_from_text(text: str) -> dict:
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if match:
-        json_text = text[text.find("{") : text.rfind("}") + 1]
-        try:
-            return json.loads(json_text)
-        except json.JSONDecodeError:
-            return {}
