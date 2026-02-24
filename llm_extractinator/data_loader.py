@@ -137,7 +137,7 @@ class DataLoader:
 
         Args:
             df (pd.DataFrame): The DataFrame to split.
-            text_column (str): The name of the text column.
+            token_column (str): The name of the token count column.
             quantile (float): The quantile to split on. Default is 0.8.
 
         Returns:
@@ -177,7 +177,7 @@ class DataLoader:
         self,
         df: pd.DataFrame,
         token_column: str = "token_count",
-        buffer_tokens: int = 1000,
+        buffer_tokens: int = 5000,
         translate: bool = False,
         reasoning_model: bool = False,
         num_predict: int = 512,
@@ -188,7 +188,7 @@ class DataLoader:
         Args:
             df (pd.DataFrame): The DataFrame containing the token count column.
             token_column (str): The name of the token count column.
-            buffer_tokens (int): The buffer tokens to add. Default is 1000.
+            buffer_tokens (int): The buffer tokens to add. Default is 5000.
 
         Returns:
             int: The maximum token count for input data.

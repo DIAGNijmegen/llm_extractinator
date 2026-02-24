@@ -13,6 +13,9 @@ Turn unstructured text into <b>Pydantic-validated structured data</b> using loca
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/github/license/diagnijmegen/llm_extractinator)
 ![Docs](https://img.shields.io/badge/docs-online-brightgreen)
+![Tests](https://img.shields.io/github/actions/workflow/status/DIAGNijmegen/llm_extractinator/test.yml?label=tests)
+![PyPI](https://img.shields.io/pypi/v/llm_extractinator)
+![Streamlit](https://img.shields.io/badge/Streamlit-app-FF4B4B?logo=streamlit)
 
 </p>
 

@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install Python 3.11 + pip + common tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    software-properties-common curl ca-certificates bash && \
+    software-properties-common curl ca-certificates bash zstd && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -59,7 +59,7 @@ EXPOSE 11434
 
 # Health check to ensure Ollama is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:11434/api/tags || exit 1
+    CMD curl -f http://localhost:11434/api/tags || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["app"]

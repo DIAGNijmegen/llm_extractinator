@@ -5,7 +5,11 @@ import time
 import unittest
 from pathlib import Path
 
+import pytest
+
 from llm_extractinator.main import extractinate
+
+pytestmark = pytest.mark.integration
 
 
 def clean_output_dir(output_dir: Path) -> None:
