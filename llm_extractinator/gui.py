@@ -9,6 +9,8 @@ A streamlined GUI for creating, managing, and running information extraction tas
 import json
 import re
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import pandas as pd
@@ -31,6 +33,23 @@ OUT_DIR = BASE_DIR / "output" / "run"
 
 for _d in (DATA_DIR, EX_DIR, TASK_DIR, PAR_DIR, OUT_DIR):
     _d.mkdir(parents=True, exist_ok=True)
+
+
+# ──────────────────── Ollama helpers ─────────────────────────────
+def _fetch_ollama_models(host: str = "http://localhost:11434") -> list[str]:
+    """Return names of locally installed Ollama models, or [] if unreachable."""
+    try:
+        with urllib.request.urlopen(f"{host}/api/tags", timeout=2) as resp:
+            data = json.loads(resp.read())
+        _EXCLUDE = {"nomic-embed-text"}
+        return [
+            m["name"]
+            for m in data.get("models", [])
+            if not any(m["name"].startswith(ex) for ex in _EXCLUDE)
+        ]
+    except (urllib.error.URLError, KeyError, json.JSONDecodeError):
+        return []
+
 
 # ──────────────────── Streamlit config ───────────────────────────
 st.set_page_config(
@@ -351,11 +370,33 @@ with tab_run:
 
     # ─── Model & sampling settings ──
     st.subheader("🧠 Model settings")
-    model_name = st.text_input(
-        "Model name",
-        value="phi4",
-        help="Name or path of the language model to run. For hosted services, use the provider‑specific ID.",
-    )
+    _installed_models = _fetch_ollama_models()
+    _OTHER = "Other (enter below)…"
+    _options = _installed_models + [_OTHER] if _installed_models else []
+    if _options:
+        _selected = st.selectbox(
+            "Model",
+            options=_options,
+            help="Models currently installed in your local Ollama instance.",
+        )
+    else:
+        _selected = _OTHER
+        st.caption(
+            "No running Ollama instance found. "
+            "Browse available models at [ollama.com/library](https://ollama.com/library)."
+        )
+    if _selected == _OTHER:
+        model_name = st.text_input(
+            "Model name",
+            value="phi4",
+            placeholder="e.g. qwen3:8b",
+            help=(
+                "Any Ollama model name. If not yet installed, Ollama will download it on first run. "
+                "Browse [ollama.com/library](https://ollama.com/library)."
+            ),
+        )
+    else:
+        model_name = _selected
     reasoning = st.toggle(
         "Reasoning model?",
         value=False,
@@ -363,85 +404,110 @@ with tab_run:
     )
 
     with st.expander("⚙️ Advanced flags"):
-        general_tab, sampling_tab = st.tabs(["General", "Sampling & limits"])
+        # — Run behaviour —
+        st.markdown("**Run behaviour**")
+        n_runs = st.number_input(
+            "Number of runs",
+            min_value=1,
+            value=1,
+            step=1,
+            help="Repeat the task multiple times with identical settings.",
+        )
+        col1, col2, col3 = st.columns(3)
+        verbose = col1.checkbox(
+            "Verbose output",
+            help="Stream full raw model output & debug logs to the UI.",
+        )
+        overwrite = col2.checkbox(
+            "Overwrite existing files",
+            help="If the run folder already exists, delete & recreate it.",
+        )
+        seed_enabled = col3.checkbox(
+            "Fix random seed",
+            help="Fix RNG seed for reproducible generation.",
+        )
+        seed = st.number_input(
+            "Seed value",
+            min_value=0,
+            value=0,
+            disabled=not seed_enabled,
+            help="Integer seed to initialise random generators.",
+        )
 
-        # — General flags —
-        with general_tab:
-            n_runs = st.number_input(
-                "Number of Runs",
-                min_value=1,
-                value=1,
-                step=1,
-                help="Repeat the Task multiple times with identical settings.",
-            )
-            colA, colB = st.columns(2)
-            verbose = colA.checkbox(
-                "Verbose output",
-                help="Stream full raw model output & debug logs to the UI.",
-            )
-            overwrite = colA.checkbox(
-                "Overwrite existing files",
-                help="If the run folder already exists, delete & recreate it.",
-            )
-            seed_enabled = colB.checkbox(
-                "Set seed", help="Fix RNG seed for reproducible generation."
-            )
-            seed = colB.number_input(
-                "Seed",
-                min_value=0,
-                value=0,
-                disabled=not seed_enabled,
-                help="Integer seed to initialise random generators.",
-            )
+        st.divider()
 
-        # — Sampling flags —
-        with sampling_tab:
-            temperature = st.slider(
-                "Temperature",
-                0.0,
-                1.0,
-                0.0,
-                0.05,
-                help="0.0 = deterministic; 1.0 = very diverse output.",
+        # — Prompting —
+        st.markdown("**Prompting**")
+        num_examples = st.number_input(
+            "Few-shot examples",
+            min_value=0,
+            value=0,
+            help="Number of labelled examples to prepend to each prompt.",
+        )
+        ctx_mode = st.radio(
+            "Context length strategy",
+            options=["max", "split", "custom"],
+            horizontal=True,
+            help=(
+                "**max** – set the context window to the minimum size needed for the longest input in your dataset. "
+                "**split** – split the dataset into short/long subsets and run each with a right-sized context (recommended when report lengths vary a lot). "
+                "**custom** – set an explicit token limit."
+            ),
+        )
+        if ctx_mode == "custom":
+            max_ctx = str(
+                st.number_input(
+                    "Custom context length (tokens)",
+                    min_value=512,
+                    value=4096,
+                    step=512,
+                )
             )
-            num_predict = st.number_input(
-                "Number of tokens to predict",
-                min_value=1,
-                value=512,
-                help="Maximum generation length per response (before stop tokens).",
+        else:
+            max_ctx = ctx_mode
+
+        st.divider()
+
+        # — Sampling —
+        st.markdown("**Sampling**")
+        temperature = st.slider(
+            "Temperature",
+            0.0,
+            1.0,
+            0.0,
+            0.05,
+            help="Controls output randomness. 0.0 = deterministic; higher = more diverse.",
+        )
+        num_predict = st.number_input(
+            "Max tokens to generate",
+            min_value=1,
+            value=512,
+            help="Maximum number of tokens the model will produce per response.",
+        )
+        col4, col5 = st.columns(2)
+        with col4:
+            topk_on = st.checkbox(
+                "Enable Top-k",
+                help="Restrict sampling to the k most probable next tokens.",
             )
-            colC, colD = st.columns(2)
-            topk_on = colC.checkbox(
-                "Top‑k", help="Restrict sampling to the k most probable tokens."
-            )
-            top_k = colC.number_input(
-                "Top‑k value",
+            top_k = st.number_input(
+                "Top-k value",
                 min_value=1,
                 value=40,
                 disabled=not topk_on,
             )
-            topp_on = colD.checkbox(
-                "Top‑p",
-                help="Nucleus sampling – dynamic token pool based on cumulative probability.",
+        with col5:
+            topp_on = st.checkbox(
+                "Enable Top-p",
+                help="Nucleus sampling – keep the smallest token set whose cumulative probability exceeds p.",
             )
-            top_p = colD.slider(
-                "Top‑p value",
+            top_p = st.slider(
+                "Top-p value",
                 0.0,
                 1.0,
                 0.9,
                 0.05,
                 disabled=not topp_on,
-            )
-            max_ctx = st.text_input(
-                "Context Length",
-                "max",
-                help="Force a custom context window size integer – or leave as 'max' for automatic calculation. Set as 'split' for a dataset with some high variability of report length.",
-            )
-            num_examples = st.number_input(
-                "Number of Examples",
-                min_value=0,
-                value=0,
-                help="Few‑shot examples to prepend to each prompt.",
             )
 
     # ─── Launch button ──
@@ -576,11 +642,7 @@ with tab_inspect:
         filtered = [r for r in filtered if r.get("status") != "success"]
     if search_text.strip():
         q = search_text.strip().lower()
-        filtered = [
-            r
-            for r in filtered
-            if any(q in str(v).lower() for v in r.values())
-        ]
+        filtered = [r for r in filtered if any(q in str(v).lower() for v in r.values())]
 
     if not filtered:
         st.warning("No records match the current filters.")
@@ -636,7 +698,9 @@ with tab_inspect:
         status_val = record.get("status", "")
 
         st.divider()
-        st.subheader(f"Record {idx} — {'✅ success' if status_val == 'success' else '❌ failure'}")
+        st.subheader(
+            f"Record {idx} — {'✅ success' if status_val == 'success' else '❌ failure'}"
+        )
 
         left, right = st.columns([2, 3])
         with left:

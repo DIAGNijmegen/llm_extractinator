@@ -168,3 +168,4 @@ translations/*
 .vscode/
 tests/testoutput/*
 tests/testtranslations/*
+ollama_models/*

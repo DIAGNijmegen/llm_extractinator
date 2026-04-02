@@ -263,10 +263,12 @@ class TaskRunner:
         Split the data into short and long examples based on token count.
         """
         if self.train is not None:
-            self.short_train, self.long_train = self.data_loader.split_data(
-                df=self.train,
+            short_df, long_df = self.data_loader.split_data(
+                df=self.data_loader.examples_df,
                 quantile=self.config.quantile,
             )
+            self.short_train = short_df[["input", "output"]].dropna().to_dict(orient="records")
+            self.long_train = long_df[["input", "output"]].dropna().to_dict(orient="records")
         else:
             self.short_train, self.long_train = None, None
         self.short_test, self.long_test = self.data_loader.split_data(
