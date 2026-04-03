@@ -12,12 +12,28 @@ except Exception:
     from langchain_core.output_parsers import PydanticOutputParser
 
 from langchain_chroma import Chroma
+from langchain_core.embeddings import Embeddings
 from langchain_ollama import ChatOllama, OllamaEmbeddings
+
 
 from llm_extractinator.callbacks import BatchCallBack
 from llm_extractinator.output_parsers import load_parser, load_parser_pydantic
 from llm_extractinator.prompt_utils import build_few_shot_prompt, build_zero_shot_prompt
 from llm_extractinator.validator import handle_prediction_failure
+
+
+class _TruncatingEmbeddings(Embeddings):
+    """Wraps an embeddings model and truncates texts to avoid exceeding the model's context limit."""
+
+    def __init__(self, base: Embeddings, max_chars: int = 2000) -> None:
+        self._base = base
+        self._max_chars = max_chars
+
+    def embed_documents(self, texts):
+        return self._base.embed_documents([t[: self._max_chars] for t in texts])
+
+    def embed_query(self, text: str):
+        return self._base.embed_query(text[: self._max_chars])
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -103,7 +119,7 @@ class Predictor:
         if examples:
             logger.info("Creating few-shot prompt.")
             ollama.pull(embedding_model)
-            self.embedding_model = OllamaEmbeddings(model=embedding_model)
+            self.embedding_model = _TruncatingEmbeddings(OllamaEmbeddings(model=embedding_model))
             from langchain_core.example_selectors import (
                 MaxMarginalRelevanceExampleSelector,
             )
