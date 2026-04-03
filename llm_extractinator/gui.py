@@ -7,6 +7,7 @@ A streamlined GUI for creating, managing, and running information extraction tas
 """
 
 import json
+import os
 import re
 import subprocess
 import urllib.error
@@ -24,7 +25,7 @@ except ImportError:  # pragma: no cover
     )  # type: ignore[arg-type]
 
 # ──────────────────── Global paths ───────────────────────────────
-BASE_DIR = Path.cwd()
+BASE_DIR = Path(os.environ.get("EXTRACTINATOR_BASE_DIR", Path.cwd()))
 DATA_DIR = BASE_DIR / "data"
 EX_DIR = BASE_DIR / "examples"
 TASK_DIR = BASE_DIR / "tasks"
@@ -261,7 +262,7 @@ with tab_build:
     st.subheader("Step 1 • Select or upload your files")
     data_path = pick_or_upload("Dataset (.csv / .json)", DATA_DIR, (".csv", ".json"))
 
-    input_field = None
+    input_field = st.session_state.get("input_field")
     if data_path:
         try:
             df = (
@@ -269,13 +270,20 @@ with tab_build:
                 if data_path.suffix == ".csv"
                 else pd.read_json(data_path)
             )
-            text_cols = [c for c in df.columns if df[c].dtype == "object"]
+            text_cols = [
+                c for c in df.columns if df[c].dtype in ("object", "string")
+            ]
             if text_cols:
+                saved_col = st.session_state.get("input_field")
+                default_idx = text_cols.index(saved_col) if saved_col in text_cols else 0
                 input_field = st.selectbox(
                     "Text column",
                     text_cols,
+                    index=default_idx,
+                    key="input_field_select",
                     help="Which column contains the raw text the model should parse?",
                 )
+                st.session_state["input_field"] = input_field
             else:
                 st.error("No text columns detected.")
         except Exception as e:

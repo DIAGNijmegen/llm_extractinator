@@ -17,7 +17,9 @@ def parse_args():
 def main():
     args = parse_args()
     path = os.path.join(os.path.dirname(__file__), "gui.py")
-    subprocess.run(["streamlit", "run", path, "--server.port", str(args.port)])
+    env = os.environ.copy()
+    env["EXTRACTINATOR_BASE_DIR"] = os.getcwd()
+    subprocess.run(["streamlit", "run", path, "--server.port", str(args.port)], env=env)
 
 
 if __name__ == "__main__":
