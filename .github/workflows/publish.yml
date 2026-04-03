@@ -3,13 +3,10 @@ name: Publish to PyPI
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
-  pull_request:
-    branches:
       - main
   release:
     types:
-      - created  # Trigger on new releases
+      - created
 
 jobs:
   publish:
