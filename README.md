@@ -247,8 +247,17 @@ Pull requests are welcome. Please keep the CLI and the docs in sync (especially 
 
 ---
 
-## 8. Citation
+## 8. Citation & Attribution
 
-If you use this tool, please cite:
+If you use this tool in your research, please cite:
 
-https://doi.org/10.1093/jamiaopen/ooaf109
+> https://doi.org/10.1093/jamiaopen/ooaf109
+
+This tool was developed by the **Oncology Research Group** at the Diagnostic Image Analysis Group (DIAG), Radboud University Medical Center.
+🔗 [diagnijmegen.nl/research/oncology](https://www.diagnijmegen.nl/research/oncology/)
+
+**Contact:**
+| Name | Email |
+|---|---|
+| Luc Builtjes | [luc.builtjes@radboudumc.nl](mailto:luc.builtjes@radboudumc.nl) |
+| Alessa Hering | [alessa.hering@radboudumc.nl](mailto:alessa.hering@radboudumc.nl) |
