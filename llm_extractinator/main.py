@@ -29,12 +29,30 @@ class NoHttpRequestsFilter(logging.Filter):
         return "HTTP Request:" not in record.getMessage()
 
 
-def setup_logging(log_dir: Path):
+class _TeeStream:
+    """Mirrors writes to multiple streams so print() output reaches the log file."""
+
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data):
+        for s in self._streams:
+            s.write(data)
+
+    def flush(self):
+        for s in self._streams:
+            s.flush()
+
+    def isatty(self):
+        return False
+
+
+def setup_logging(log_dir: Path, verbose: bool = False):
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "task_runner.log"
 
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG if verbose else logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
     )
@@ -42,6 +60,10 @@ def setup_logging(log_dir: Path):
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+
+    if verbose:
+        # LangChain's debug output goes via print() not logging — tee stdout to the log file
+        sys.stdout = _TeeStream(sys.__stdout__, open(log_file, "a"))
 
 
 @dataclass
@@ -119,7 +141,7 @@ class TaskConfig:
         self.translation_dir = (
             Path(self.translation_dir) if self.translation_dir else cwd / "translations"
         )
-        setup_logging(self.log_dir)
+        setup_logging(self.log_dir, verbose=self.verbose)
 
 
 class TaskRunner:

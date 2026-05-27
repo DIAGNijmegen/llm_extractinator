@@ -163,8 +163,11 @@ cython_debug/
 
 # Project specific
 examples/*
+!examples/.gitkeep
 output/*
+!output/.gitkeep
 translations/*
+!translations/.gitkeep
 .vscode/
 tests/testoutput/*
 tests/testtranslations/*
