@@ -160,7 +160,10 @@ class PredictionTask:
                 )
 
             logger.info("Merging chunked predictions.")
-            chunk_files = list(output_path.glob("nlp-predictions-dataset-*.json"))
+            chunk_files = [
+                f for f in output_path.glob("nlp-predictions-dataset-*.json")
+                if f.stem.split("-")[-1].isdigit()
+            ]
             chunk_predictions = []
             for chunk_file in chunk_files:
                 with chunk_file.open("r") as f:
