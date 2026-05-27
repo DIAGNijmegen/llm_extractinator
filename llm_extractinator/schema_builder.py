@@ -170,7 +170,7 @@ def _manager_ui(container) -> None:
         new_model = st.text_input(
             "Enter new model name (e.g. User)", key=f"sb_new_model_name"
         )
-        if st.button("➕ Add model", use_container_width=True, key="sb_add_model_btn"):
+        if st.button("➕ Add model", width="stretch", key="sb_add_model_btn"):
             name = new_model.strip()
             if not name:
                 st.warning("Please enter a model name.")

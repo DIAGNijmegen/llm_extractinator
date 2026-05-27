@@ -6,6 +6,7 @@ from typing import Dict, List
 import pandas as pd
 from langchain_ollama import ChatOllama
 
+from llm_extractinator.ollama_server import model_supports_thinking
 from llm_extractinator.predictor import Predictor
 from llm_extractinator.translator import Translator
 from llm_extractinator.utils import save_json
@@ -62,6 +63,18 @@ class PredictionTask:
             setattr(self, key, kwargs.get(key, None))
 
         self.output_path_base = Path(self.output_dir) / Path(self.run_name)
+
+        # Auto-detect thinking capability; reasoning_model flag is the manual override.
+        # When auto-detected (but not manually requested), also bump num_predict so
+        # thinking tokens don't consume the entire generation budget.
+        self._is_thinking = model_supports_thinking(self.model_name) or bool(self.reasoning_model)
+        if self._is_thinking and not self.reasoning_model:
+            logger.info(
+                "Auto-detected thinking model '%s' — enabling reasoning mode and bumping num_predict.",
+                self.model_name,
+            )
+            self.num_predict += 5000
+
         self.model = self.initialize_model()
 
         self.predictor = Predictor(
@@ -82,7 +95,7 @@ class PredictionTask:
             seed=self.seed,
             top_k=self.top_k,
             top_p=self.top_p,
-            reasoning=self.reasoning_model,
+            reasoning=True if self._is_thinking else None,
         )
 
     def _translate_task(self) -> None:

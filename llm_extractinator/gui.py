@@ -52,6 +52,22 @@ def _fetch_ollama_models(host: str = "http://localhost:11434") -> list[str]:
         return []
 
 
+def _fetch_model_thinking(model_name: str, host: str = "http://localhost:11434") -> bool:
+    """Return True if the model advertises thinking capability via Ollama's show API."""
+    try:
+        data = json.dumps({"name": model_name}).encode()
+        req = urllib.request.Request(
+            f"{host}/api/show",
+            data=data,
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            info = json.loads(resp.read())
+        return "thinking" in info.get("capabilities", [])
+    except Exception:
+        return False
+
+
 # ──────────────────── Streamlit config ───────────────────────────
 st.set_page_config(
     page_title="LLM Extractinator Studio",
@@ -109,9 +125,9 @@ def preview_file(path: Path, n_rows: int = 5) -> None:
     try:
         match path.suffix.lower():
             case ".csv":
-                st.dataframe(pd.read_csv(path).head(n_rows), use_container_width=True)
+                st.dataframe(pd.read_csv(path).head(n_rows), width="stretch")
             case ".json":
-                st.dataframe(pd.read_json(path).head(n_rows), use_container_width=True)
+                st.dataframe(pd.read_json(path).head(n_rows), width="stretch")
             case ".py":
                 st.code(path.read_text(), language="python")
     except Exception as exc:  # pragma: no cover
@@ -405,10 +421,26 @@ with tab_run:
         )
     else:
         model_name = _selected
-    reasoning = st.toggle(
+    _thinking_detected = _fetch_model_thinking(model_name)
+    _tog_col1, _tog_col2 = st.columns(2)
+    reasoning = _tog_col1.toggle(
         "Reasoning model?",
+        value=_thinking_detected,
+        key=f"reasoning_toggle_{model_name}",
+        help=(
+            "Auto-detected: this model supports thinking. Reasoning mode is enabled automatically. "
+            "You can turn it off, but structured-output quality may suffer."
+            if _thinking_detected else
+            "Enable for thinking models (e.g. qwen3.5). "
+            "Routes chain-of-thought tokens away from the JSON output so parsing stays reliable."
+        ),
+    )
+    if _thinking_detected:
+        _tog_col1.caption("⚡ Thinking model detected — auto-enabled")
+    overwrite = _tog_col2.toggle(
+        "Overwrite existing files",
         value=False,
-        help="Enable chain‑of‑thought or other reasoning‑enhanced variants. May impact speed.",
+        help="If the run folder already exists, delete & recreate it.",
     )
 
     with st.expander("⚙️ Advanced flags"):
@@ -421,16 +453,12 @@ with tab_run:
             step=1,
             help="Repeat the task multiple times with identical settings.",
         )
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         verbose = col1.checkbox(
             "Verbose output",
             help="Stream full raw model output & debug logs to the UI.",
         )
-        overwrite = col2.checkbox(
-            "Overwrite existing files",
-            help="If the run folder already exists, delete & recreate it.",
-        )
-        seed_enabled = col3.checkbox(
+        seed_enabled = col2.checkbox(
             "Fix random seed",
             help="Fix RNG seed for reproducible generation.",
         )
@@ -691,7 +719,7 @@ with tab_inspect:
     st.subheader(f"Records ({len(filtered)} shown)")
     event = st.dataframe(
         summary_df,
-        use_container_width=True,
+        width="stretch",
         hide_index=False,
         on_select="rerun",
         selection_mode="single-row",
