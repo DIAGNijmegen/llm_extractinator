@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -13,7 +14,21 @@ except Exception:
 
 from langchain_chroma import Chroma
 from langchain_core.embeddings import Embeddings
+from langchain_core.runnables import RunnableLambda
 from langchain_ollama import ChatOllama, OllamaEmbeddings
+
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def _strip_think_tags(msg):
+    """Strip <think>...</think> blocks from model output before JSON parsing.
+
+    Some models (e.g. qwen3.5) ignore think:false and always emit reasoning
+    tokens as plain content, which breaks structured-output parsing.
+    """
+    if hasattr(msg, "content") and isinstance(msg.content, str):
+        return msg.model_copy(update={"content": _THINK_RE.sub("", msg.content).strip()})
+    return msg
 
 
 from llm_extractinator.callbacks import BatchCallBack
@@ -139,7 +154,13 @@ class Predictor:
         Make predictions on the test data.
         """
         logger.info("Starting prediction on test data with %d samples.", len(test_data))
-        model = self.model.with_structured_output(self.parser_model).with_retry()
+        response_format = self.parser_model.model_json_schema()
+        if "required" not in response_format:
+            response_format["required"] = list(response_format.get("properties", {}).keys())
+        bound_llm = self.model.bind(format=response_format)
+        model = (
+            bound_llm | RunnableLambda(_strip_think_tags) | self.base_parser
+        ).with_retry()
         chain = self.prompt | model
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
