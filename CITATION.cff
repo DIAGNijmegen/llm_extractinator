@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below. See 'preferred-citation'."
+type: software
+title: "LLM Extractinator"
+version: 0.6.0
+date-released: "2026-07-21"
+url: "https://github.com/DIAGNijmegen/llm_extractinator"
+repository-code: "https://github.com/DIAGNijmegen/llm_extractinator"
+license: Apache-2.0
+authors:
+  - family-names: Builtjes
+    given-names: Luc
+  - family-names: Hering
+    given-names: Alessa
+preferred-citation:
+  type: article
+  title: "Leveraging open-source large language models for clinical information extraction in resource-constrained settings"
+  authors:
+    - family-names: Builtjes
+      given-names: Luc
+    - family-names: Bosma
+      given-names: Joeran
+    - family-names: Prokop
+      given-names: Mathias
+    - family-names: van Ginneken
+      given-names: Bram
+    - family-names: Hering
+      given-names: Alessa
+  journal: "JAMIA Open"
+  year: 2025
+  volume: 8
+  issue: 5
+  article-number: "ooaf109"
+  doi: "10.1093/jamiaopen/ooaf109"
+  url: "https://doi.org/10.1093/jamiaopen/ooaf109"
