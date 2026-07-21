@@ -493,7 +493,7 @@ def parse_args() -> TaskConfig:
 def extractinate(**kwargs) -> None:
     """Main function that accepts keyword arguments and runs task execution."""
     config = TaskConfig(**kwargs)
-    if config.seed:
+    if config.seed is not None:
         random.seed(config.seed)
         np.random.seed(config.seed)
     task_runner = TaskRunner(config)
