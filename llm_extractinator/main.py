@@ -4,7 +4,6 @@ import os
 import random
 import sys
 import time
-import traceback
 from dataclasses import asdict, dataclass
 from datetime import timedelta
 from pathlib import Path
@@ -240,8 +239,8 @@ class TaskRunner:
         try:
             task = PredictionTask(**asdict(self.config))
             return task.run()
-        except Exception as error:
-            traceback.print_exc()
+        except Exception:
+            logging.exception("Error running task")
             return False
 
     def _extract_task_info(self) -> None:
@@ -499,9 +498,8 @@ def extractinate(**kwargs) -> None:
     task_runner = TaskRunner(config)
     try:
         task_runner.run_tasks()
-    except Exception as error:
-        logging.error(f"Error running tasks: {error}")
-        traceback.print_exc()
+    except Exception:
+        logging.exception("Error running tasks")
 
 
 def main():
