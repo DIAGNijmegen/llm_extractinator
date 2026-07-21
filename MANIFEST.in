@@ -1,7 +1,6 @@
 # Include essential metadata files
 include README.md
 include LICENSE
-include setup.cfg
 include pyproject.toml
 
 # Include package data
