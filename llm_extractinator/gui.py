@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-"""
-LLM Extractinator Studio
----------------------------------------------------------
-A streamlined GUI for creating, managing, and running information extraction tasks using LLM Extractinator.
-"""
+# LLM Extractinator Studio
+# -------------------------------------------------------------------
+# A streamlined GUI for creating, managing, and running information
+# extraction tasks using LLM Extractinator.
+#
+# The app follows a linear three-stage flow — Task -> Run -> Results — so the
+# path from configuring a task to inspecting its output is always moving forward.
+#
+# NB: this must be a comment, not a module docstring. Because `from __future__`
+# has to be the first statement, a triple-quoted string here would be a bare
+# expression that Streamlit "magic" renders into the page.
 
 import json
 import os
@@ -23,6 +29,28 @@ except ImportError:  # pragma: no cover
     render_schema_builder = lambda **_: st.info(
         "`schema_builder` missing – install or remove this call."
     )  # type: ignore[arg-type]
+
+try:
+    from theme import (  # type: ignore
+        app_header,
+        inject_theme,
+        sidebar_brand,
+        sidebar_flow,
+        status_strip,
+    )
+except ImportError:  # pragma: no cover
+    inject_theme = lambda: None  # type: ignore[assignment]
+    app_header = lambda *a, **k: st.title(a[0] if a else "LLM Extractinator")  # type: ignore
+    status_strip = lambda *a, **k: None  # type: ignore[assignment]
+    sidebar_brand = lambda: st.markdown("### 🧩 Studio")  # type: ignore[assignment]
+    sidebar_flow = lambda *a, **k: None  # type: ignore[assignment]
+
+try:
+    from importlib.metadata import version as _pkg_version
+
+    APP_VERSION = _pkg_version("llm_extractinator")
+except Exception:  # pragma: no cover
+    APP_VERSION = ""
 
 # ──────────────────── Global paths ───────────────────────────────
 BASE_DIR = Path(os.environ.get("EXTRACTINATOR_BASE_DIR", Path.cwd()))
@@ -69,50 +97,85 @@ def _fetch_model_thinking(model_name: str, host: str = "http://localhost:11434")
 
 
 # ──────────────────── Streamlit config ───────────────────────────
+_LOGO_PATH = Path(__file__).parent / "assets" / "logo.png"
 st.set_page_config(
     page_title="LLM Extractinator Studio",
-    page_icon="🧩",
+    page_icon=str(_LOGO_PATH) if _LOGO_PATH.exists() else "🧩",
     layout="wide",
     menu_items={
-        "Get help": "https://github.com/your‑org/llm‑extractinator",
-        "About": "Built with ❤️  &  Streamlit",
+        "Get help": "https://github.com/DIAGNijmegen/llm_extractinator",
+        "About": "LLM Extractinator Studio — structured extraction from unstructured text.",
     },
 )
-PAGE = st.session_state.get("page", "studio")  # studio | builder
+inject_theme()
+app_header(
+    "LLM Extractinator Studio",
+    "Structured extraction from unstructured text, powered by local LLMs.",
+    badge="Studio",
+)
 
-# ──────────────────── Sidebar – navigation ───────────────────────
+# ──────────────────── Sidebar ────────────────────────────────────
 with st.sidebar:
-    st.title("🧩 Studio")
+    sidebar_brand()
 
-    if PAGE == "studio":
-        if st.button(
-            "🛠️ Open Parser Builder", help="Switch to the visual parser‑schema builder"
-        ):
-            st.session_state["page"] = "builder"
-            st.rerun()
-    else:
-        if st.button("← Back to Studio", help="Return to the main Studio page"):
-            st.session_state["page"] = "studio"
-            st.rerun()
+    st.divider()
 
-    if st.button("🔄 Reset Session", help="Clear cache & reload with fresh state"):
+    st.markdown('<div class="lx-sb-label">Workflow</div>', unsafe_allow_html=True)
+    sidebar_flow(
+        [
+            ("Task", "Configure or pick a task"),
+            ("Run", "Choose a model and run it"),
+            ("Results", "Explore the extracted output"),
+        ]
+    )
+
+    st.divider()
+
+    if st.button(
+        "🔄 Reset session",
+        help="Clear cached selections & reload with fresh state",
+        width="stretch",
+    ):
         for k in list(st.session_state.keys()):
             if k.startswith("task_") or k in {
                 "data_path",
                 "examples_path",
                 "parser_path",
+                "parser_choice",
+                "parser_mode",
+                "parser_select",
+                "schema_builder",
+                "schema_builder_last_saved",
                 "input_field",
+                "input_field_select",
                 "task_ready",
                 "task_choice",
+                "task_mode",
+                "model_name",
+                "ollama_host",
+                "view_run",
             }:
                 del st.session_state[k]
         st.rerun()
 
-    st.markdown("---")
-    st.caption(f"📁 Working directory: `{BASE_DIR}`")
+    st.caption("Working directory")
+    st.markdown(
+        f"<div class='lx-workdir'>{BASE_DIR}</div>",
+        unsafe_allow_html=True,
+    )
 
     st.divider()
-    st.caption("Built with ❤️ & Streamlit • Luc Builtjes 2025")
+
+    _ver = f"v{APP_VERSION}" if APP_VERSION else "LLM Extractinator"
+    st.markdown(
+        '<div class="lx-sb-foot">'
+        f"<span>{_ver}</span><span class='dot'>•</span>"
+        '<a href="https://diagnijmegen.github.io/llm_extractinator/" target="_blank">Docs</a>'
+        "<span class='dot'>•</span>"
+        '<a href="https://github.com/DIAGNijmegen/llm_extractinator" target="_blank">GitHub</a>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 # ──────────────────── Helpers ────────────────────────────────────
@@ -207,14 +270,15 @@ def next_free_task_id() -> str:
 
 
 def list_output_runs() -> list[Path]:
-    """Return sorted list of run folders that contain a predictions file."""
+    """Return run folders that contain a predictions file, newest first."""
     if not OUT_DIR.exists():
         return []
-    return sorted(
+    runs = [
         p
         for p in OUT_DIR.iterdir()
         if p.is_dir() and (p / "nlp-predictions-dataset.json").exists()
-    )
+    ]
+    return sorted(runs, key=lambda p: p.stat().st_mtime, reverse=True)
 
 
 def classify_fields(record: dict) -> tuple[dict, dict]:
@@ -231,165 +295,316 @@ def classify_fields(record: dict) -> tuple[dict, dict]:
     return scalar, structured
 
 
-# ──────────────────── Parser Builder page ───────────────────────
-if PAGE == "builder":
-    st.header("🛠️ Parser Builder")
-    render_schema_builder(embed=True)
-    st.stop()
+def render_task_summary(obj: dict, *, bordered: bool = True) -> None:
+    """Show a friendly summary of a Task JSON object (instead of raw JSON).
 
-# ──────────────────── Main Studio page ───────────────────────────
+    Set ``bordered=False`` when rendering inside another card to avoid nesting.
+    """
+    box = st.container(border=True) if bordered else st.container()
+    with box:
+        st.markdown(f"**Description**  \n{obj.get('Description', '—')}")
+        c1, c2 = st.columns(2)
+        c1.markdown(f"**Dataset**  \n`{obj.get('Data_Path', '—')}`")
+        c1.markdown(f"**Text column**  \n`{obj.get('Input_Field', '—')}`")
+        c2.markdown(f"**Output schema**  \n`{obj.get('Parser_Format', '—')}`")
+        c2.markdown(f"**Examples**  \n`{obj.get('Example_Path', '— (none)')}`")
 
-tab_qs, tab_build, tab_run, tab_inspect = st.tabs(
-    ["🚀 Quick‑start", "🛠️ Build Task", "▶️ Run", "🔍 Inspect"]
-)
 
-# 1️⃣ QUICK‑START TAB
-with tab_qs:
-    st.header("🚀 Quick‑start with an existing Task")
-    tasks = sorted(TASK_DIR.glob("Task*.json"))
-    if tasks:
-        task_labels = [p.name for p in tasks]
-        task_choice = st.selectbox(
-            "Select a Task JSON",
-            ["—"] + task_labels,
-            index=0,
-            help="Pick a pre‑configured Task file to load",
-        )
-        if task_choice != "—":
-            path = TASK_DIR / task_choice
-            st.json(json.loads(path.read_text()), expanded=False)
-            if st.button(
-                "✅ Use this Task", help="Load the selected Task into the Run tab"
-            ):
-                st.session_state.update(
-                    {"task_choice": task_choice, "task_ready": True}
-                )
-                st.toast("Task selected → switch to ▶️ Run tab", icon="🎉")
-    else:
-        st.info("No Task files found. Build one in the next tab →")
+# ──────────────────── Output-schema builder (modal) ─────────────
 
-# 2️⃣ BUILD‑TASK TAB
-with tab_build:
-    st.header("🛠️ Build a new Task file")
 
-    files_complete = False
+@st.dialog("🛠️ Build output schema", width="large")
+def _schema_builder_dialog() -> None:
+    """Visual schema builder in a modal so it doesn't crowd the task form."""
+    st.caption(
+        "Add the fields the model should extract, then click "
+        "**💾 Save & use this schema**. It'll be selected for the task automatically."
+    )
+    saved = render_schema_builder(embed=True, use_sidebar=False, save_dir=PAR_DIR)
+    if saved and saved.exists():
+        st.success(f"Saved `{saved.name}` — click below to use it.")
+        if st.button("Use this schema & close", type="primary", width="stretch"):
+            # Hand the filename to parser_input via a pending flag so it can set
+            # the selectbox's widget state *before* the widget is created on the
+            # next run (setting it here would be too late — the widget already ran).
+            st.session_state["parser_pending"] = saved.name
+            st.session_state.pop("schema_builder_last_saved", None)
+            st.rerun()
 
-    # ─── Files sub‑step ──
-    st.subheader("Step 1 • Select or upload your files")
-    data_path = pick_or_upload("Dataset (.csv / .json)", DATA_DIR, (".csv", ".json"))
 
-    input_field = st.session_state.get("input_field")
-    if data_path:
-        try:
-            df = (
-                pd.read_csv(data_path)
-                if data_path.suffix == ".csv"
-                else pd.read_json(data_path)
-            )
-            text_cols = [
-                c for c in df.columns if df[c].dtype in ("object", "string")
-            ]
-            if text_cols:
-                saved_col = st.session_state.get("input_field")
-                default_idx = text_cols.index(saved_col) if saved_col in text_cols else 0
-                input_field = st.selectbox(
-                    "Text column",
-                    text_cols,
-                    index=default_idx,
-                    key="input_field_select",
-                    help="Which column contains the raw text the model should parse?",
-                )
-                st.session_state["input_field"] = input_field
-            else:
-                st.error("No text columns detected.")
-        except Exception as e:
-            st.error(f"Failed to read dataset: {e}")
-
-    parser_path = pick_or_upload("Output parser (.py)", PAR_DIR, (".py",))
-
-    examples_path = pick_or_upload(
-        "Examples (.json) [optional]",
-        EX_DIR,
-        (".json",),
-        optional=True,
+def parser_input() -> Path | None:
+    """Pick an existing output schema, build a new one (modal), or upload a .py."""
+    st.markdown("**Output schema**")
+    st.caption(
+        "Defines the fields the model should extract and their types "
+        "(a Pydantic model whose top-level class is `OutputParser`)."
     )
 
-    if data_path and parser_path and input_field:
-        files_complete = True
-        st.success("✓ Files ready")
+    files = sorted(f.name for f in PAR_DIR.iterdir() if f.suffix.lower() == ".py")
 
-    # ─── Description sub‑step ──
-    if files_complete:
-        st.subheader("Step 2 • Describe the task")
-        desc = st.text_area(
-            "Task description",
-            st.session_state.get("task_description", ""),
-            help="Explain in plain language what this Task should accomplish.",
-        )
-        task_id = st.text_input(
-            "3‑digit Task ID",
-            st.session_state.get("task_id", next_free_task_id()),
-            max_chars=3,
-            help="Unique identifier (000‑999) – auto‑suggested if left blank.",
-        )
-        if desc.strip() and task_id.isdigit() and int(task_id) < 1000:
-            st.session_state.update(
-                {"task_description": desc.strip(), "task_id": f"{int(task_id):03d}"}
-            )
-            st.success("✓ Description captured")
+    # A schema just built/saved in the modal announces itself here. Set the
+    # selectbox's widget state now, before the widget is instantiated below.
+    pending = st.session_state.pop("parser_pending", None)
+    if pending and pending in files:
+        st.session_state["parser_select"] = pending
+        st.session_state["parser_choice"] = pending
 
-    # ─── Review & save sub‑step ──
-    if files_complete and "task_description" in st.session_state:
-        st.subheader("Step 3 • Review & save")
-        task_json_obj: dict[str, str] = {
-            "Description": st.session_state["task_description"],
-            "Data_Path": Path(data_path).name,
-            "Input_Field": input_field,
-            "Parser_Format": Path(parser_path).name,
-        }
-        if examples_path:
-            task_json_obj["Example_Path"] = Path(examples_path).name
+    sel_col, btn_col = st.columns([3, 1])
 
-        st.json(task_json_obj, expanded=False)
-
-        task_json_path = TASK_DIR / f"Task{st.session_state['task_id']}.json"
-        needs_write = (
-            not task_json_path.exists()
-            or json.loads(task_json_path.read_text()) != task_json_obj
-        )
+    with btn_col:
+        st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
         if st.button(
-            "💾 Save Task", disabled=not needs_write, help="Write the Task JSON to disk"
+            "🛠️ Build new",
+            width="stretch",
+            key="open_builder",
+            help="Design a schema visually in a pop-up",
         ):
-            task_json_path.write_text(json.dumps(task_json_obj, indent=4))
-            st.toast(f"Saved → {task_json_path.relative_to(BASE_DIR)}", icon="💾")
-            st.session_state.update(
-                {"task_choice": task_json_path.name, "task_ready": True}
-            )
+            st.session_state.pop("schema_builder_last_saved", None)
+            _schema_builder_dialog()
 
-# 3️⃣ RUN‑TASK TAB
-with tab_run:
-    st.header("▶️ Run Extractinator")
+    path: Path | None = None
+    with sel_col:
+        if files:
+            # Seed the widget's initial value from parser_choice (or the first
+            # file) when it has no valid selection yet. Driving it purely through
+            # session state avoids the "default value ignored" warning that comes
+            # from passing `index` alongside a keyed widget.
+            if st.session_state.get("parser_select") not in files:
+                seed = st.session_state.get("parser_choice")
+                st.session_state["parser_select"] = seed if seed in files else files[0]
+            choice = st.selectbox(
+                "Schema file",
+                files,
+                key="parser_select",
+                help="Pick a schema from tasks/parsers/",
+            )
+            st.session_state["parser_choice"] = choice
+            path = PAR_DIR / choice
+        else:
+            st.info("No schema files yet — click **Build new** to create one.")
+
+    with st.expander("Upload a .py schema instead"):
+        upload = st.file_uploader("Drag a .py file", type=["py"], key="parser_uploader")
+        if upload is not None:
+            up_path = PAR_DIR / upload.name
+            up_path.write_bytes(upload.getbuffer())
+            st.session_state["parser_choice"] = upload.name
+            st.toast(f"Saved → {up_path.relative_to(BASE_DIR)}")
+            path = up_path
+
+    if path is not None and path.exists():
+        with st.expander("Preview schema"):
+            preview_file(path)
+    return path
+
+
+# ──────────────────── Task-building sub-flows ───────────────────
+
+
+def use_existing_task() -> None:
+    """Let the user pick a pre-configured Task file and mark it ready."""
+    tasks = list(sorted(TASK_DIR.glob("Task*.json")))
+    if not tasks:
+        st.info("No task files found yet. Switch to **Build a new task** to create one.")
+        return
+
+    labels = [p.name for p in tasks]
+    default = st.session_state.get("task_choice")
+    idx = labels.index(default) if default in labels else 0
+    choice = st.selectbox(
+        "Task file",
+        labels,
+        index=idx,
+        help="Pick a pre‑configured task to load",
+    )
+    path = TASK_DIR / choice
+    try:
+        obj = json.loads(path.read_text())
+    except Exception as e:
+        st.error(f"Could not read task file: {e}")
+        return
+
+    render_task_summary(obj)
+    with st.expander("Raw JSON"):
+        st.json(obj, expanded=False)
+
+    if st.button("✅ Use this task", type="primary"):
+        st.session_state.update({"task_choice": choice, "task_ready": True})
+        st.toast("Task ready — open the ▶️ Run tab above.", icon="🎉")
+        st.rerun()
+
+
+def build_new_task() -> None:
+    """Three-step form to compose and save a new Task JSON."""
+    files_complete = False
+
+    # ─── Step 1 · inputs ──
+    with st.container(border=True):
+        st.markdown('<span class="lx-step">Step 1 · inputs</span>', unsafe_allow_html=True)
+        st.markdown("#### Select your data and output schema")
+        data_path = pick_or_upload("Dataset (.csv / .json)", DATA_DIR, (".csv", ".json"))
+
+        input_field = st.session_state.get("input_field")
+        if data_path:
+            try:
+                df = (
+                    pd.read_csv(data_path)
+                    if data_path.suffix == ".csv"
+                    else pd.read_json(data_path)
+                )
+                text_cols = [c for c in df.columns if df[c].dtype in ("object", "string")]
+                if text_cols:
+                    saved_col = st.session_state.get("input_field")
+                    default_idx = text_cols.index(saved_col) if saved_col in text_cols else 0
+                    input_field = st.selectbox(
+                        "Text column",
+                        text_cols,
+                        index=default_idx,
+                        key="input_field_select",
+                        help="Which column contains the raw text the model should parse?",
+                    )
+                    st.session_state["input_field"] = input_field
+                else:
+                    st.error("No text columns detected.")
+            except Exception as e:
+                st.error(f"Failed to read dataset: {e}")
+
+        st.divider()
+        parser_path = parser_input()
+
+        st.divider()
+        examples_path = pick_or_upload(
+            "Examples (.json) [optional]",
+            EX_DIR,
+            (".json",),
+            optional=True,
+        )
+
+        if data_path and parser_path and input_field:
+            files_complete = True
+            st.success("✓ Inputs ready")
+
+    # ─── Step 2 · describe ──
+    if files_complete:
+        with st.container(border=True):
+            st.markdown('<span class="lx-step">Step 2 · describe</span>', unsafe_allow_html=True)
+            st.markdown("#### Tell the model what to do")
+            desc = st.text_area(
+                "Task description",
+                st.session_state.get("task_description", ""),
+                help="Explain in plain language what this task should accomplish.",
+            )
+            id_col, _ = st.columns([1, 2])
+            task_id = id_col.text_input(
+                "3‑digit Task ID",
+                st.session_state.get("task_id", next_free_task_id()),
+                max_chars=3,
+                help="Unique identifier (000‑999) – auto‑suggested if left blank.",
+            )
+            if desc.strip() and task_id.isdigit() and int(task_id) < 1000:
+                st.session_state.update(
+                    {"task_description": desc.strip(), "task_id": f"{int(task_id):03d}"}
+                )
+                st.success("✓ Description captured")
+
+    # ─── Step 3 · review & save ──
+    if files_complete and "task_description" in st.session_state:
+        with st.container(border=True):
+            st.markdown('<span class="lx-step">Step 3 · review &amp; save</span>', unsafe_allow_html=True)
+            st.markdown("#### Review and save the task")
+            task_json_obj: dict[str, str] = {
+                "Description": st.session_state["task_description"],
+                "Data_Path": Path(data_path).name,
+                "Input_Field": input_field,
+                "Parser_Format": Path(parser_path).name,
+            }
+            if examples_path:
+                task_json_obj["Example_Path"] = Path(examples_path).name
+
+            render_task_summary(task_json_obj, bordered=False)
+
+            task_json_path = TASK_DIR / f"Task{st.session_state['task_id']}.json"
+            needs_write = (
+                not task_json_path.exists()
+                or json.loads(task_json_path.read_text()) != task_json_obj
+            )
+            if st.button(
+                "💾 Save task",
+                type="primary",
+                disabled=not needs_write,
+                help="Write the task JSON to disk and mark it ready to run",
+            ):
+                task_json_path.write_text(json.dumps(task_json_obj, indent=4))
+                st.toast(f"Saved → {task_json_path.relative_to(BASE_DIR)}", icon="💾")
+                st.session_state.update(
+                    {"task_choice": task_json_path.name, "task_ready": True}
+                )
+                st.rerun()
+
+
+# ──────────────────── Persistent status strip ──────────────────
+# Reserve the strip's position here (just under the header) but fill it at the
+# very end of the script — after the Run tab has had a chance to update the
+# current model and any fresh run — so its values are never a step behind.
+_strip_slot = st.container()
+
+
+def _render_status_strip() -> None:
+    runs = list_output_runs()
+    task_ready = bool(st.session_state.get("task_ready"))
+    task_label = st.session_state.get("task_choice", "None selected") if task_ready else "None selected"
+    model = st.session_state.get("model_name")
+    run_label = runs[0].name if runs else "None yet"
+    status_strip(
+        [
+            ("Task", task_label, task_ready),
+            ("Model", model or "Not chosen yet", bool(model)),
+            ("Latest run", run_label, bool(runs)),
+        ]
+    )
+
+
+# ──────────────────── Main flow: Task → Run → Results ──────────
+tab_task, tab_run, tab_results = st.tabs(["📝 Task", "▶️ Run", "📊 Results"])
+
+# 1️⃣ TASK
+with tab_task:
+    st.subheader("Configure a task")
+    mode = st.radio(
+        "How would you like to start?",
+        ["Use an existing task", "Build a new task"],
+        horizontal=True,
+        key="task_mode",
+        label_visibility="collapsed",
+    )
+    st.divider()
+    if mode == "Use an existing task":
+        use_existing_task()
+    else:
+        build_new_task()
+
+# 2️⃣ RUN
+# Defined as a function so an early `return` stops only this tab — using
+# st.stop() inside a tab would halt the whole script and blank the other tabs.
+def render_run_tab() -> None:
+    st.subheader("Run the extractor")
 
     if not st.session_state.get("task_ready"):
-        st.info("Choose a Task in 🛠️ Build Task or 🚀 Quick‑start first.")
-        st.stop()
+        st.info("Choose or build a task on the **📝 Task** tab first.")
+        return
 
-    # ─── Task selection ──
-    task_files = sorted(TASK_DIR.glob("Task*.json"))
+    # ─── Task to run ──
+    task_files = [p.name for p in sorted(TASK_DIR.glob("Task*.json"))]
     default_idx = next(
-        (
-            i
-            for i, p in enumerate(task_files)
-            if p.name == st.session_state.get("task_choice")
-        ),
+        (i for i, name in enumerate(task_files) if name == st.session_state.get("task_choice")),
         0,
     )
     task_choice = st.selectbox(
-        "Task file",
-        [p.name for p in task_files],
+        "Task to run",
+        task_files,
         index=default_idx,
         key="task_choice",
-        help="Select which Task configuration to execute",
+        help="Which task configuration to execute",
     )
 
     # ─── Model & sampling settings ──
@@ -433,6 +648,7 @@ with tab_run:
         )
     else:
         model_name = _selected
+    st.session_state["model_name"] = model_name
     _thinking_detected = _fetch_model_thinking(model_name, **_host_kwargs)
     _tog_col1, _tog_col2 = st.columns(2)
     reasoning = _tog_col1.toggle(
@@ -642,22 +858,48 @@ with tab_run:
 
             return_code = process.wait()
 
-        st.success("Finished successfully ✅" if return_code == 0 else "Failed ❌")
+        # ─── Completion → hand off to Results ──
+        if return_code == 0:
+            st.success("Finished successfully ✅")
+            runs_after = list_output_runs()
+            if runs_after:
+                newest = runs_after[0]
+                st.session_state["view_run"] = newest.name
+                try:
+                    recs = json.loads(
+                        (newest / "nlp-predictions-dataset.json").read_text(encoding="utf-8")
+                    )
+                    tot = len(recs)
+                    ok = sum(1 for r in recs if r.get("status") == "success")
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Records", tot)
+                    m2.metric("✅ Successes", ok)
+                    m3.metric("❌ Failures", tot - ok)
+                except Exception:
+                    pass
+                st.info(
+                    f"Saved to **{newest.name}** — open the **📊 Results** tab to explore it."
+                )
+        else:
+            st.error("Failed ❌ — check the log above for details.")
 
-# 4️⃣ INSPECT TAB
-with tab_inspect:
-    st.header("🔍 Inspect Outputs")
+# 3️⃣ RESULTS
+def render_results_tab() -> None:
+    st.subheader("Explore results")
 
     runs = list_output_runs()
     if not runs:
-        st.info("No output runs found yet. Run a task first to generate results.")
-        st.stop()
+        st.info("No results yet. Run a task on the **▶️ Run** tab to generate output.")
+        return
 
-    run_labels = [p.name for p in runs]
+    run_labels = [p.name for p in runs]  # already newest-first
+    default_run = st.session_state.get("view_run")
+    idx = run_labels.index(default_run) if default_run in run_labels else 0
     selected_run = st.selectbox(
-        "Select a run",
+        "Run",
         run_labels,
-        help="Choose an output run folder to inspect",
+        index=idx,
+        help="Choose an output run to inspect (newest first)",
     )
     run_path = OUT_DIR / selected_run
     records: list[dict] = json.loads(
@@ -696,13 +938,9 @@ with tab_inspect:
 
     if not filtered:
         st.warning("No records match the current filters.")
-        st.stop()
+        return
 
     # ─── Build summary dataframe ──
-    # Find a representative record to determine columns
-    sample = filtered[0]
-    scalar_sample, structured_sample = classify_fields(sample)
-
     rows = []
     for r in filtered:
         sc, st_ = classify_fields(r)
@@ -767,3 +1005,17 @@ with tab_inspect:
                     st.json(v, expanded=True)
             else:
                 st.info("No structured output fields in this record.")
+    else:
+        st.caption("Select a row above to see the full record.")
+
+
+# ──────────────────── Render Run & Results tabs ────────────────
+with tab_run:
+    render_run_tab()
+
+with tab_results:
+    render_results_tab()
+
+# Fill the status strip now that model_name / latest run are up to date.
+with _strip_slot:
+    _render_status_strip()

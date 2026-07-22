@@ -48,6 +48,7 @@ include = ["llm_extractinator*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.md"]
+"llm_extractinator" = ["assets/*.png"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
