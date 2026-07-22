@@ -20,12 +20,14 @@ It follows a professional documentation pattern:
 | `--overwrite` | `False` | Overwrites existing outputs if enabled. |
 | `--seed` | `None` | Random seed for reproducibility. |
 | `--model_name` | `"phi4"` | Model used via Ollama. |
+| `--ollama_host` | `None` | Connect to an already-running Ollama server instead of managing one. |
 | `--embedding_model` | `"nomic-embed-text"` | Embedding model for few‑shot selection. |
 | `--temperature` | `0.0` | Sampling randomness. |
 | `--top_k` | `None` | Top‑K sampling. |
 | `--top_p` | `None` | Nucleus sampling. |
 | `--num_predict` | `512` | Maximum generated tokens. |
 | `--max_context_len` | `"max"` | Context length strategy. |
+| `--quantile` | `0.8` | Split point for `--max_context_len split` (short vs long cases). |
 | `--reasoning_model` | `False` | Enables reasoning‑model mode. |
 | `--num_examples` | `0` | Number of few‑shot examples. |
 | `--chunk_size` | `None` | Chunk size for long inputs. |
@@ -92,6 +94,17 @@ Name of the Ollama model to use (e.g., `"phi4"`, `"llama3.3"`, `"deepseek-r1:8b"
 
 ---
 
+### `--ollama_host`
+
+**Type:** `str`
+**Default:** `None`
+Base URL of an already-running Ollama server, e.g. `"http://localhost:11500"` or `"http://remote-machine:11434"`.
+
+- **Unset (default):** llm_extractinator manages its own server — starting it, pulling `--model_name`/`--embedding_model` as needed, and stopping the model when the run finishes.
+- **Set:** the server is treated as externally managed — llm_extractinator only connects to it. It will not start/stop the server and will not pull models onto it, so make sure the model is already available there.
+
+---
+
 ### `--embedding_model`
 
 **Type:** `str`
@@ -136,8 +149,15 @@ Maximum number of tokens to generate for the model’s output.
 **Default:** `"max"`  
 Controls context length policy:
 - `"max"` — use maximum available length  
-- `"split"` — split dataset in two by input size  
+- `"split"` — split dataset in two by input size, running each subset with a right-sized context (good when lengths vary a lot); results are merged afterwards  
 - integer — explicitly set context length
+
+---
+
+### `--quantile`
+**Type:** `float`  
+**Default:** `0.8`  
+Only used with `--max_context_len split`. Sets the token-count quantile that divides "short" from "long" cases — at `0.8`, the longest 20% are run as the long subset. Must be between 0 and 1.
 
 ---
 
@@ -215,15 +235,18 @@ Folder where translated versions of inputs are saved when using `--translate`.
 
 ## 3. Task Configuration Files
 
-Task files define what to extract and how to parse it.  
-Files follow the pattern:
+Task files define what to extract and how to parse it. They must be named:
 
 ```
-TaskXXX_name.json
+Task<NNN>...json
 ```
 
-Example:  
-`Task001_products.json` → task ID `1`.
+where `<NNN>` is a **zero-padded three-digit ID**. Anything may follow the ID (an optional `_name` is common) as long as it isn't another digit, so all of these are valid and share ID `1`:
+
+- `Task001.json` (what the Studio saves)
+- `Task001_products.json`
+
+IDs must be unique within a task directory. Reference a task by its integer ID: `--task_id 1`.
 
 ---
 
@@ -267,8 +290,8 @@ Required only if using `--num_examples > 0`.
 ## 4. Additional Commands
 
 ### `build-parser`
-Launches a Streamlit tool for interactively building Pydantic parser models.
+Opens the **Output Schema Builder** — a Streamlit tool for building the Pydantic `OutputParser` model visually and saving it to `tasks/parsers/`.
 
 ### `launch-extractinator`
-Opens the Streamlit GUI for assembling datasets, parsers, and tasks.
+Opens the **Studio**, the full Streamlit app for assembling datasets, output schemas, and tasks, then running them and inspecting results. See [Studio](studio.md).
 

@@ -2,20 +2,13 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 import tiktoken
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
-
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-import pandas as pd
-import tiktoken
 
 
 class DataLoader:

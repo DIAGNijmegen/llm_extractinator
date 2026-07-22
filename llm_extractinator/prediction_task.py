@@ -39,6 +39,7 @@ class PredictionTask:
         "top_k",
         "top_p",
         "reasoning_model",
+        "ollama_host",
         "train_path",
         "test_path",
         "input_field",
@@ -67,7 +68,9 @@ class PredictionTask:
         # Auto-detect thinking capability; reasoning_model flag is the manual override.
         # When auto-detected (but not manually requested), also bump num_predict so
         # thinking tokens don't consume the entire generation budget.
-        self._is_thinking = model_supports_thinking(self.model_name) or bool(self.reasoning_model)
+        self._is_thinking = model_supports_thinking(
+            self.model_name, host=self.ollama_host
+        ) or bool(self.reasoning_model)
         if self._is_thinking and not self.reasoning_model:
             logger.info(
                 "Auto-detected thinking model '%s' — enabling reasoning mode and bumping num_predict.",
@@ -83,11 +86,13 @@ class PredictionTask:
             examples_path=self.example_dir,
             num_examples=self.num_examples,
             task_dir=self.task_dir,
+            ollama_host=self.ollama_host,
         )
 
     def initialize_model(self) -> ChatOllama:
         return ChatOllama(
             model=self.model_name,
+            base_url=self.ollama_host,
             temperature=self.temperature,
             num_predict=self.num_predict,
             num_ctx=self.max_context_len,

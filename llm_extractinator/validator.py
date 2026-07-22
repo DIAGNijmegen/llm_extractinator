@@ -1,7 +1,10 @@
+import logging
 import random
 from typing import Any, Dict, Literal, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel, ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 def handle_failure(annotation):
@@ -77,7 +80,7 @@ def validate_results(
             pass
 
     # If we get here, everything has failed. We provide a final fallback.
-    print("[validate_results] Provided data is invalid. Assigning defaults.")
+    logger.warning("Provided data is invalid. Assigning defaults.")
     fallback_data = {}
     for field_name, field_def in parser_model.model_fields.items():
         fallback_data[field_name] = handle_failure(field_def.annotation)

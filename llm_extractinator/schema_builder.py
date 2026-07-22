@@ -25,9 +25,16 @@ from __future__ import annotations
 
 import ast
 import os
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
+
+try:
+    from theme import app_header, inject_theme  # type: ignore
+except ImportError:  # pragma: no cover
+    inject_theme = lambda: None  # type: ignore[assignment]
+    app_header = None  # type: ignore[assignment]
 
 ################################################################################
 # Constants
@@ -37,6 +44,18 @@ SPECIAL_TYPES = ["list", "dict", "Any", "Literal"]
 _DEFAULT_MODEL_NAME = "OutputParser"
 _DEFAULT_EXPORT_NAME = "output_parser"
 _STATE_KEY = "schema_builder"  # namespace all session_state under one key
+_LAST_SAVED_KEY = "schema_builder_last_saved"  # path of the most recently saved parser
+
+
+def _default_save_dir() -> Path:
+    """Where exported parsers are written.
+
+    Mirrors the GUI's resolution of the project root via EXTRACTINATOR_BASE_DIR so
+    the standalone builder and the embedded Studio builder always agree on
+    ``tasks/parsers``.
+    """
+    base = Path(os.environ.get("EXTRACTINATOR_BASE_DIR", Path.cwd()))
+    return base / "tasks" / "parsers"
 
 
 ################################################################################
@@ -89,7 +108,9 @@ def _detect_imports() -> list[str]:
     for fields in _models().values():
         for f in fields:
             t = f["type"]
-            if f.get("field_expr"):
+            # Only import Field when the expression actually uses it (a bare
+            # ``= None`` default is a field_expr too, but needs no import).
+            if f.get("field_expr") and "Field(" in f["field_expr"]:
                 use_field = True
             if t.startswith("Optional["):
                 typing.add("Optional")
@@ -98,8 +119,9 @@ def _detect_imports() -> list[str]:
                 typing.add("Any")
             if t.startswith("Literal["):
                 typing.add("Literal")
-            if t.startswith("list[") or t.startswith("dict["):
-                typing.update({"list", "dict"})
+            # NB: list[...] / dict[...] are builtin generics (PEP 585) and must
+            # NOT be imported from typing — typing has no list/dict members, so
+            # doing so would make the generated parser raise ImportError.
 
     if typing:
         imports.add(f"from typing import {', '.join(sorted(typing))}")
@@ -212,8 +234,11 @@ def _design_ui(container) -> None:
     """Main design tab: add/delete fields per model."""
     with container:
         models_snapshot = list(_models())  # avoid changing dict while iterating
+        # Expand the model automatically when it's the only one, so the common
+        # single-model case needs no extra click.
+        solo = len(models_snapshot) == 1
         for model_name in models_snapshot:
-            with st.expander(f"🧰 {model_name}", expanded=False):
+            with st.expander(f"🧰 {model_name}", expanded=solo):
                 st.markdown(f"### Define fields for `{model_name}`")
 
                 # --- field inputs row --------------------------------------------------
@@ -339,9 +364,11 @@ def _code_ui(container) -> None:
         st.code(code, language="python")
 
 
-def _export_ui(container) -> None:
+def _export_ui(container, *, save_dir: Path | None = None) -> None:
     with container:
         st.subheader("📅 Export")
+        save_dir = Path(save_dir) if save_dir is not None else _default_save_dir()
+
         export_name_key = "sb_export_file_name"
         export_name = st.text_input(
             "Filename",
@@ -362,14 +389,18 @@ def _export_ui(container) -> None:
                 key="sb_download_btn",
             )
         with col2:
-            if st.button("💾 Save to tasks/parsers/", key="sb_save_btn"):
-                path = os.path.join("tasks", "parsers")
-                os.makedirs(path, exist_ok=True)
-                with open(
-                    os.path.join(path, f"{export_name}.py"), "w", encoding="utf-8"
-                ) as f:
-                    f.write(code)
-                st.success("Saved successfully.")
+            if st.button(
+                "💾 Save & use this schema",
+                key="sb_save_btn",
+                type="primary",
+                help=f"Write the parser to {save_dir}",
+            ):
+                save_dir.mkdir(parents=True, exist_ok=True)
+                path = save_dir / f"{export_name}.py"
+                path.write_text(code, encoding="utf-8")
+                # Advertise the saved file so an embedding app can pick it up.
+                st.session_state[_LAST_SAVED_KEY] = path
+                st.success(f"Saved → {path.name}")
 
 
 ################################################################################
@@ -377,51 +408,88 @@ def _export_ui(container) -> None:
 ################################################################################
 
 
-def render_schema_builder(*, embed: bool = False) -> None:
-    """Render the Pydantic-model builder UI.
+def render_schema_builder(
+    *,
+    embed: bool = False,
+    use_sidebar: bool | None = None,
+    save_dir: str | os.PathLike | None = None,
+) -> Path | None:
+    """Render the visual output-schema (Pydantic model) builder UI.
 
     Parameters
     ----------
     embed : bool, default False
         False → full standalone page (page_config, title, intro copy).
         True  → slim/embedded mode for use inside another app/tab.
+    use_sidebar : bool, optional
+        Whether the model-manager and import controls live in ``st.sidebar``.
+        Defaults to ``not embed`` — i.e. standalone uses the sidebar, but an
+        embedded builder keeps everything inline so it doesn't fight the host
+        app's own sidebar navigation.
+    save_dir : path-like, optional
+        Directory the "Save & use" button writes to. Defaults to
+        ``<EXTRACTINATOR_BASE_DIR>/tasks/parsers``.
+
+    Returns
+    -------
+    Path | None
+        The path of the parser saved during this render, if any.
     """
     _init_session()
+    if use_sidebar is None:
+        use_sidebar = not embed
 
     # ------------------------------------------------------------------ Page shell
     if not embed:
+        _logo = Path(__file__).parent / "assets" / "logo.png"
         # set_page_config can only be called once; ignore duplicate attempts
         try:  # pragma: no cover - streamlit runtime side-effect
             st.set_page_config(
-                page_title="Pydantic v2 Model Builder", layout="wide", page_icon="🛠️"
+                page_title="Output Schema Builder",
+                layout="wide",
+                page_icon=str(_logo) if _logo.exists() else "🛠️",
             )
         except Exception:  # catch RuntimeError on re-run or prior set
             pass
 
-        st.title("🛠️ Pydantic Model Builder")
+        inject_theme()
+        if app_header is not None:
+            app_header(
+                "Output Schema Builder",
+                "Define the fields the model extracts — no code required.",
+                badge="Schema",
+            )
+        else:  # pragma: no cover
+            st.title("🛠️ Output Schema Builder")
         st.markdown(
             """
-            Build and preview **Pydantic v2** models without writing any code.
-
-            **What can you do here?**
-            - Create Python data models using a visual interface.
-            - Add fields with built‑in types, collections, or nested models.
-            - **Import** existing model files to continue editing them.
-            - Export the resulting code to use in your projects.
+            Define the **output schema** — the fields the model should extract and
+            their types — without writing any code. Internally this is a
+            **Pydantic v2** model. Build it visually, import an existing schema to
+            keep editing, then export the Python to use in a task.
             """
         )
 
-    # ------------------------------------------------------------------ Sidebar (still shown when embedded; host app controls layout)
-    with st.sidebar:
-        manager_tab, import_tab = st.tabs(["📦 Model Manager", "📂 Import file"])
-        _manager_ui(manager_tab)
-        _import_ui(import_tab)
+    # ------------------------------------------------------------------ Model manager + import
+    if use_sidebar:
+        with st.sidebar:
+            manager_tab, import_tab = st.tabs(["📦 Model Manager", "📂 Import file"])
+            _manager_ui(manager_tab)
+            _import_ui(import_tab)
+    else:
+        with st.expander("📦 Models & import", expanded=False):
+            manager_tab, import_tab = st.tabs(["📦 Model Manager", "📂 Import file"])
+            _manager_ui(manager_tab)
+            _import_ui(import_tab)
 
     # ------------------------------------------------------------------ Main area
     design_tab, code_tab, export_tab = st.tabs(["🔗 Design", "📝 Code", "📅 Export"])
     _design_ui(design_tab)
     _code_ui(code_tab)
-    _export_ui(export_tab)
+    _export_ui(export_tab, save_dir=save_dir)
+
+    saved = st.session_state.get(_LAST_SAVED_KEY)
+    return Path(saved) if saved else None
 
 
 ################################################################################

@@ -6,7 +6,7 @@ This page explains:
 
 - What to change (Docker / local)
 - How to run with **CPU-only**
-- Why you should **pick a smaller model**, e.g. `qwen3:8b`
+- Why you should **pick a smaller model**, e.g. `qwen3.5:2b`
 
 !!! Note
       Using a GPU is **strongly recommended**, as it allows you to run larger models which generally perform better.
@@ -25,7 +25,7 @@ Whether inference runs on **GPU or CPU** is controlled by:
 So to go CPU-only you mainly need to:
 
 1. Start Ollama without GPU access, and
-2. Use a **small model** such as `qwen3:8b`.
+2. Use a **small model** such as `qwen3.5:2b`.
 
 Everything else (tasks, parsers, CLI flags) stays the same.
 
@@ -40,18 +40,18 @@ Therefore for CPU-only hardware:
 - Prefer models smaller than **10B parameters**
 - Use the default **quantized** variants from Ollama
 - Good starting point:
-  - `qwen3:8b`
+  - `qwen3.5:2b`
 
 Example CLI call:
 
 ```bash
-extractinate --task_id 1 --model_name "qwen3:8b" --reasoning_model
+extractinate --task_id 1 --model_name "qwen3.5:2b" --reasoning_model
 ```
 
 !!! Note
       We use the `--reasoning_model` flag here because `qwen3` is a reasoning-capable model. If you use a different model that does not emit intermediate reasoning, you can omit this flag.
 
-If this still throws an error or inference is too slow, you can choose an even smaller model such as `qwen3:4b`, `qwen3:1.7b`, or even `qwen3:0.6b`. Alternatively, you can further tune `--num_predict`, `--max_context_len`, and `--num_examples` (see below).
+If this still throws an error or inference is too slow, you can choose an even smaller model such as `qwen3:1.7b` or even `qwen3:0.6b`. Alternatively, you can further tune `--num_predict`, `--max_context_len`, and `--num_examples` (see below).
 
 !!! Warning
       Very small models may struggle to follow complex instructions or produce high-quality outputs. Always spot-check the results to ensure they meet your requirements.
@@ -81,7 +81,7 @@ Inside the container:
 
 - Ollama will run in CPU mode.
 - The Studio (`launch-extractinator`) and CLI (`extractinate`) work exactly the same.
-- The main difference is **speed**, so use a smaller model such as `qwen3:8b`.
+- The main difference is **speed**, so use a smaller model such as `qwen3.5:2b`.
 
 ---
 
@@ -94,13 +94,13 @@ If you run everything directly on your machine instead of Docker:
 3. Pull a small model:
 
    ```bash
-   ollama pull qwen3:8b
+   ollama pull qwen3.5:2b
    ```
 
 4. Run Extractinator with that model:
 
    ```bash
-   extractinate --task_id 1 --model_name "qwen3:8b" --reasoning_model
+   extractinate --task_id 1 --model_name "qwen3.5:2b" --reasoning_model
    ```
 
 On a machine without a compatible GPU, Ollama will automatically fall back to CPU-only.
@@ -118,7 +118,7 @@ On CPU you pay more dearly for every token, so it’s worth dialling a few knobs
 Use a smaller `--num_predict`:
 
 ```bash
-extractinate --task_id 1   --model_name "qwen3:8b"   --num_predict 256 --reasoning_model
+extractinate --task_id 1   --model_name "qwen3.5:2b"   --num_predict 256 --reasoning_model
 ```
 
 This caps how long the model’s response can be.
@@ -128,7 +128,7 @@ This caps how long the model’s response can be.
 If your inputs are very long, you can reduce the effective context via `--max_context_len`:
 
 ```bash
-extractinate --task_id 1   --model_name "qwen3:8b"   --max_context_len 2048 --reasoning_model
+extractinate --task_id 1   --model_name "qwen3.5:2b"   --max_context_len 2048 --reasoning_model
 ```
 
 This can significantly reduce compute on very long texts.
@@ -147,13 +147,13 @@ For CPU-only runs:
 
 If you only have a CPU and want a sane setup:
 
-1. **Pick a small model**, e.g. `qwen3:8b`.
+1. **Pick a small model**, e.g. `qwen3.5:2b`.
 2. If using Docker, **remove `--gpus all`** from the run command.
 3. If running locally, make sure Ollama is installed and running; pull the CPU-friendly model.
 4. Start with:
 
    ```bash
-   extractinate --task_id 1 --model_name "qwen3:8b" --num_predict 256 --max_context_len 2048 --num_examples 0 --reasoning_model
+   extractinate --task_id 1 --model_name "qwen3.5:2b" --num_predict 256 --max_context_len 2048 --num_examples 0 --reasoning_model
    ```
 
 5. If that’s fast enough, you can gradually increase `--num_predict` or context length as needed.

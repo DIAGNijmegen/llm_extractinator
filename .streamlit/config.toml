@@ -1,0 +1,10 @@
+# Baseline theme for LLM Extractinator when the app is launched from the repo
+# root. The authoritative, cwd-independent theme lives in llm_extractinator/
+# theme.py (injected as CSS at runtime); this file just makes Streamlit's own
+# widgets start from matching colors.
+[theme]
+base = "light"
+primaryColor = "#12a3a0"
+backgroundColor = "#f6f8fb"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#2c3a4f"

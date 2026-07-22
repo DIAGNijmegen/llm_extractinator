@@ -4,28 +4,28 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+from typing import Optional
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 _OLLAMA_HOST = "http://localhost:11434"
-_OLLAMA_URL = f"{_OLLAMA_HOST}/api/tags"
 
 
-def _ollama_is_running() -> bool:
+def _ollama_is_running(host: str = _OLLAMA_HOST) -> bool:
     try:
-        urllib.request.urlopen(_OLLAMA_URL, timeout=2)
+        urllib.request.urlopen(f"{host}/api/tags", timeout=2)
         return True
     except (urllib.error.URLError, OSError):
         return False
 
 
-def model_supports_thinking(model_name: str) -> bool:
-    """Return True if the locally installed model advertises thinking capability."""
+def model_supports_thinking(model_name: str, host: Optional[str] = None) -> bool:
+    """Return True if the given server's model advertises thinking capability."""
     try:
         data = json.dumps({"name": model_name}).encode()
         req = urllib.request.Request(
-            f"{_OLLAMA_HOST}/api/show",
+            f"{host or _OLLAMA_HOST}/api/show",
             data=data,
             headers={"Content-Type": "application/json"},
         )
@@ -37,13 +37,24 @@ def model_supports_thinking(model_name: str) -> bool:
 
 
 class OllamaServerManager:
-    def __init__(self, log_dir):
+    def __init__(self, log_dir, host: Optional[str] = None):
         self.process = None
+        self.host = host or _OLLAMA_HOST
+        # True when the caller pointed us at an already-running server: we only
+        # connect to it, never start/pull models onto/stop it ourselves.
+        self.externally_managed = host is not None
         self._external = False  # True when Ollama was already running before we started
         self.log_file = log_dir / "ollama_server.log"
 
     def start_server(self):
-        if _ollama_is_running():
+        if self.externally_managed:
+            logger.info(
+                "Using externally managed Ollama server at %s — skipping start.",
+                self.host,
+            )
+            return
+
+        if _ollama_is_running(self.host):
             logger.info("Ollama server already running — skipping start.")
             self._external = True
             return
@@ -62,11 +73,15 @@ class OllamaServerManager:
         # Wait for the server to become ready
         for _ in range(10):
             time.sleep(1)
-            if _ollama_is_running():
+            if _ollama_is_running(self.host):
                 break
         logger.info("Ollama server started.")
 
     def stop(self, model_name):
+        if self.externally_managed:
+            logger.info("Externally managed Ollama server — skipping model stop.")
+            return
+
         command = ["ollama", "stop", model_name]
         try:
             subprocess.run(command, check=True, text=True)
@@ -75,6 +90,10 @@ class OllamaServerManager:
             logger.error(f"Failed to stop model '{model_name}'.")
 
     def pull_model(self, model_name):
+        if self.externally_managed:
+            logger.info("Externally managed Ollama server — skipping model pull.")
+            return
+
         command = ["ollama", "pull", model_name]
         try:
             subprocess.run(command, check=True, text=True)

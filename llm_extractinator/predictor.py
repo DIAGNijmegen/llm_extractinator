@@ -66,6 +66,7 @@ class Predictor:
         examples_path: Path,
         num_examples: int,
         task_dir: Path = Path(os.getcwd()) / "tasks",
+        ollama_host: Optional[str] = None,
     ) -> None:
         """
         Initialize the Predictor with the provided model, task configuration, and paths.
@@ -75,6 +76,7 @@ class Predictor:
         self.num_examples = num_examples
         self.examples_path = examples_path
         self.task_dir = task_dir
+        self.ollama_host = ollama_host
         self._extract_task_info()
 
     def _extract_task_info(self) -> None:
@@ -133,8 +135,13 @@ class Predictor:
 
         if examples:
             logger.info("Creating few-shot prompt.")
-            ollama.pull(embedding_model)
-            self.embedding_model = _TruncatingEmbeddings(OllamaEmbeddings(model=embedding_model))
+            if self.ollama_host:
+                logger.info("Externally managed Ollama server — skipping embedding model pull.")
+            else:
+                ollama.pull(embedding_model)
+            self.embedding_model = _TruncatingEmbeddings(
+                OllamaEmbeddings(model=embedding_model, base_url=self.ollama_host)
+            )
             from langchain_core.example_selectors import (
                 MaxMarginalRelevanceExampleSelector,
             )

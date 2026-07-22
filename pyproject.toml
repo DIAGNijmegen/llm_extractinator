@@ -1,3 +1,59 @@
 [build-system]
 requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm_extractinator"
+dynamic = ["version"]
+description = "A framework that enables efficient extraction of structured data from unstructured text using large language models (LLMs)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+    { name = "Luc Builtjes", email = "Luc.Builtjes@radboudumc.nl" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas>=2.2.3",
+    "tqdm>=4.67.1",
+    "pydantic>=2.10.6",
+    "langchain>=0.3.16,<1.0.0",
+    "langchain-core>=0.3.32",
+    "langchain-chroma>=0.2.1",
+    "langchain-ollama>=0.3.0",
+    "ollama>=0.5.0",
+    "tiktoken>=0.8.0",
+    "streamlit>=1.45.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.scripts]
+extractinate = "llm_extractinator.main:main"
+build-parser = "llm_extractinator.launch_schema_builder:main"
+launch-extractinator = "llm_extractinator.launch_gui:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "llm_extractinator.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["llm_extractinator*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md"]
+"llm_extractinator" = ["assets/*.png"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--strict-markers --cov=llm_extractinator --cov-report=term-missing"
+testpaths = ["tests"]
+markers = [
+    "integration: requires Ollama and a local LLM (skipped in CI)",
+]
