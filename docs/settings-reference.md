@@ -27,6 +27,7 @@ It follows a professional documentation pattern:
 | `--top_p` | `None` | Nucleus sampling. |
 | `--num_predict` | `512` | Maximum generated tokens. |
 | `--max_context_len` | `"max"` | Context length strategy. |
+| `--quantile` | `0.8` | Split point for `--max_context_len split` (short vs long cases). |
 | `--reasoning_model` | `False` | Enables reasoning‑model mode. |
 | `--num_examples` | `0` | Number of few‑shot examples. |
 | `--chunk_size` | `None` | Chunk size for long inputs. |
@@ -148,8 +149,15 @@ Maximum number of tokens to generate for the model’s output.
 **Default:** `"max"`  
 Controls context length policy:
 - `"max"` — use maximum available length  
-- `"split"` — split dataset in two by input size  
+- `"split"` — split dataset in two by input size, running each subset with a right-sized context (good when lengths vary a lot); results are merged afterwards  
 - integer — explicitly set context length
+
+---
+
+### `--quantile`
+**Type:** `float`  
+**Default:** `0.8`  
+Only used with `--max_context_len split`. Sets the token-count quantile that divides "short" from "long" cases — at `0.8`, the longest 20% are run as the long subset. Must be between 0 and 1.
 
 ---
 
@@ -227,15 +235,18 @@ Folder where translated versions of inputs are saved when using `--translate`.
 
 ## 3. Task Configuration Files
 
-Task files define what to extract and how to parse it.  
-Files follow the pattern:
+Task files define what to extract and how to parse it. They must be named:
 
 ```
-TaskXXX_name.json
+Task<NNN>...json
 ```
 
-Example:  
-`Task001_products.json` → task ID `1`.
+where `<NNN>` is a **zero-padded three-digit ID**. Anything may follow the ID (an optional `_name` is common) as long as it isn't another digit, so all of these are valid and share ID `1`:
+
+- `Task001.json` (what the Studio saves)
+- `Task001_products.json`
+
+IDs must be unique within a task directory. Reference a task by its integer ID: `--task_id 1`.
 
 ---
 
@@ -279,8 +290,8 @@ Required only if using `--num_examples > 0`.
 ## 4. Additional Commands
 
 ### `build-parser`
-Launches a Streamlit tool for interactively building Pydantic parser models.
+Opens the **Output Schema Builder** — a Streamlit tool for building the Pydantic `OutputParser` model visually and saving it to `tasks/parsers/`.
 
 ### `launch-extractinator`
-Opens the Streamlit GUI for assembling datasets, parsers, and tasks.
+Opens the **Studio**, the full Streamlit app for assembling datasets, output schemas, and tasks, then running them and inspecting results. See [Studio](studio.md).
 

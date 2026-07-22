@@ -8,23 +8,33 @@ theme:
     - content.code.copy
 nav:
   - Home: index.md
-  - Installation: installation.md
-  - Preparing Data: preparing-data.md
-  - Parser: parser.md
-  - CLI Usage: cli.md
-  - LLM Extractinator Studio: studio.md
-  - Manual Configuration: manual-configuration.md
-  - Python: python.md
-  - Docker: docker.md
-  - Settings: settings-reference.md
-  - Few-Shot Prompting: examples.md
-  - CPU only: cpu-only.md
+  - Getting started:
+      - Installation: installation.md
+      - Quickstart: quickstart.md
+  - Building tasks:
+      - Preparing Data: preparing-data.md
+      - Output Schema: parser.md
+      - Few-Shot Prompting: examples.md
+      - Manual Configuration: manual-configuration.md
+  - Running:
+      - Studio: studio.md
+      - CLI Usage: cli.md
+      - Python API: python.md
+      - Understanding Output: output.md
+  - Reference:
+      - Settings & Flags: settings-reference.md
+      - Troubleshooting: troubleshooting.md
+  - Deployment:
+      - Docker: docker.md
+      - CPU only: cpu-only.md
 markdown_extensions:
   - admonition
   - codehilite
   - pymdownx.details
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - tables
   - toc:
       permalink: true

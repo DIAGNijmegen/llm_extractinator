@@ -1,55 +1,90 @@
-# Parser
+# Output schema
 
-The parser defines the **output shape**: the fields, their types, and nesting. Internally this is a **Pydantic** model.
+The **output schema** defines what the model gives back: the fields, their types, and how they nest. Under the hood it's a **Pydantic v2 model**, and in task files it's referred to as the `Parser_Format`.
 
-You can create it in two ways:
+!!! info "One naming rule"
+    The **top-level class must be named `OutputParser`**. That's the class Extractinator validates every model response against. Nested/helper models can be named anything.
 
-1. using the **visual builder** (recommended): `build-parser`
-2. writing the Pydantic model by hand
+You can create a schema two ways:
 
-## 1. Visual builder
+1. the **visual builder** (recommended) — no Python required, or
+2. writing the Pydantic model **by hand**.
 
-Run:
+---
+
+## 1. The visual builder
+
+Open the standalone builder:
 
 ```bash
 build-parser
 ```
 
-This opens the UI where you can:
+…or use it inside the Studio: on the **Task** tab, choose *Build a new task* and click **🛠️ Build new** next to *Output schema*. Either way you get the **Output Schema Builder**, where you can:
 
-- add fields (string, int, float, list, nested model)
-- rename the model
-- preview the generated Python
-- export it
+- add fields with primitive types (`str`, `int`, `float`, `bool`), collections (`list`, `dict`), `Literal` choices, or nested models,
+- mark fields optional,
+- rename the model,
+- preview the generated Python live, and
+- **import** an existing schema file to keep editing it.
 
-When you export, save the file to:
+When you save, the file is written to `tasks/parsers/<name>.py`. In the Studio it's also selected for your task automatically.
 
-```text
-tasks/parsers/<name>.py
-```
+---
 
-## 2. Structure of the generated file
+## 2. Writing one by hand
 
-A generated parser file usually looks like:
+A schema file is just a Pydantic model:
 
 ```python
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 
 class OutputParser(BaseModel):
     patient_id: str
     findings: Optional[str] = None
-    measurements: Optional[List[float]] = None
+    measurements: Optional[list[float]] = None
 ```
 
-You can edit this file manually if you want to add validators or docstrings.
+Save it under `tasks/parsers/` and reference the filename in your task JSON.
 
-!!! tip
-    You can also write your own Pydantic models from scratch. Just make sure they inherit from `BaseModel` and the top level class is named `OutputParser`. You can ask your favorite LLM to help you with setting it up for your specific use case!
+### Nested models
 
-## 3. Using the parser in a task
+Use a helper model for repeated structure, and reference it from `OutputParser`:
 
-In your task JSON:
+```python
+from pydantic import BaseModel
+
+class Product(BaseModel):
+    name: str
+    price: float
+
+class OutputParser(BaseModel):
+    products: list[Product]
+```
+
+### Optional fields and choices
+
+```python
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+
+class OutputParser(BaseModel):
+    summary: str = Field(description="One-sentence summary of the report")
+    severity: Optional[Literal["low", "medium", "high"]] = None
+    followups: list[str] = []
+```
+
+`Field(description=...)` is passed to the model as guidance, so descriptive text here can improve extraction.
+
+!!! tip "Let an LLM draft it"
+    Writing schemas from scratch? Describe your fields to your favourite chat model and ask for a Pydantic v2 model with a top-level `OutputParser` class — then paste it in or import it into the builder.
+
+---
+
+## 3. Using the schema in a task
+
+Reference the **filename** (not a path) in your task JSON:
 
 ```json
 {
@@ -57,10 +92,13 @@ In your task JSON:
 }
 ```
 
-The extractor will load the Python model from `tasks/parsers/report.py` and tell the LLM to return JSON that matches it.
+Extractinator loads the model from `tasks/parsers/report.py` and instructs the LLM to return JSON matching it. When a response can't be coerced into the schema, that record is marked `"status": "failure"` with default values filled in (see [Understanding output](output.md)).
 
-## 4. Good practices
+---
 
-- keep field names lowercase and descriptive
-- prefer `Optional[...]` for fields that might not be present in the text
-- start with a small model and expand it once the LLM returns consistent data
+## Good practices
+
+- Keep field names **lowercase and descriptive** — they double as hints to the model.
+- Prefer **`Optional[...]`** for anything that might genuinely be absent, rather than forcing a value.
+- **Start small.** Get two or three fields returning reliably before expanding the schema.
+- Use **`Literal`** when a field should be one of a fixed set of values — it constrains the model and makes downstream code simpler.

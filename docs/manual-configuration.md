@@ -1,47 +1,77 @@
-# Manual Configuration
+# Manual configuration
 
-This page is for users who want to create task files and parsers **by hand** without the Studio.
+Prefer to work in files rather than the Studio? Everything the Studio produces is plain text you can create by hand. This page covers the layout and conventions.
 
 ## Directory layout
 
-A common layout is:
+A typical project:
 
 ```text
 .
 ├── data/
-│   └── reports.csv
+│   └── reports.csv              # your source data
 ├── tasks/
-│   ├── Task001_reports.json
+│   ├── Task001_reports.json     # a task file
 │   └── parsers/
-│       └── report.py
-└── output/
+│       └── report.py            # the output schema (Pydantic model)
+├── examples/                    # optional few-shot files
+└── output/                      # results are written here
 ```
 
-- `data/` — your source CSV/JSON
-- `tasks/` — your task JSONs
-- `tasks/parsers/` — Python files with Pydantic models
-- `output/` — where extraction results go
+These map to the CLI's default directories (`--data_dir`, `--task_dir`, `--example_dir`, `--output_dir`), so if you keep this layout you rarely need to pass any path flags.
 
-## Task JSON fields
+## The task file
 
-Minimum viable task:
+A minimal task:
 
 ```json
 {
   "Description": "Extract structured info from radiology reports",
-  "Data_Path": "data/reports.csv",
+  "Data_Path": "reports.csv",
   "Input_Field": "text",
   "Parser_Format": "report.py"
 }
 ```
 
-The only additional field you may want is `Example_Path` if you intend to use example-based prompting.
+| Field | Required | Notes |
+|---|---|---|
+| `Description` | ✅ | Plain-language instruction to the model |
+| `Data_Path` | ✅ | Dataset filename, relative to `--data_dir` |
+| `Input_Field` | ✅ | Exact column/key holding the text |
+| `Parser_Format` | ✅ | Schema filename in `tasks/parsers/` |
+| `Example_Path` | — | Few-shot file, relative to `--example_dir` (only if using examples) |
 
-## Naming
+`Data_Path` and `Parser_Format` are **filenames**, resolved against the data and `tasks/parsers/` directories respectively — not full paths.
 
-Use the `TaskXXX_name.json` style so the CLI can pick task IDs reliably:
+## Naming task files
 
-- `Task001_reports.json` → `--task_id 1`
-- `Task010_products.json` → `--task_id 10`
+Task files must be named so the CLI can extract the numeric ID:
 
-Stick to **integers** in the CLI to avoid confusion.
+```text
+Task<NNN>...json
+```
+
+- `<NNN>` is a **zero-padded three-digit** number — this is the ID.
+- Anything may follow it (an underscore and a descriptive name is common), as long as it isn't another digit.
+
+Examples:
+
+| Filename | `--task_id` |
+|---|---|
+| `Task001.json` | `1` |
+| `Task001_reports.json` | `1` |
+| `Task010_products.json` | `10` |
+
+Each ID must be **unique** within a task directory — two files with the same ID is an error. Always reference tasks by their integer ID on the CLI (`--task_id 10`).
+
+## The output schema
+
+`Parser_Format` points at a Python file in `tasks/parsers/` defining a Pydantic model whose top-level class is named `OutputParser`. See [Output schema](parser.md) for how to write one (or generate it with `build-parser`).
+
+## Next
+
+Run your hand-built task exactly like any other:
+
+```bash
+extractinate --task_id 1 --model_name "phi4"
+```
