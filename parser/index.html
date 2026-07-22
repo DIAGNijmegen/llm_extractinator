@@ -12,22 +12,22 @@
         <link rel="prev" href="../preparing-data/">
       
       
-        <link rel="next" href="../cli/">
+        <link rel="next" href="../examples/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Parser - LLM Extractinator</title>
+        <title>Output Schema - LLM Extractinator</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#parser" class="md-skip">
+        <a href="#output-schema" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Parser
+              Output Schema
             
           </span>
         </div>
@@ -246,6 +246,58 @@
   
   
   
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
         
@@ -266,9 +318,99 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building tasks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Building tasks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
   
   
   
@@ -293,9 +435,10 @@
     </li>
   
 
-    
-      
-      
+              
+            
+              
+                
   
   
     
@@ -317,7 +460,7 @@
   <span class="md-ellipsis">
     
   
-    Parser
+    Output Schema
   
 
     
@@ -335,7 +478,7 @@
   <span class="md-ellipsis">
     
   
-    Parser
+    Output Schema
   
 
     
@@ -361,10 +504,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-visual-builder" class="md-nav__link">
+  <a href="#1-the-visual-builder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Visual builder
+        1. The visual builder
       
     </span>
   </a>
@@ -372,10 +515,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
+  <a href="#2-writing-one-by-hand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Structure of the generated file
+        2. Writing one by hand
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Writing one by hand">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nested models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-fields-and-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional fields and choices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-using-the-schema-in-a-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Using the schema in a task
       
     </span>
   </a>
@@ -383,21 +565,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
+  <a href="#good-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Using the parser in a task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-good-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Good practices
+        Good practices
       
     </span>
   </a>
@@ -411,171 +582,10 @@
     </li>
   
 
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../studio/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    LLM Extractinator Studio
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../manual-configuration/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Manual Configuration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../python/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../docker/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Docker
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../settings-reference/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settings
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
+              
+            
+              
+                
   
   
   
@@ -600,9 +610,411 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understanding Output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings & Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
   
   
   
@@ -624,6 +1036,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -655,10 +1075,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-visual-builder" class="md-nav__link">
+  <a href="#1-the-visual-builder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Visual builder
+        1. The visual builder
       
     </span>
   </a>
@@ -666,10 +1086,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-structure-of-the-generated-file" class="md-nav__link">
+  <a href="#2-writing-one-by-hand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Structure of the generated file
+        2. Writing one by hand
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Writing one by hand">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nested models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-fields-and-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional fields and choices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-using-the-schema-in-a-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Using the schema in a task
       
     </span>
   </a>
@@ -677,21 +1136,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-using-the-parser-in-a-task" class="md-nav__link">
+  <a href="#good-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Using the parser in a task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-good-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Good practices
+        Good practices
       
     </span>
   </a>
@@ -718,54 +1166,83 @@
   
 
 
-<h1 id="parser">Parser<a class="headerlink" href="#parser" title="Permanent link">&para;</a></h1>
-<p>The parser defines the <strong>output shape</strong>: the fields, their types, and nesting. Internally this is a <strong>Pydantic</strong> model.</p>
-<p>You can create it in two ways:</p>
+<h1 id="output-schema">Output schema<a class="headerlink" href="#output-schema" title="Permanent link">&para;</a></h1>
+<p>The <strong>output schema</strong> defines what the model gives back: the fields, their types, and how they nest. Under the hood it's a <strong>Pydantic v2 model</strong>, and in task files it's referred to as the <code>Parser_Format</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">One naming rule</p>
+<p>The <strong>top-level class must be named <code>OutputParser</code></strong>. That's the class Extractinator validates every model response against. Nested/helper models can be named anything.</p>
+</div>
+<p>You can create a schema two ways:</p>
 <ol>
-<li>using the <strong>visual builder</strong> (recommended): <code>build-parser</code></li>
-<li>writing the Pydantic model by hand</li>
+<li>the <strong>visual builder</strong> (recommended) — no Python required, or</li>
+<li>writing the Pydantic model <strong>by hand</strong>.</li>
 </ol>
-<h2 id="1-visual-builder">1. Visual builder<a class="headerlink" href="#1-visual-builder" title="Permanent link">&para;</a></h2>
-<p>Run:</p>
+<hr />
+<h2 id="1-the-visual-builder">1. The visual builder<a class="headerlink" href="#1-the-visual-builder" title="Permanent link">&para;</a></h2>
+<p>Open the standalone builder:</p>
 <div class="highlight"><pre><span></span><code>build-parser
 </code></pre></div>
-<p>This opens the UI where you can:</p>
+<p>…or use it inside the Studio: on the <strong>Task</strong> tab, choose <em>Build a new task</em> and click <strong>🛠️ Build new</strong> next to <em>Output schema</em>. Either way you get the <strong>Output Schema Builder</strong>, where you can:</p>
 <ul>
-<li>add fields (string, int, float, list, nested model)</li>
-<li>rename the model</li>
-<li>preview the generated Python</li>
-<li>export it</li>
+<li>add fields with primitive types (<code>str</code>, <code>int</code>, <code>float</code>, <code>bool</code>), collections (<code>list</code>, <code>dict</code>), <code>Literal</code> choices, or nested models,</li>
+<li>mark fields optional,</li>
+<li>rename the model,</li>
+<li>preview the generated Python live, and</li>
+<li><strong>import</strong> an existing schema file to keep editing it.</li>
 </ul>
-<p>When you export, save the file to:</p>
-<div class="highlight"><pre><span></span><code>tasks/parsers/&lt;name&gt;.py
-</code></pre></div>
-<h2 id="2-structure-of-the-generated-file">2. Structure of the generated file<a class="headerlink" href="#2-structure-of-the-generated-file" title="Permanent link">&para;</a></h2>
-<p>A generated parser file usually looks like:</p>
+<p>When you save, the file is written to <code>tasks/parsers/&lt;name&gt;.py</code>. In the Studio it's also selected for your task automatically.</p>
+<hr />
+<h2 id="2-writing-one-by-hand">2. Writing one by hand<a class="headerlink" href="#2-writing-one-by-hand" title="Permanent link">&para;</a></h2>
+<p>A schema file is just a Pydantic model:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">OutputParser</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">patient_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">findings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">measurements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">measurements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
-<p>You can edit this file manually if you want to add validators or docstrings.</p>
+<p>Save it under <code>tasks/parsers/</code> and reference the filename in your task JSON.</p>
+<h3 id="nested-models">Nested models<a class="headerlink" href="#nested-models" title="Permanent link">&para;</a></h3>
+<p>Use a helper model for repeated structure, and reference it from <code>OutputParser</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Product</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">price</span><span class="p">:</span> <span class="nb">float</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">OutputParser</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">products</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Product</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="optional-fields-and-choices">Optional fields and choices<a class="headerlink" href="#optional-fields-and-choices" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">OutputParser</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;One-sentence summary of the report&quot;</span><span class="p">)</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="s2">&quot;high&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">followups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre></div>
+<p><code>Field(description=...)</code> is passed to the model as guidance, so descriptive text here can improve extraction.</p>
 <div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>You can also write your own Pydantic models from scratch. Just make sure they inherit from <code>BaseModel</code> and the top level class is named <code>OutputParser</code>. You can ask your favorite LLM to help you with setting it up for your specific use case!</p>
+<p class="admonition-title">Let an LLM draft it</p>
+<p>Writing schemas from scratch? Describe your fields to your favourite chat model and ask for a Pydantic v2 model with a top-level <code>OutputParser</code> class — then paste it in or import it into the builder.</p>
 </div>
-<h2 id="3-using-the-parser-in-a-task">3. Using the parser in a task<a class="headerlink" href="#3-using-the-parser-in-a-task" title="Permanent link">&para;</a></h2>
-<p>In your task JSON:</p>
+<hr />
+<h2 id="3-using-the-schema-in-a-task">3. Using the schema in a task<a class="headerlink" href="#3-using-the-schema-in-a-task" title="Permanent link">&para;</a></h2>
+<p>Reference the <strong>filename</strong> (not a path) in your task JSON:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Parser_Format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;report.py&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The extractor will load the Python model from <code>tasks/parsers/report.py</code> and tell the LLM to return JSON that matches it.</p>
-<h2 id="4-good-practices">4. Good practices<a class="headerlink" href="#4-good-practices" title="Permanent link">&para;</a></h2>
+<p>Extractinator loads the model from <code>tasks/parsers/report.py</code> and instructs the LLM to return JSON matching it. When a response can't be coerced into the schema, that record is marked <code>"status": "failure"</code> with default values filled in (see <a href="../output/">Understanding output</a>).</p>
+<hr />
+<h2 id="good-practices">Good practices<a class="headerlink" href="#good-practices" title="Permanent link">&para;</a></h2>
 <ul>
-<li>keep field names lowercase and descriptive</li>
-<li>prefer <code>Optional[...]</code> for fields that might not be present in the text</li>
-<li>start with a small model and expand it once the LLM returns consistent data</li>
+<li>Keep field names <strong>lowercase and descriptive</strong> — they double as hints to the model.</li>
+<li>Prefer <strong><code>Optional[...]</code></strong> for anything that might genuinely be absent, rather than forcing a value.</li>
+<li><strong>Start small.</strong> Get two or three fields returning reliably before expanding the schema.</li>
+<li>Use <strong><code>Literal</code></strong> when a field should be one of a fixed set of values — it constrains the model and makes downstream code simpler.</li>
 </ul>
 
 
@@ -822,10 +1299,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
