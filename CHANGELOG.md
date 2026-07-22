@@ -8,7 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.6.0] - 2026-07-22
 
+- Redesign Studio with a shared brand theme (`theme.py`): branded header, dark sidebar with workflow guide, card-styled metrics/expanders, packaged logo assets; schema builder matches the same look
+- Reorganize and expand documentation: grouped mkdocs nav (Getting started / Building tasks / Running / Reference / Deployment), new Quickstart, Understanding Output, and Troubleshooting pages
 - Add `--ollama_host` to connect to an already-running Ollama server (local on a different port, or remote) instead of always spinning up and managing one
+- Rewrite test suite as hermetic offline pipeline tests, with the real-model check moved behind an opt-in `integration` marker
 - Fix `seed=0` being silently ignored in `extractinate` (`if config.seed:` treated 0 as falsy)
 - Route error output through `logging` instead of `print`/`traceback.print_exc()` so it reaches the log file
 - Remove a duplicate import block in `data_loader.py`
