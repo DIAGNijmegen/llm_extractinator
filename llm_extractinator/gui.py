@@ -394,7 +394,19 @@ with tab_run:
 
     # ─── Model & sampling settings ──
     st.subheader("🧠 Model settings")
-    _installed_models = _fetch_ollama_models()
+    ollama_host = st.text_input(
+        "Ollama server URL (optional)",
+        value=st.session_state.get("ollama_host", ""),
+        placeholder="e.g. http://localhost:11500 — leave blank to auto-manage a local server",
+        help=(
+            "Point at an already-running Ollama server instead of having llm_extractinator "
+            "start/stop its own. When set, the model must already be pulled on that server — "
+            "llm_extractinator won't pull or unload models on a server it doesn't manage."
+        ),
+    ).strip()
+    st.session_state["ollama_host"] = ollama_host
+    _host_kwargs = {"host": ollama_host} if ollama_host else {}
+    _installed_models = _fetch_ollama_models(**_host_kwargs)
     _OTHER = "Other (enter below)…"
     _options = _installed_models + [_OTHER] if _installed_models else []
     if _options:
@@ -421,7 +433,7 @@ with tab_run:
         )
     else:
         model_name = _selected
-    _thinking_detected = _fetch_model_thinking(model_name)
+    _thinking_detected = _fetch_model_thinking(model_name, **_host_kwargs)
     _tog_col1, _tog_col2 = st.columns(2)
     reasoning = _tog_col1.toggle(
         "Reasoning model?",
@@ -584,6 +596,8 @@ with tab_run:
             cmd += ["--max_context_len", max_ctx]
         if num_examples:
             cmd += ["--num_examples", str(num_examples)]
+        if ollama_host:
+            cmd += ["--ollama_host", ollama_host]
 
         st.markdown("##### Final command")
         bash(cmd)

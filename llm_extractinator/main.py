@@ -88,6 +88,7 @@ class TaskConfig:
     top_k: Optional[int] = None
     top_p: Optional[float] = None
     seed: Optional[int] = None
+    ollama_host: Optional[str] = None
 
     # File Paths
     output_dir: Optional[Path] = None
@@ -227,7 +228,7 @@ class TaskRunner:
 
     def _run_with_manager(self) -> None:
         """Runs the task with a managed Ollama server."""
-        manager = OllamaServerManager(self.config.log_dir)
+        manager = OllamaServerManager(self.config.log_dir, host=self.config.ollama_host)
         manager.start_server()
         manager.pull_model(self.config.model_name)
         filepath = self._run_task()
@@ -434,6 +435,18 @@ def parse_args() -> TaskConfig:
     )
     parser.add_argument(
         "--seed", type=int, default=None, help="Random seed for reproducibility."
+    )
+    parser.add_argument(
+        "--ollama_host",
+        type=str,
+        default=None,
+        help=(
+            "Base URL of an already-running Ollama server, e.g. 'http://localhost:11500' "
+            "or 'http://remote-machine:11434'. If not set, llm_extractinator manages its own "
+            "server on the default port (starting/stopping it and pulling models as needed). "
+            "When set, the server is treated as externally managed: llm_extractinator will not "
+            "start it, pull models onto it, or stop it — it only connects."
+        ),
     )
 
     # File Paths

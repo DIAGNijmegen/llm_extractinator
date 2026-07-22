@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.6.0] - 2026-07-22
 
+- Add `--ollama_host` to connect to an already-running Ollama server (local on a different port, or remote) instead of always spinning up and managing one
 - Fix `seed=0` being silently ignored in `extractinate` (`if config.seed:` treated 0 as falsy)
 - Route error output through `logging` instead of `print`/`traceback.print_exc()` so it reaches the log file
 - Remove a duplicate import block in `data_loader.py`

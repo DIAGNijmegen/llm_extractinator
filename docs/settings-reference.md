@@ -20,6 +20,7 @@ It follows a professional documentation pattern:
 | `--overwrite` | `False` | Overwrites existing outputs if enabled. |
 | `--seed` | `None` | Random seed for reproducibility. |
 | `--model_name` | `"phi4"` | Model used via Ollama. |
+| `--ollama_host` | `None` | Connect to an already-running Ollama server instead of managing one. |
 | `--embedding_model` | `"nomic-embed-text"` | Embedding model for few‑shot selection. |
 | `--temperature` | `0.0` | Sampling randomness. |
 | `--top_k` | `None` | Top‑K sampling. |
@@ -89,6 +90,17 @@ Random seed for reproducible behavior where possible.
 **Type:** `str`
 **Default:** `"phi4"`
 Name of the Ollama model to use (e.g., `"phi4"`, `"llama3.3"`, `"deepseek-r1:8b"`). See [Ollama models](https://ollama.com/models) for available options.
+
+---
+
+### `--ollama_host`
+
+**Type:** `str`
+**Default:** `None`
+Base URL of an already-running Ollama server, e.g. `"http://localhost:11500"` or `"http://remote-machine:11434"`.
+
+- **Unset (default):** llm_extractinator manages its own server — starting it, pulling `--model_name`/`--embedding_model` as needed, and stopping the model when the run finishes.
+- **Set:** the server is treated as externally managed — llm_extractinator only connects to it. It will not start/stop the server and will not pull models onto it, so make sure the model is already available there.
 
 ---
 
