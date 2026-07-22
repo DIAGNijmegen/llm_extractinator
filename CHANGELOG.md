@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-22
+
 - Fix `seed=0` being silently ignored in `extractinate` (`if config.seed:` treated 0 as falsy)
 - Route error output through `logging` instead of `print`/`traceback.print_exc()` so it reaches the log file
 - Remove a duplicate import block in `data_loader.py`
@@ -69,7 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Initial 0.5.x release baseline
 
-[Unreleased]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.5.14...HEAD
+[Unreleased]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.5.14...v0.6.0
 [0.5.14]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.5.13...v0.5.14
 [0.5.13]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.5.12...v0.5.13
 [0.5.12]: https://github.com/DIAGNijmegen/llm_extractinator/compare/v0.5.11...v0.5.12
