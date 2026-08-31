@@ -172,3 +172,11 @@ translations/*
 tests/testoutput/*
 tests/testtranslations/*
 ollama_models/*
+
+# Dev-test harness: the tasks and data are committed, the run artefacts are not
+devtests/output/
+devtests/reports/
+
+# Release-prep scratch, not repo content
+PR_BODY.md
+RELEASE_NOTES.md

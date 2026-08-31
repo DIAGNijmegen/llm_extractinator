@@ -1,0 +1,30 @@
+{
+  "Description": "Extract every measurement stated in a radiology report, with what was measured and how large it was.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "measurements": {
+      "type": "list",
+      "description": "Every measurement the report states, one entry per measurement",
+      "items": {
+        "type": "dict",
+        "description": "A single measurement",
+        "properties": {
+          "structure": {
+            "type": "str",
+            "description": "What was measured, e.g. 'hepatic lesion', 'common bile duct'"
+          },
+          "size_mm": {
+            "type": "float",
+            "description": "The size in millimetres"
+          },
+          "comparison": {
+            "type": "str",
+            "description": "How it compares with the prior study, if stated",
+            "optional": true
+          }
+        }
+      }
+    }
+  }
+}

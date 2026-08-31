@@ -29,9 +29,10 @@ htmlcov/
 .gitignore
 .gitattributes
 
-# Documentation
+# Documentation (docs/ is the source, site/ is the built output)
 *.md
 docs/
+site/
 README.md
 
 # IDE

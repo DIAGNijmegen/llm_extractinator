@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the paper below. See 'preferred-citation'."
 type: software
 title: "LLM Extractinator"
-version: 0.6.0
-date-released: "2026-07-21"
+version: 0.7.0
+date-released: "2026-08-28"
 url: "https://github.com/DIAGNijmegen/llm_extractinator"
 repository-code: "https://github.com/DIAGNijmegen/llm_extractinator"
 license: Apache-2.0

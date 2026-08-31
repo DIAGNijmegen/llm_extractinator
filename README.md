@@ -207,6 +207,18 @@ Every record contains your **original input columns**, the **extracted fields**,
 
 Pull requests are welcome. If you change task naming, required fields, or CLI flags, please update the docs in the same PR so the two stay in sync.
 
+```bash
+pip install -e ".[test]"
+pytest                              # offline suite — no GPU, no Ollama, a few seconds
+python devtests/run.py --model phi4  # the same pipeline against a real model
+```
+
+The two suites answer different questions: `pytest` proves the plumbing with the
+model faked out, and `devtests/` covers what a faked model structurally cannot —
+whether the grammar holds an enum, whether the output budget is big enough,
+how far the token estimate drifts on your language. See
+**[Development & testing](https://diagnijmegen.github.io/llm_extractinator/development/)**.
+
 ---
 
 ## 8. Citation & attribution

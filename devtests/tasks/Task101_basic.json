@@ -1,0 +1,19 @@
+{
+  "Description": "Extract the key facts from a radiology report. The reports are free text written by radiologists and follow no fixed template.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality used, e.g. CT, MRI, ultrasound, radiograph"
+    },
+    "body_region": {
+      "type": "str",
+      "description": "The anatomical region imaged, as named in the report"
+    },
+    "primary_finding": {
+      "type": "str",
+      "description": "The single most important finding, in the report's own words"
+    }
+  }
+}

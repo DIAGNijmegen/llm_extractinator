@@ -1,0 +1,37 @@
+{
+  "Description": "Extract whatever the report happens to state. Every field is optional: leave a field out entirely rather than guessing at it.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality, if stated",
+      "optional": true
+    },
+    "primary_finding": {
+      "type": "str",
+      "description": "The main finding, if there is one",
+      "optional": true
+    },
+    "prior_surgery": {
+      "type": "str",
+      "description": "Any previous surgery the report mentions",
+      "optional": true
+    },
+    "contrast_reaction": {
+      "type": "str",
+      "description": "Any adverse contrast reaction described",
+      "optional": true
+    },
+    "radiation_dose": {
+      "type": "str",
+      "description": "The radiation dose, if the report gives one",
+      "optional": true
+    },
+    "referring_clinician": {
+      "type": "str",
+      "description": "The named referring clinician, if given",
+      "optional": true
+    }
+  }
+}

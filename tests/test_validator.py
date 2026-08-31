@@ -1,12 +1,22 @@
-from typing import Literal, Optional, Union
+"""What a failed row carries.
 
-import pytest
+The rule under test is that a failure never looks like an answer. The previous
+implementation filled type defaults and picked a ``random.choice`` for enum
+fields, so a failed row was indistinguishable from a real extraction except for
+the ``status`` column — and not even reproducible between runs.
+"""
+
+from typing import Literal, Optional
+
+from langchain_core.exceptions import OutputParserException
 from pydantic import BaseModel
 
 from llm_extractinator.validator import (
-    handle_failure,
+    DIAGNOSTIC_FIELDS,
+    MAX_CAPTURED_CHARS,
     handle_prediction_failure,
-    validate_results,
+    raw_model_output,
+    success_diagnostics,
 )
 
 
@@ -15,116 +25,95 @@ class SimpleModel(BaseModel):
     score: int
 
 
-class NestedModel(BaseModel):
-    label: str
-    count: int
+class EnumModel(BaseModel):
+    severity: Literal["mild", "moderate", "severe"]
+    note: Optional[str] = None
 
 
-# ── handle_failure ────────────────────────────────────────────────
+# ── never invent a value ──────────────────────────────────────────
 
 
-def test_handle_failure_str():
-    assert handle_failure(str) == ""
-
-
-def test_handle_failure_int():
-    assert handle_failure(int) == 0
-
-
-def test_handle_failure_float():
-    assert handle_failure(float) == 0.0
-
-
-def test_handle_failure_bool():
-    assert handle_failure(bool) is False
-
-
-def test_handle_failure_list():
-    assert handle_failure(list) == []
-
-
-def test_handle_failure_dict():
-    assert handle_failure(dict) == {}
-
-
-def test_handle_failure_literal_returns_valid_choice():
-    result = handle_failure(Literal["a", "b", "c"])
-    assert result in {"a", "b", "c"}
-
-
-def test_handle_failure_optional_str():
-    assert handle_failure(Optional[str]) == ""
-
-
-def test_handle_failure_union_int_none():
-    assert handle_failure(Union[int, None]) == 0
-
-
-def test_handle_failure_nested_basemodel():
-    result = handle_failure(NestedModel)
-    assert isinstance(result, NestedModel)
-    assert result.label == ""
-    assert result.count == 0
-
-
-def test_handle_failure_unknown_type_returns_none():
-    class Arbitrary:
-        pass
-
-    assert handle_failure(Arbitrary) is None
-
-
-# ── handle_prediction_failure ─────────────────────────────────────
-
-
-def test_handle_prediction_failure_status_is_failure():
-    result = handle_prediction_failure(ValueError("oops"), {}, SimpleModel)
+def test_status_is_failure():
+    result = handle_prediction_failure(ValueError("oops"), SimpleModel)
     assert result["status"] == "failure"
 
 
-def test_handle_prediction_failure_fields_are_defaults():
-    result = handle_prediction_failure(RuntimeError("bad"), {}, SimpleModel)
-    assert result["name"] == ""
-    assert result["score"] == 0
+def test_every_schema_field_is_none():
+    """Not "" and not 0.
+
+    A type default is a value: ``0`` for a failed heart rate is a real zero in a
+    mean, where ``None`` becomes NaN and drops out of the statistic.
+    """
+    result = handle_prediction_failure(RuntimeError("bad"), SimpleModel)
+    assert result["name"] is None
+    assert result["score"] is None
 
 
-def test_handle_prediction_failure_does_not_use_input_values():
-    result = handle_prediction_failure(
-        ValueError("err"), {"name": "Alice", "score": 99}, SimpleModel
-    )
-    assert result["name"] == ""
-    assert result["score"] == 0
+def test_enum_fields_are_not_filled_with_a_random_valid_choice():
+    """The regression this module exists for.
+
+    ``random.choice`` over a Literal produced a plausible, non-reproducible
+    answer on a row where the model said nothing usable. Repeated, because the
+    old behaviour would only be caught intermittently by a single call.
+    """
+    for _ in range(20):
+        result = handle_prediction_failure(ValueError("x"), EnumModel)
+        assert result["severity"] is None, (
+            "a failed row was given a valid-looking severity the model "
+            "never produced"
+        )
 
 
-# ── validate_results ──────────────────────────────────────────────
+def test_no_keys_beyond_the_schema_and_the_diagnostics():
+    """The caller merges the source row on top of this one, so anything extra
+    here duplicates a column — or worse, looks like an extraction result."""
+    result = handle_prediction_failure(ValueError("err"), SimpleModel)
+    assert set(result) == {"name", "score", "status", *DIAGNOSTIC_FIELDS}
 
 
-def test_validate_results_valid_dict():
-    result = validate_results({"name": "Alice", "score": 10}, SimpleModel)
-    assert isinstance(result, SimpleModel)
-    assert result.name == "Alice"
-    assert result.score == 10
+# ── keep the evidence ─────────────────────────────────────────────
 
 
-def test_validate_results_valid_pydantic_model():
-    model = SimpleModel(name="Bob", score=5)
-    result = validate_results(model, SimpleModel)
-    assert isinstance(result, SimpleModel)
-    assert result.name == "Bob"
+def test_error_type_and_message_are_recorded():
+    error = OutputParserException("Invalid json output: blah")
+    result = handle_prediction_failure(error, SimpleModel)
+    assert result["error_type"] == "OutputParserException"
+    assert "Invalid json output" in result["error_message"]
 
 
-def test_validate_results_invalid_dict_falls_back_to_defaults():
-    # "not_an_int" cannot be coerced to int → ValidationError → fallback
-    result = validate_results({"name": "Alice", "score": "not_an_int"}, SimpleModel)
-    assert isinstance(result, SimpleModel)
-    assert result.name == ""
-    assert result.score == 0
+def test_raw_model_output_is_kept():
+    """The model's own words are the whole diagnosis.
+
+    Truncated JSON means the generation budget ran out; prose means the model
+    ignored the schema. Those need opposite fixes and are indistinguishable
+    without the text.
+    """
+    error = OutputParserException("Invalid json output", llm_output='{"name": "Ali')
+    result = handle_prediction_failure(error, SimpleModel)
+    assert result["raw_output"] == '{"name": "Ali'
 
 
-def test_validate_results_invalid_model_falls_back_to_defaults():
-    # model_construct bypasses validation, creating an intentionally broken object
-    bad = SimpleModel.model_construct(name=999, score="oops")
-    result = validate_results(bad, SimpleModel)
-    assert isinstance(result, SimpleModel)
-    assert result.name == ""
-    assert result.score == 0
+def test_raw_output_is_found_through_the_cause():
+    inner = OutputParserException("inner", llm_output="the model said this")
+    outer = ValueError("wrapped")
+    outer.__cause__ = inner
+    assert raw_model_output(outer) == "the model said this"
+
+
+def test_raw_output_is_none_when_the_model_never_answered():
+    """A transport failure has no output, and that absence is informative."""
+    assert raw_model_output(ConnectionError("Failed to connect to Ollama")) is None
+
+
+def test_long_output_is_clipped_and_says_so():
+    huge = "x" * (MAX_CAPTURED_CHARS + 500)
+    captured = raw_model_output(OutputParserException("e", llm_output=huge))
+    assert len(captured) < len(huge)
+    assert "truncated" in captured
+    assert str(len(huge)) in captured
+
+
+def test_successful_rows_carry_the_same_diagnostic_keys():
+    """One uniform set of keys per file, whether or not anything failed."""
+    assert set(success_diagnostics()) == set(DIAGNOSTIC_FIELDS)
+    assert all(value is None for value in success_diagnostics().values())

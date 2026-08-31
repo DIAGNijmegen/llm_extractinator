@@ -267,3 +267,102 @@ def test_task_loader_get_name_before_load_raises():
     loader = TaskLoader("/some/path", task_id=1)
     with pytest.raises(ValueError, match="No task file loaded"):
         loader.get_task_name()
+
+
+# ── DataLoader.estimate_context_window ────────────────────────────
+
+
+def _loader_with_examples(tmp_path, examples):
+    import json as _json
+
+    path = tmp_path / "examples.json"
+    path.write_text(_json.dumps(examples), encoding="utf-8")
+    dl = DataLoader(examples_path=path)
+    dl.load_examples()
+    return dl
+
+
+def test_estimate_counts_scaffolding_longest_input_and_output_budget(tmp_path):
+    dl = DataLoader()
+    df = pd.DataFrame({"token_count": [10, 500, 30]})
+
+    estimate = dl.estimate_context_window(
+        df, num_predict=100, scaffolding_tokens=200, safety_margin=0.0,
+        min_margin_tokens=0,
+    )
+
+    assert estimate == 200 + 500 + 100  # scaffolding + longest input + generation
+
+
+def test_estimate_applies_a_percentage_margin_to_the_prompt_only(tmp_path):
+    """The margin covers tokenizer drift, which does not apply to what we generate."""
+    dl = DataLoader()
+    df = pd.DataFrame({"token_count": [800]})
+
+    estimate = dl.estimate_context_window(
+        df, num_predict=100, scaffolding_tokens=200, safety_margin=0.10,
+        min_margin_tokens=0,
+    )
+
+    assert estimate == 1000 + 100 + 100  # prompt + 10% of prompt + generation
+
+
+def test_estimate_floors_the_margin_for_short_prompts(tmp_path):
+    """A percentage of a tiny prompt would not cover the chat template's own tokens."""
+    dl = DataLoader()
+    df = pd.DataFrame({"token_count": [10]})
+
+    estimate = dl.estimate_context_window(
+        df, num_predict=0, scaffolding_tokens=0, safety_margin=0.15,
+        min_margin_tokens=64,
+    )
+
+    assert estimate == 10 + 64
+
+
+def test_example_tokens_uses_the_longest_examples_not_the_longest_document(tmp_path):
+    """The old formula reserved `longest_document * (num_examples + 1)`.
+
+    With five examples that is six times the longest document, spending exactly
+    the VRAM the context ceiling exists to protect.
+    """
+    dl = _loader_with_examples(
+        tmp_path,
+        [
+            {"input": "short", "output": "a"},
+            {"input": "a much longer example input here", "output": "bb"},
+            {"input": "mid length example", "output": "ccc"},
+        ],
+    )
+
+    two = dl.example_tokens(2)
+    three = dl.example_tokens(3)
+
+    assert 0 < two < three  # picks the largest, and more examples cost more
+    assert dl.example_tokens(0) == 0
+
+
+def test_example_tokens_counts_the_answers_too(tmp_path):
+    """Both halves of a few-shot exchange end up in the prompt."""
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+
+    short_out = _loader_with_examples(a, [{"input": "same input", "output": "x"}])
+    long_out = _loader_with_examples(
+        b, [{"input": "same input", "output": "a considerably longer answer than x"}]
+    )
+
+    assert long_out.example_tokens(1) > short_out.example_tokens(1)
+
+
+def test_estimate_grows_with_few_shot_examples(tmp_path):
+    dl = _loader_with_examples(
+        tmp_path, [{"input": "an example input", "output": "an example answer"}]
+    )
+    df = pd.DataFrame({"token_count": [100]})
+
+    without = dl.estimate_context_window(df, num_examples=0, safety_margin=0.0, min_margin_tokens=0)
+    with_one = dl.estimate_context_window(df, num_examples=1, safety_margin=0.0, min_margin_tokens=0)
+
+    assert with_one > without

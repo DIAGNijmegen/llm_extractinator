@@ -57,22 +57,25 @@ Your examples file uses the wrong field names. It must have exactly `input` and 
 
 ### Most records come back as `"failure"`
 
-**Nine times out of ten this is the token limit.** When almost *everything* fails, the model is running out of output tokens before it can finish the JSON — the response is cut off mid-object, so it can't be parsed into your schema. Fix this first, before touching anything else:
+**Start by reading `failures.json`.** It sits next to the predictions file and contains only the failed rows, each with its input and — the useful part — `raw_output`, what the model actually said. That answers the question directly instead of by elimination:
 
-1. **Raise `--num_predict`.** This caps how many tokens the model may generate per response (default `512`), and it's the usual culprit. Nested schemas, long field values, and reasoning models all need more room — try `1024`, `2048`, or higher:
+- **Truncated JSON**, cut off mid-object: the answer ran out of room. Raise `--num_predict`.
+- **Prose, or an apology**: the model ignored the schema. That is a prompt or model problem, not a budget one.
+- **Empty, with an `error_type` of `ConnectionError`**: the server went away. Nothing to do with your schema.
 
-    ```bash
-    extractinate --task_id 1 --model_name "phi4" --num_predict 2048
-    ```
+Running out of output tokens used to be the overwhelmingly common cause. It is much less likely now — `--num_predict` is sized from your schema when you don't set it, a reasoning model gets an extra allowance automatically, and the context window is checked against the real prompt before the run starts. If it still happens, raise it explicitly:
 
-2. **Using a reasoning model?** Its "thinking" is counted against that same output budget, so it needs *even more*. Make sure `--reasoning_model` is set **and** give `--num_predict` a generous value — this combination is the most common cause of all-failure runs.
+```bash
+extractinate --task_id 1 --model_name "phi4" --num_predict 4096
+```
 
-If failures persist even with plenty of output room, then look at the prompt and schema:
+If `raw_output` shows the model writing prose or filling fields wrongly, the problem is the prompt or the schema:
 
+1. **Describe your fields.** `Field(description=...)`, or `"description"` in an inline schema, is rendered into the prompt — it is how the model learns what a field *means*, as opposed to what type it is. Vague or missing descriptions are the most common quality problem.
+2. **Sharpen the task `Description`**, and use `Extra_Instructions` for anything that applies to the whole task (an output language, a unit convention).
 3. **Simplify the schema** — start with two or three fields and expand once they're reliable.
-4. **Use a stronger model** — small models struggle with complex or deeply nested schemas.
-5. **Add `Field(description=...)`** to ambiguous fields, or sharpen the task `Description`.
-6. **Add a few examples** with `--num_examples` (see [Few-shot prompting](examples.md)).
+4. **Add a few examples** with `--num_examples` (see [Few-shot prompting](examples.md)).
+5. **Use a stronger model** — small models struggle with complex or deeply nested schemas.
 
 ### Values look plausible but are wrong
 

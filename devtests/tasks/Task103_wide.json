@@ -1,0 +1,107 @@
+{
+  "Description": "Extract a detailed structured summary of a staging CT report, covering every organ system the report describes.",
+  "Data_Path": "reports_long.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality and the region covered"
+    },
+    "contrast": {
+      "type": "str",
+      "description": "Contrast administration, as described in the technique"
+    },
+    "slice_thickness_mm": {
+      "type": "float",
+      "description": "Reconstruction slice thickness in millimetres",
+      "optional": true
+    },
+    "image_quality": {
+      "type": "str",
+      "description": "The report's own assessment of image quality",
+      "optional": true
+    },
+    "comparison_date": {
+      "type": "str",
+      "description": "Date of the prior study used for comparison",
+      "optional": true
+    },
+    "clinical_history": {
+      "type": "str",
+      "description": "The presenting complaint and its duration"
+    },
+    "lung_findings": {
+      "type": "str",
+      "description": "Findings in the lungs and airways",
+      "optional": true
+    },
+    "mediastinum_findings": {
+      "type": "str",
+      "description": "Findings in the mediastinum",
+      "optional": true
+    },
+    "liver_findings": {
+      "type": "str",
+      "description": "Findings in the liver and biliary system",
+      "optional": true
+    },
+    "pancreas_findings": {
+      "type": "str",
+      "description": "Findings in the pancreas, spleen and adrenals",
+      "optional": true
+    },
+    "kidney_findings": {
+      "type": "str",
+      "description": "Findings in the kidneys and urinary tract",
+      "optional": true
+    },
+    "bowel_findings": {
+      "type": "str",
+      "description": "Findings in the bowel and peritoneum",
+      "optional": true
+    },
+    "musculoskeletal_findings": {
+      "type": "str",
+      "description": "Musculoskeletal findings",
+      "optional": true
+    },
+    "largest_lesion_mm": {
+      "type": "int",
+      "description": "Size in millimetres of the largest measured lesion",
+      "optional": true
+    },
+    "largest_lesion_site": {
+      "type": "str",
+      "description": "Anatomical site of the largest measured lesion",
+      "optional": true
+    },
+    "lesion_count": {
+      "type": "int",
+      "description": "How many lesions are individually measured",
+      "optional": true
+    },
+    "new_lesions": {
+      "type": "bool",
+      "description": "Whether any lesion is described as newly apparent",
+      "optional": true
+    },
+    "growing_lesions": {
+      "type": "bool",
+      "description": "Whether any lesion is described as having increased",
+      "optional": true
+    },
+    "incidental_finding": {
+      "type": "str",
+      "description": "Any incidental finding noted",
+      "optional": true
+    },
+    "impression_summary": {
+      "type": "str",
+      "description": "The impression, summarised in one sentence"
+    },
+    "recommendation": {
+      "type": "str",
+      "description": "The recommendation given at the end of the report"
+    }
+  }
+}

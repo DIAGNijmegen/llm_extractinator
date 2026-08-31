@@ -1,0 +1,36 @@
+{
+  "Description": "Classify a radiology report along three fixed axes. Choose the closest option; do not invent new categories.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "severity": {
+      "type": "str",
+      "description": "Overall severity of the findings",
+      "literals": [
+        "normal",
+        "mild",
+        "moderate",
+        "severe"
+      ]
+    },
+    "urgency": {
+      "type": "str",
+      "description": "How quickly the report implies action is needed",
+      "literals": [
+        "routine",
+        "expedited",
+        "urgent"
+      ]
+    },
+    "laterality": {
+      "type": "str",
+      "description": "Which side the main finding is on",
+      "literals": [
+        "left",
+        "right",
+        "bilateral",
+        "not_applicable"
+      ]
+    }
+  }
+}

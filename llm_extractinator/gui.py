@@ -16,12 +16,33 @@ import json
 import os
 import re
 import subprocess
+import threading
+import time
 import urllib.error
 import urllib.request
+from collections import deque
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+
+try:
+    from llm_extractinator.run_config import (  # type: ignore
+        HARDWARE_PRESETS,
+        RunSettings,
+        THINKING_TEMPERATURE,
+    )
+    from llm_extractinator.utils import (  # type: ignore
+        parse_test_run_size,
+        run_folder_name,
+    )
+except ImportError:  # pragma: no cover - Streamlit runs this file as a script
+    from run_config import (  # type: ignore
+        HARDWARE_PRESETS,
+        RunSettings,
+        THINKING_TEMPERATURE,
+    )
+    from utils import parse_test_run_size, run_folder_name  # type: ignore
 
 try:
     from schema_builder import render_schema_builder  # type: ignore
@@ -94,6 +115,149 @@ def _fetch_model_thinking(model_name: str, host: str = "http://localhost:11434")
         return "thinking" in info.get("capabilities", [])
     except Exception:
         return False
+
+
+# ──────────────────── Hardware presets ───────────────────────────
+_OTHER_MODEL = "Other (enter below)…"
+
+
+_ANSI_RE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
+# Ollama's pull output redraws one line over and over. It belongs on the status
+# line, not in the transcript, or it buries everything else.
+_PULL_RE = re.compile(r"^(pulling|downloading|transferring|verifying)\b", re.IGNORECASE)
+
+# tqdm writes "  40%|####      | 4/10 [00:12<00:18,  ...]" to stderr. The row
+# counts are the only reliable progress signal we have — and as of 0.7.0 the
+# callback counts *rows* rather than calls to the model, so a retried row no
+# longer double-counts and this number can be trusted again.
+_PROGRESS_RE = re.compile(r"(\d+)\s*/\s*(\d+)\s*\[")
+
+# The budget line the resolver logs, e.g.
+# "context 4096 = 1119 prompt + 512 answer + 2465 headroom (fitted to the data)".
+_BUDGET_RE = re.compile(r"context\s+[\d,]+\s*=\s*[\d,]+\s+prompt\b.*", re.IGNORECASE)
+
+
+class RunProcess:
+    """A running ``extractinate``, readable from the UI thread without blocking.
+
+    The old Run tab iterated ``process.stdout`` inline. Streamlit runs one script
+    thread per session, so that held the whole app: no other tab responded, and —
+    the part that actually hurt on a real dataset — there was no way to offer a
+    Stop button, because a click cannot be processed while the script is parked
+    in a read loop. A full clinical run is hours of that.
+
+    So the subprocess is drained by a daemon thread into a bounded deque, and the
+    page polls. Nothing here touches ``st.*``: a thread without a script run
+    context cannot use the Streamlit API, and the deque is shared by reference
+    through session state instead.
+    """
+
+    MAX_LINES = 2000
+
+    def __init__(self, cmd: list[str]) -> None:
+        self.cmd = cmd
+        self.started = time.time()
+        self.finished: float | None = None
+        self.lines: deque[str] = deque(maxlen=self.MAX_LINES)
+        self.status_line = ""
+        self.budget_line = ""
+        self.done_rows = 0
+        self.total_rows = 0
+        self.stopped_by_user = False
+        self._lock = threading.Lock()
+        self._process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        )
+        self._thread = threading.Thread(target=self._drain, daemon=True)
+        self._thread.start()
+
+    def _drain(self) -> None:
+        assert self._process.stdout is not None
+        for raw in self._process.stdout:
+            line = _ANSI_RE.sub("", raw.rstrip("\n"))
+            # tqdm redraws with \r, so one read can carry several frames.
+            line = line.split("\r")[-1]
+            if not line.strip():
+                continue
+            with self._lock:
+                if match := _PROGRESS_RE.search(line):
+                    self.done_rows, self.total_rows = int(match[1]), int(match[2])
+                    self.status_line = line
+                    continue
+                if _PULL_RE.match(line):
+                    self.status_line = line
+                    continue
+                if match := _BUDGET_RE.search(line):
+                    self.budget_line = match[0]
+                self.lines.append(line)
+        self._process.wait()
+        with self._lock:
+            self.finished = time.time()
+
+    # — read side, called from the script thread —
+
+    def snapshot(self) -> dict:
+        with self._lock:
+            return {
+                "log": "\n".join(self.lines),
+                "status_line": self.status_line,
+                "budget_line": self.budget_line,
+                "done_rows": self.done_rows,
+                "total_rows": self.total_rows,
+                "finished": self.finished,
+            }
+
+    @property
+    def running(self) -> bool:
+        return self._process.poll() is None
+
+    @property
+    def elapsed(self) -> float:
+        with self._lock:
+            end = self.finished
+        return (end or time.time()) - self.started
+
+    @property
+    def return_code(self) -> int | None:
+        return self._process.poll()
+
+    def stop(self) -> None:
+        """Ask the run to stop, then insist.
+
+        ``terminate`` gives ``extractinate`` the chance to run its ``finally``
+        and shut down the Ollama server it started; without that the server is
+        left running and the next run inherits a loaded model. The kill is the
+        fallback for a process that ignores it.
+        """
+        self.stopped_by_user = True
+        self._process.terminate()
+        try:
+            self._process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            self._process.kill()
+
+
+def _apply_hw_preset(preset) -> None:
+    """Fill the model and context-ceiling fields from a preset.
+
+    Call this before those widgets are instantiated — Streamlit refuses a
+    session-state write to a key whose widget has already rendered this run.
+
+    The model is recorded as *pending* rather than forced into the free-text box:
+    which server we are talking to may not be known yet, so whether this model is
+    in the installed list can only be settled further down, once the host is.
+    """
+    st.session_state["preset_pending_model"] = preset.model
+    st.session_state["model_name_free_text"] = preset.model
+    st.session_state["context_cap_enabled"] = True
+    st.session_state["context_cap_input"] = preset.context_cap
 
 
 # ──────────────────── Streamlit config ───────────────────────────
@@ -349,7 +513,7 @@ def parser_input() -> Path | None:
         st.session_state["parser_select"] = pending
         st.session_state["parser_choice"] = pending
 
-    sel_col, btn_col = st.columns([3, 1])
+    sel_col, btn_col = st.columns([3, 1], vertical_alignment="bottom")
 
     with btn_col:
         st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
@@ -454,12 +618,14 @@ def build_new_task() -> None:
                 )
                 text_cols = [c for c in df.columns if df[c].dtype in ("object", "string")]
                 if text_cols:
-                    saved_col = st.session_state.get("input_field")
-                    default_idx = text_cols.index(saved_col) if saved_col in text_cols else 0
+                    if st.session_state.get("input_field_select") not in text_cols:
+                        saved_col = st.session_state.get("input_field")
+                        st.session_state["input_field_select"] = (
+                            saved_col if saved_col in text_cols else text_cols[0]
+                        )
                     input_field = st.selectbox(
                         "Text column",
                         text_cols,
-                        index=default_idx,
                         key="input_field_select",
                         help="Which column contains the raw text the model should parse?",
                     )
@@ -586,302 +752,735 @@ with tab_task:
 # 2️⃣ RUN
 # Defined as a function so an early `return` stops only this tab — using
 # st.stop() inside a tab would halt the whole script and blank the other tabs.
-def render_run_tab() -> None:
-    st.subheader("Run the extractor")
+_REASONING_MODES = {"Auto": None, "On": True, "Off": False}
 
-    if not st.session_state.get("task_ready"):
-        st.info("Choose or build a task on the **📝 Task** tab first.")
-        return
+# Every widget seeds through session state rather than a `value=`/`index=`
+# default: passing a default alongside a key Streamlit already holds makes it log
+# a warning and silently ignore the default. Collected here so the seeding is one
+# readable block rather than a `setdefault` buried beside each control.
+_WIDGET_DEFAULTS = {
+    "scope_choice": "Full dataset",
+    "test_run_rows": 5,
+    "test_run_random": False,
+    "context_cap_enabled": False,
+    "context_cap_input": 8192,
+    "chunking_enabled": False,
+    "chunk_size_input": 50,
+    "reasoning_mode": "Auto",
+    "temp_manual": False,
+    "num_predict_manual": False,
+    "num_predict_input": 512,
+    "topk_on": False,
+    "top_k_input": 40,
+    "topp_on": False,
+    "num_examples_input": 0,
+    "ctx_mode": "max",
+    "custom_ctx_input": 4096,
+    "n_runs_input": 1,
+    "seed_enabled": False,
+    "seed_input": 0,
+    "overwrite": False,
+    "verbose": False,
+    "ollama_host": "",
+}
 
-    # ─── Task to run ──
-    task_files = [p.name for p in sorted(TASK_DIR.glob("Task*.json"))]
-    default_idx = next(
-        (i for i, name in enumerate(task_files) if name == st.session_state.get("task_choice")),
-        0,
-    )
-    task_choice = st.selectbox(
-        "Task to run",
-        task_files,
-        index=default_idx,
-        key="task_choice",
-        help="Which task configuration to execute",
-    )
 
-    # ─── Model & sampling settings ──
-    st.subheader("🧠 Model settings")
-    ollama_host = st.text_input(
-        "Ollama server URL (optional)",
-        value=st.session_state.get("ollama_host", ""),
-        placeholder="e.g. http://localhost:11500 — leave blank to auto-manage a local server",
-        help=(
-            "Point at an already-running Ollama server instead of having llm_extractinator "
-            "start/stop its own. When set, the model must already be pulled on that server — "
-            "llm_extractinator won't pull or unload models on a server it doesn't manage."
-        ),
-    ).strip()
-    st.session_state["ollama_host"] = ollama_host
-    _host_kwargs = {"host": ollama_host} if ollama_host else {}
-    _installed_models = _fetch_ollama_models(**_host_kwargs)
-    _OTHER = "Other (enter below)…"
-    _options = _installed_models + [_OTHER] if _installed_models else []
-    if _options:
-        _selected = st.selectbox(
+# Widget values worth carrying across a run. Streamlit drops session-state
+# entries whose widget did not render, and the run view renders none of the
+# form — so without this, coming back from a run resets every setting.
+_REMEMBERED_KEYS = tuple(_WIDGET_DEFAULTS) + (
+    "task_choice",
+    "model_dropdown_choice",
+    "model_name_free_text",
+    "hw_preset_choice",
+)
+
+
+def _remember_settings() -> None:
+    """Copy the live widget values somewhere Streamlit will not garbage-collect.
+
+    ``st.session_state["remembered"]`` is a plain dict, not a widget key, so it
+    survives reruns in which the widgets themselves are absent.
+    """
+    st.session_state["remembered"] = {
+        key: st.session_state[key] for key in _REMEMBERED_KEYS if key in st.session_state
+    }
+
+
+def _seed_widgets() -> None:
+    """Restore last-known values, falling back to the defaults."""
+    remembered = st.session_state.get("remembered", {})
+    for key, value in _WIDGET_DEFAULTS.items():
+        st.session_state.setdefault(key, remembered.get(key, value))
+    for key in ("model_dropdown_choice", "model_name_free_text", "hw_preset_choice"):
+        if key not in st.session_state and key in remembered:
+            st.session_state[key] = remembered[key]
+
+
+def _model_picker() -> str:
+    """Server, model and preset — the three controls that decide *which model*.
+
+    They live together because they are one decision, and because two of them
+    write the third: entering a server URL repopulates the model list, and
+    applying a preset sets the model outright. Scattering them across the page
+    meant meeting them in the reverse of their dependency order — pick a model,
+    then choose the server that decides which models exist, then apply a preset
+    that overwrites the model again.
+    """
+    host = st.session_state.get("ollama_host", "")
+    host_kwargs = {"host": host} if host else {}
+    installed = _fetch_ollama_models(**host_kwargs)
+    options = installed + [_OTHER_MODEL] if installed else []
+
+    # A preset's model becomes a dropdown selection the moment we can see it on
+    # the server — which may be several reruns later, once a host is entered.
+    pending = st.session_state.get("preset_pending_model")
+    if pending and options:
+        st.session_state["model_dropdown_choice"] = (
+            pending if pending in installed else _OTHER_MODEL
+        )
+        if pending in installed:
+            del st.session_state["preset_pending_model"]
+
+    if options:
+        if st.session_state.get("model_dropdown_choice") not in options:
+            st.session_state["model_dropdown_choice"] = options[0]
+        selected = st.selectbox(
             "Model",
-            options=_options,
-            help="Models currently installed in your local Ollama instance.",
+            options=options,
+            key="model_dropdown_choice",
+            help="Models currently installed on the Ollama server.",
         )
     else:
-        _selected = _OTHER
-        st.caption(
-            "No running Ollama instance found. "
-            "Browse available models at [ollama.com/library](https://ollama.com/library)."
-        )
-    if _selected == _OTHER:
+        selected = _OTHER_MODEL
+
+    if selected == _OTHER_MODEL:
+        st.session_state.setdefault("model_name_free_text", "phi4")
         model_name = st.text_input(
             "Model name",
-            value="phi4",
+            key="model_name_free_text",
             placeholder="e.g. qwen3:8b",
             help=(
-                "Any Ollama model name. If not yet installed, Ollama will download it on first run. "
+                "Any Ollama model name; it is pulled on first run if missing. "
                 "Browse [ollama.com/library](https://ollama.com/library)."
             ),
         )
     else:
-        model_name = _selected
+        model_name = selected
+
+    # The two things that change the list above, kept directly beneath it so
+    # their effect is visible where it lands.
+    where = host or "localhost:11434"
+    found = f"{len(installed)} model(s)" if installed else "not reachable"
+    st.caption(f"{where} · {found}")
+
+    server_col, preset_col = st.columns(2)
+
+    with server_col.popover("Server", width="stretch"):
+        st.text_input(
+            "Ollama server URL",
+            key="ollama_host",
+            placeholder="blank = manage a local server",
+            help=(
+                "Point at an already-running server instead of managing one. The "
+                "model must already be pulled there — llm_extractinator does not "
+                "pull or unload models on a server it does not own."
+            ),
+        )
+        st.caption(
+            "Changing this re-reads the model list above."
+            if installed
+            else "Nothing answered at this address, so the model name is not checked."
+        )
+
+    with preset_col.popover("Preset", width="stretch"):
+        # An action, not a mode. Nothing here stays lit afterwards: a lasting
+        # "Medium is active" marker stops being true the moment any field it
+        # wrote is edited by hand. The toast reports what changed instead.
+        choice = st.selectbox(
+            "Recommended settings",
+            list(HARDWARE_PRESETS),
+            key="hw_preset_choice",
+            help="A starting point sized for your GPU. Every field stays editable.",
+        )
+        preset = HARDWARE_PRESETS[choice]
+        st.caption(f"Sets {preset.describe()}. {preset.note}")
+        if st.button("Apply", width="stretch", key="apply_preset"):
+            # Deferred to the top of the next run: the widgets this writes to
+            # have already rendered by now, and Streamlit rejects the write.
+            st.session_state["preset_to_apply"] = choice
+            st.rerun()
+
     st.session_state["model_name"] = model_name
-    _thinking_detected = _fetch_model_thinking(model_name, **_host_kwargs)
-    _tog_col1, _tog_col2 = st.columns(2)
-    reasoning = _tog_col1.toggle(
-        "Reasoning model?",
-        value=_thinking_detected,
-        key=f"reasoning_toggle_{model_name}",
-        help=(
-            "Auto-detected: this model supports thinking. Reasoning mode is enabled automatically. "
-            "You can turn it off, but structured-output quality may suffer."
-            if _thinking_detected else
-            "Enable for thinking models (e.g. qwen3.5). "
-            "Routes chain-of-thought tokens away from the JSON output so parsing stays reliable."
-        ),
-    )
-    if _thinking_detected:
-        _tog_col1.caption("⚡ Thinking model detected — auto-enabled")
-    overwrite = _tog_col2.toggle(
-        "Overwrite existing files",
-        value=False,
-        help="If the run folder already exists, delete & recreate it.",
+    return model_name
+
+
+def _settings_panel(model_name: str, thinking_detected: bool) -> dict:
+    """Everything that is not task, model or scope.
+
+    Grouped by the question each answer belongs to rather than by which CLI flag
+    it becomes. The previous grouping — *Repetition & logging* / *Prompting &
+    context* / *Sampling* — put the context ceiling and the output budget in
+    different sections, when they are the two halves of one window that the
+    backend now resolves jointly. Anything the run decides for itself lives
+    behind an explicit "set this manually" checkbox, so the panel shows overrides
+    rather than a wall of numbers that may or may not be in force.
+    """
+    # "Execution" rather than "Run": the top-level tab is already called Run, and
+    # two things with one name in the same view is exactly the kind of small
+    # ambiguity that makes a page feel careless.
+    hardware, generation, prompt, bookkeeping = st.tabs(
+        ["Hardware", "Generation", "Prompt", "Execution"]
     )
 
-    with st.expander("⚙️ Advanced flags"):
-        # — Run behaviour —
-        st.markdown("**Run behaviour**")
-        n_runs = st.number_input(
-            "Number of runs",
+    with hardware:
+        st.caption(
+            "What has to fit on the card, and what happens if the run is "
+            "interrupted. The server and the presets live beside the model, "
+            "since that is what they change."
+        )
+        cap_col, ceiling_col = st.columns([1, 2], vertical_alignment="bottom")
+        context_cap_enabled = cap_col.checkbox(
+            "Cap context length",
+            key="context_cap_enabled",
+            help=(
+                "Upper bound on the context window. The window is still fitted to "
+                "your data, but never grows past this — the context window, not "
+                "the model weights, is usually what pushes a run out of VRAM."
+            ),
+        )
+        context_cap = ceiling_col.number_input(
+            "Context ceiling (tokens)",
+            min_value=512,
+            step=512,
+            key="context_cap_input",
+            disabled=not context_cap_enabled,
+            help=(
+                "The *whole* window: the prompt and the generated answer share "
+                "it. Documents that no longer fit are truncated, and the run "
+                "says how many."
+            ),
+        )
+        chunk_col, rows_col = st.columns([1, 2], vertical_alignment="bottom")
+        chunking_enabled = chunk_col.checkbox(
+            "Process in chunks",
+            key="chunking_enabled",
+            help=(
+                "Write each chunk's predictions to disk before starting the next, "
+                "so an interrupted run can resume: completed chunks are skipped "
+                "and everything is merged at the end."
+            ),
+        )
+        chunk_size = rows_col.number_input(
+            "Rows per chunk",
             min_value=1,
-            value=1,
             step=1,
-            help="Repeat the task multiple times with identical settings.",
-        )
-        col1, col2 = st.columns(2)
-        verbose = col1.checkbox(
-            "Verbose output",
-            help="Stream full raw model output & debug logs to the UI.",
-        )
-        seed_enabled = col2.checkbox(
-            "Fix random seed",
-            help="Fix RNG seed for reproducible generation.",
-        )
-        seed = st.number_input(
-            "Seed value",
-            min_value=0,
-            value=0,
-            disabled=not seed_enabled,
-            help="Integer seed to initialise random generators.",
+            key="chunk_size_input",
+            disabled=not chunking_enabled,
         )
 
-        st.divider()
+    with generation:
+        st.caption("How the model produces text. Left alone, the run decides.")
+        reasoning_mode = st.radio(
+            "Reasoning",
+            list(_REASONING_MODES),
+            horizontal=True,
+            key="reasoning_mode",
+            help=(
+                "Thinking models emit chain-of-thought before their answer. "
+                "**Auto** lets the run decide once the model is pulled and can be "
+                "inspected — right almost always. **On** forces it for a model "
+                "that cannot be inspected yet; **Off** makes a thinking model "
+                "answer directly."
+            ),
+        )
+        reasoning = _REASONING_MODES[reasoning_mode]
+        if reasoning is None:
+            st.caption(
+                f"Auto: **{model_name}** reports thinking support, so reasoning "
+                "will be on."
+                if thinking_detected
+                else "Auto: settled at run time, once the model has been pulled."
+            )
+        thinking_now = reasoning if reasoning is not None else thinking_detected
 
-        # — Prompting —
-        st.markdown("**Prompting**")
+        temp_manual = st.checkbox(
+            "Set temperature manually",
+            key="temp_manual",
+            help=(
+                "Left off, temperature is chosen for you: 0.0 (greedy) for an "
+                "ordinary model, 0.6 for a thinking one — Qwen's own guidance is "
+                "not to run a thinking model greedy, as it degrades output and "
+                "can loop forever."
+            ),
+        )
+        temperature = st.slider(
+            "Temperature",
+            0.0,
+            1.0,
+            THINKING_TEMPERATURE if thinking_now else 0.0,
+            0.05,
+            disabled=not temp_manual,
+            help="0.0 = deterministic; higher = more diverse.",
+        )
+        if not temp_manual:
+            st.caption(
+                f"Auto: **{THINKING_TEMPERATURE}** — a thinking model must not run "
+                "greedy."
+                if thinking_now
+                else "Auto: **0.0** — deterministic, which is what extraction wants."
+            )
+        elif thinking_now and temperature == 0:
+            st.caption(
+                "⚠️ Greedy decoding on a thinking model degrades output and can "
+                "produce endless repetition. Use a seed for reproducibility instead."
+            )
+
+        # The budget sits next to the ceiling that has to contain it, and behind
+        # the same manual/auto shape as temperature. Since 0.7.0 the backend
+        # sizes this from the output schema and adds the reasoning allowance
+        # itself, so a number here is an override, not a setting to be filled in.
+        num_predict_manual = st.checkbox(
+            "Set max output tokens manually",
+            key="num_predict_manual",
+            help=(
+                "Left off, the budget is derived from your output schema — a "
+                "three-field schema and a thirty-field one need very different "
+                "amounts — and the chain-of-thought allowance is added on top for "
+                "a thinking model."
+            ),
+        )
+        num_predict = st.number_input(
+            "Max output tokens",
+            min_value=1,
+            step=64,
+            key="num_predict_input",
+            disabled=not num_predict_manual,
+            help="Maximum tokens the model may produce per row.",
+        )
+        if not num_predict_manual:
+            st.caption(
+                "Auto: sized from the output schema, floored at 512."
+                + (
+                    " A thinking model also gets the reasoning allowance on top."
+                    if thinking_now
+                    else ""
+                )
+            )
+
+        topk_col, topp_col = st.columns(2)
+        with topk_col:
+            topk_on = st.checkbox(
+                "Enable Top-k",
+                key="topk_on",
+                help="Restrict sampling to the k most probable next tokens.",
+            )
+            top_k = st.number_input(
+                "Top-k value", min_value=1, key="top_k_input", disabled=not topk_on
+            )
+        with topp_col:
+            topp_on = st.checkbox(
+                "Enable Top-p",
+                key="topp_on",
+                help=(
+                    "Nucleus sampling — keep the smallest token set whose "
+                    "cumulative probability exceeds p."
+                ),
+            )
+            top_p = st.slider(
+                "Top-p value", 0.0, 1.0, 0.9, 0.05, disabled=not topp_on
+            )
+
+    with prompt:
+        st.caption("What the model is shown for each row.")
         num_examples = st.number_input(
             "Few-shot examples",
             min_value=0,
-            value=0,
-            help="Number of labelled examples to prepend to each prompt.",
+            step=1,
+            key="num_examples_input",
+            help=(
+                "Labelled examples prepended to each prompt. They are counted "
+                "against the context window, answers included."
+            ),
         )
         ctx_mode = st.radio(
             "Context length strategy",
             options=["max", "split", "custom"],
             horizontal=True,
+            key="ctx_mode",
             help=(
-                "**max** – set the context window to the minimum size needed for the longest input in your dataset. "
-                "**split** – split the dataset into short/long subsets and run each with a right-sized context (recommended when report lengths vary a lot). "
-                "**custom** – set an explicit token limit."
+                "**max** — fit the window to the longest input in the dataset. "
+                "**split** — process short and long documents separately, each "
+                "with a right-sized window (worth it when lengths vary a lot). "
+                "**custom** — a fixed token count."
             ),
         )
         if ctx_mode == "custom":
             max_ctx = str(
                 st.number_input(
-                    "Custom context length (tokens)",
+                    "Fixed context length (tokens)",
                     min_value=512,
-                    value=4096,
                     step=512,
+                    key="custom_ctx_input",
                 )
             )
         else:
             max_ctx = ctx_mode
 
-        st.divider()
-
-        # — Sampling —
-        st.markdown("**Sampling**")
-        temperature = st.slider(
-            "Temperature",
-            0.0,
-            1.0,
-            0.0,
-            0.05,
-            help="Controls output randomness. 0.0 = deterministic; higher = more diverse.",
-        )
-        num_predict = st.number_input(
-            "Max tokens to generate",
+    with bookkeeping:
+        st.caption("Repetition, reproducibility and output handling.")
+        n_runs = st.number_input(
+            "Number of runs",
             min_value=1,
-            value=512,
-            help="Maximum number of tokens the model will produce per response.",
+            step=1,
+            key="n_runs_input",
+            help="Repeat the task with identical settings.",
         )
-        col4, col5 = st.columns(2)
-        with col4:
-            topk_on = st.checkbox(
-                "Enable Top-k",
-                help="Restrict sampling to the k most probable next tokens.",
+        seed_col, seed_val_col = st.columns([1, 2], vertical_alignment="bottom")
+        seed_enabled = seed_col.checkbox(
+            "Fix random seed",
+            key="seed_enabled",
+            help="Makes sampling and random test-run selection reproducible.",
+        )
+        seed = seed_val_col.number_input(
+            "Seed value", min_value=0, key="seed_input", disabled=not seed_enabled
+        )
+        overwrite = st.checkbox(
+            "Overwrite existing output",
+            key="overwrite",
+            help=(
+                "Re-run and replace existing output. Without this, a run whose "
+                "output folder already exists is skipped and the previous results "
+                "are kept."
+            ),
+        )
+        verbose = st.checkbox(
+            "Verbose output",
+            key="verbose",
+            help="Stream full raw model output and debug logs into the run log.",
+        )
+
+    return {
+        "reasoning": reasoning,
+        "n_runs": int(n_runs),
+        "verbose": verbose,
+        "overwrite": overwrite,
+        "seed": int(seed) if seed_enabled else None,
+        "chunk_size": int(chunk_size) if chunking_enabled else None,
+        "num_examples": int(num_examples),
+        "max_context_len": max_ctx,
+        "max_context_cap": int(context_cap) if context_cap_enabled else None,
+        "temperature": float(temperature) if temp_manual else None,
+        "num_predict": int(num_predict) if num_predict_manual else None,
+        "top_k": int(top_k) if topk_on else None,
+        "top_p": float(top_p) if topp_on else None,
+    }
+
+
+def _render_run_view(run: RunProcess) -> None:
+    """The page while a run is in flight, and immediately after it ends.
+
+    The form is not drawn at all here. Leaving twenty controls on screen under a
+    scrolling log was the single biggest reason this tab felt cluttered: during
+    the one period when the user can change nothing, it showed them everything
+    they could change.
+    """
+    st.markdown(f"**{'Running' if run.running else 'Finished'}** · `{run.cmd[2]}`")
+    st.caption(" ".join(run.cmd))
+
+    # The live view polls; the finished view is static. Keeping them on separate
+    # branches is what stops the timer: a fragment with ``run_every`` set never
+    # stops ticking on its own, and one that called ``st.rerun`` whenever it saw
+    # a finished run would rerun the app forever.
+    if run.running:
+        _run_monitor(run)
+    else:
+        _run_panel(run)
+        _render_run_outcome(run)
+
+
+@st.fragment(run_every=1.0)
+def _run_monitor(run: RunProcess) -> None:
+    """The live view, refreshed once a second.
+
+    A fragment rather than a ``sleep``-and-``st.rerun`` loop, because the tabs
+    are built at module scope: a whole-app rerun every second would also re-run
+    the Results tab, which reads the predictions file off disk. Polling one
+    fragment keeps the cost proportional to what is actually changing.
+    """
+    _run_panel(run)
+    if not run.running:
+        # Hand back to the full script, which will take the static branch above
+        # and render the outcome. This fires exactly once per run.
+        st.rerun()
+
+
+def _run_panel(run: RunProcess) -> None:
+    """Progress, status, promoted budget line and log — live or finished."""
+    state = run.snapshot()
+    running = run.running
+
+    head, stop = st.columns([4, 1], vertical_alignment="bottom")
+    with head:
+        if state["total_rows"]:
+            done, total = state["done_rows"], state["total_rows"]
+            st.progress(
+                min(done / total, 1.0),
+                text=f"{done:,} of {total:,} rows · {_duration(run.elapsed)} elapsed",
             )
-            top_k = st.number_input(
-                "Top-k value",
-                min_value=1,
-                value=40,
-                disabled=not topk_on,
-            )
-        with col5:
-            topp_on = st.checkbox(
-                "Enable Top-p",
-                help="Nucleus sampling – keep the smallest token set whose cumulative probability exceeds p.",
-            )
-            top_p = st.slider(
-                "Top-p value",
+        else:
+            st.progress(
                 0.0,
-                1.0,
-                0.9,
-                0.05,
-                disabled=not topp_on,
+                text=(
+                    f"Starting up · {_duration(run.elapsed)} elapsed"
+                    if running
+                    else f"Ran for {_duration(run.elapsed)}"
+                ),
+            )
+    if running and stop.button("Stop", width="stretch", help="Terminate the run"):
+        run.stop()
+        st.rerun()
+
+    if state["status_line"]:
+        st.caption(state["status_line"])
+    if state["budget_line"]:
+        # The one log line worth promoting: it is the whole point of 0.7.0 and
+        # it would otherwise scroll past inside the transcript.
+        st.info(state["budget_line"], icon=":material/straighten:")
+
+    with st.expander("Run log", expanded=not running and run.return_code != 0):
+        st.code(state["log"] or "…", language="bash")
+
+
+def _render_run_outcome(run: RunProcess) -> None:
+    """The result card. Ends the run by pointing at the thing to do next."""
+    code = run.return_code
+    if run.stopped_by_user:
+        st.warning("Stopped. Partial output may have been written.")
+    elif code == 0:
+        st.success("Finished successfully.")
+    else:
+        st.error(f"Failed (exit code {code}) — see the run log above.")
+
+    runs_after = list_output_runs()
+    if code == 0 and runs_after:
+        newest = runs_after[0]
+        st.session_state["view_run"] = newest.name
+        try:
+            records = json.loads(
+                (newest / "nlp-predictions-dataset.json").read_text(encoding="utf-8")
+            )
+            total = len(records)
+            ok = sum(1 for r in records if r.get("status") == "success")
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Records", f"{total:,}")
+            m2.metric("Successes", f"{ok:,}")
+            m3.metric("Failures", f"{total - ok:,}", delta=None)
+            if total - ok:
+                st.caption(
+                    f"`failures.json` in **{newest.name}** has the model's own "
+                    "output for each failed row."
+                )
+        except Exception:
+            pass
+        st.caption(f"Saved to **{newest.name}**. Open the Results tab to explore it.")
+
+    if st.button("New run", type="primary"):
+        st.session_state.pop("active_run", None)
+        st.rerun()
+
+
+def _duration(seconds: float) -> str:
+    minutes, secs = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}h {minutes:02d}m"
+    if minutes:
+        return f"{minutes}m {secs:02d}s"
+    return f"{secs}s"
+
+
+def render_run_tab() -> None:
+    # A run in flight owns the page. Checked before anything is drawn, so the
+    # form and the run view are never on screen together.
+    active: RunProcess | None = st.session_state.get("active_run")
+    if active is not None:
+        _render_run_view(active)
+        return
+
+    if not st.session_state.get("task_ready"):
+        st.info("Choose or build a task on the **Task** tab first.")
+        return
+
+    # A preset writes session state for widgets further down the script, which
+    # Streamlit refuses once they have rendered. Applying it here — from a flag
+    # set by last run's click — means the write always lands before any widget
+    # exists, so controls can be placed by meaning rather than by write order.
+    if pending := st.session_state.pop("preset_to_apply", None):
+        preset = HARDWARE_PRESETS[pending]
+        _apply_hw_preset(preset)
+        # Say what moved. A preset silently rewriting the model you just picked
+        # is the surprise; naming the change is what makes it an action rather
+        # than something the page did behind your back.
+        st.toast(
+            f"Applied {pending} — model {preset.model}, "
+            f"context ceiling {preset.context_cap:,}",
+            icon=":material/check:",
+        )
+
+    if st.session_state.pop("pending_overwrite", False):
+        st.session_state["overwrite"] = True
+
+    _seed_widgets()
+
+    # ── Launch bar ───────────────────────────────────────────────
+    # Task, model and scope are what a routine run actually changes, so they sit
+    # above the fold with the button. Everything else is an override.
+    task_files = [p.name for p in sorted(TASK_DIR.glob("Task*.json"))]
+    if st.session_state.get("task_choice") not in task_files:
+        st.session_state["task_choice"] = task_files[0]
+
+    task_col, model_col, scope_col = st.columns([2, 2, 2])
+
+    with task_col:
+        task_choice = st.selectbox(
+            "Task", task_files, key="task_choice", help="Which task to execute."
+        )
+
+    with model_col:
+        model_name = _model_picker()
+
+    with scope_col:
+        scope = st.radio(
+            "Scope",
+            ["Full dataset", "Test run"],
+            horizontal=True,
+            key="scope_choice",
+            help=(
+                "A test run processes a handful of rows — a quick check before "
+                "committing to the full dataset. Its output lands in a separate "
+                "folder, and the window is still sized from the full dataset so "
+                "the check reflects the real run."
+            ),
+        )
+        test_run_enabled = scope == "Test run"
+        test_run_size, test_run_random = 5, False
+        if test_run_enabled:
+            rows_col, rand_col = st.columns([1, 1], vertical_alignment="bottom")
+            test_run_size = rows_col.number_input(
+                "Rows", min_value=1, step=1, key="test_run_rows"
+            )
+            test_run_random = rand_col.checkbox(
+                "Random", key="test_run_random", help="Sample rather than take the first N."
             )
 
-    # ─── Launch button ──
-    launch = st.button(
-        "🚀 Run",
-        type="primary",
-        help="Start the extractinate process with the above settings",
+    ollama_host = st.session_state.get("ollama_host", "")
+    thinking_detected = _fetch_model_thinking(
+        model_name, **({"host": ollama_host} if ollama_host else {})
     )
 
-    # ─── Execute CLI when launched ──
+    with st.expander("Settings", expanded=False):
+        advanced = _settings_panel(model_name, thinking_detected)
+
+    settings = RunSettings(
+        task_file=task_choice,
+        model_name=model_name,
+        test_run_size=int(test_run_size) if test_run_enabled else None,
+        test_run_random=test_run_random,
+        ollama_host=ollama_host or None,
+        **advanced,
+    )
+
+    # ── Review & launch ──────────────────────────────────────────
+    status_strip(settings.summary())
+
+    problem = _configuration_problem(settings)
+    if problem:
+        st.error(problem)
+
+    stale = [] if settings.overwrite else _existing_output(settings)
+    if stale:
+        warn_col, fix_col = st.columns([4, 1], vertical_alignment="bottom")
+        warn_col.warning(
+            f"**{stale[0]}** already has results"
+            + (f" (and {len(stale) - 1} more)" if len(stale) > 1 else "")
+            + ". This run will be skipped and the existing output kept — so the "
+            "Results tab would show the old predictions, not a new run."
+        )
+        if fix_col.button("Overwrite", width="stretch", help="Replace the existing output"):
+            # Deferred like the preset: the `overwrite` checkbox has already
+            # rendered by the time this warning is drawn, and Streamlit refuses a
+            # session-state write to an instantiated widget.
+            st.session_state["pending_overwrite"] = True
+            st.rerun()
+
+    launch_col, cmd_col = st.columns([1, 3], vertical_alignment="bottom")
+    launch = launch_col.button(
+        f"Run · test ({settings.test_run_size} rows)" if test_run_enabled else "Run",
+        type="primary",
+        width="stretch",
+        disabled=problem is not None,
+        help=(
+            problem
+            or "Start extractinate with the settings above"
+        ),
+    )
+    with cmd_col.popover("Show command"):
+        bash(settings.to_command())
+
+    # Written on every render of the form, so whatever is on screen survives the
+    # run view — during which none of these widgets exist and Streamlit would
+    # otherwise discard their state.
+    _remember_settings()
+
     if launch:
-        cmd = [
-            "extractinate",
-            "--task_id",
-            re.match(r"Task(\d{3})", task_choice).group(1),
-            "--model_name",
-            model_name,
-        ]
-        if reasoning:
-            cmd.append("--reasoning_model")
-        if n_runs != 1:
-            cmd += ["--n_runs", str(n_runs)]
-        if verbose:
-            cmd.append("--verbose")
-        if overwrite:
-            cmd.append("--overwrite")
-        if seed_enabled:
-            cmd += ["--seed", str(seed)]
-        if temperature:
-            cmd += ["--temperature", str(temperature)]
-        if topk_on:
-            cmd += ["--top_k", str(top_k)]
-        if topp_on:
-            cmd += ["--top_p", str(top_p)]
-        if num_predict != 512:
-            cmd += ["--num_predict", str(num_predict)]
-        if max_ctx != "max":
-            cmd += ["--max_context_len", max_ctx]
-        if num_examples:
-            cmd += ["--num_examples", str(num_examples)]
-        if ollama_host:
-            cmd += ["--ollama_host", ollama_host]
+        st.session_state["active_run"] = RunProcess(settings.to_command())
+        st.rerun()
 
-        st.markdown("##### Final command")
-        bash(cmd)
 
-        with st.spinner("Running extractinate…"):
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                bufsize=1,  # line-buffered
+def _configuration_problem(settings: RunSettings) -> str | None:
+    """Why this configuration cannot run, or ``None``.
+
+    Returned rather than rendered so the same answer can disable the button.
+    Showing an error beside a live button invites the click it just argued
+    against — and the backend now refuses these outright, so the click buys a
+    traceback rather than a degraded run.
+    """
+    if settings.num_predict is None:
+        return None
+    if settings.max_context_cap is not None and settings.max_context_cap <= settings.num_predict:
+        return (
+            f"The context ceiling ({settings.max_context_cap:,}) has to be larger "
+            f"than max output tokens ({settings.num_predict:,}) — the window holds "
+            "the prompt *and* the answer, so this leaves no room for documents."
+        )
+    if settings.max_context_len not in ("max", "split"):
+        fixed = int(settings.max_context_len)
+        if fixed <= settings.num_predict:
+            return (
+                f"The fixed context length ({fixed:,}) has to be larger than max "
+                f"output tokens ({settings.num_predict:,}); the window holds both "
+                "the prompt and the answer."
             )
+    return None
 
-            # One box for the full log, one for the current progress line
-            log_box = st.empty()
-            status_box = st.empty()
 
-            ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-            log_lines: list[str] = []
+def _existing_output(settings: RunSettings) -> list[str]:
+    """Run folders this configuration would write to that already hold results.
 
-            # heuristics for "ephemeral" progress lines (Ollama)
-            progress_re = re.compile(
-                r"^(pulling|downloading|transferring|verifying)\b", re.IGNORECASE
-            )
+    The backend's guard is skip-not-clobber, which is the safe default but a
+    silent one: without ``--overwrite`` the run appears to succeed and hands
+    back the *previous* predictions. Better to say so before the click than to
+    let someone read a stale file as a fresh result.
+    """
+    task_stem = Path(settings.task_file).stem
+    hits = []
+    for run_idx in range(settings.n_runs):
+        folder = OUT_DIR / run_folder_name(task_stem, run_idx, settings.test_run_size)
+        if (folder / "nlp-predictions-dataset.json").exists():
+            hits.append(folder.name)
+    return hits
 
-            for raw_line in process.stdout:
-                # strip ANSI and trailing newline
-                clean_line = ansi_escape.sub("", raw_line.rstrip("\n"))
-
-                if not clean_line.strip():
-                    continue
-
-                # If this looks like a progress bar line, show it only in status_box
-                if progress_re.match(clean_line):
-                    status_box.write(clean_line)
-                else:
-                    log_lines.append(clean_line)
-                    # keep the log bounded
-                    tail = log_lines[-200:]
-                    log_box.code("\n".join(tail), language="bash")
-
-            return_code = process.wait()
-
-        # ─── Completion → hand off to Results ──
-        if return_code == 0:
-            st.success("Finished successfully ✅")
-            runs_after = list_output_runs()
-            if runs_after:
-                newest = runs_after[0]
-                st.session_state["view_run"] = newest.name
-                try:
-                    recs = json.loads(
-                        (newest / "nlp-predictions-dataset.json").read_text(encoding="utf-8")
-                    )
-                    tot = len(recs)
-                    ok = sum(1 for r in recs if r.get("status") == "success")
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Records", tot)
-                    m2.metric("✅ Successes", ok)
-                    m3.metric("❌ Failures", tot - ok)
-                except Exception:
-                    pass
-                st.info(
-                    f"Saved to **{newest.name}** — open the **📊 Results** tab to explore it."
-                )
-        else:
-            st.error("Failed ❌ — check the log above for details.")
 
 # 3️⃣ RESULTS
 def render_results_tab() -> None:
@@ -899,7 +1498,10 @@ def render_results_tab() -> None:
         "Run",
         run_labels,
         index=idx,
-        help="Choose an output run to inspect (newest first)",
+        format_func=lambda name: (
+            f"🧪 {name}" if parse_test_run_size(name) is not None else name
+        ),
+        help="Choose an output run to inspect (newest first). 🧪 marks test runs (subset of the dataset).",
     )
     run_path = OUT_DIR / selected_run
     records: list[dict] = json.loads(

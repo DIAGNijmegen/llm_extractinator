@@ -1,0 +1,37 @@
+{
+  "Description": "Extract a structured summary from a radiology report.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality used \u2014 CT, MRI, ultrasound, radiograph or mammography",
+      "optional": true
+    },
+    "body_region": {
+      "type": "str",
+      "description": "The anatomical region examined, as named in the report",
+      "optional": true
+    },
+    "contrast_used": {
+      "type": "bool",
+      "description": "Whether intravenous contrast was given, as stated in the technique",
+      "optional": true
+    },
+    "primary_finding": {
+      "type": "str",
+      "description": "The single most clinically important finding, in the report's own words",
+      "optional": true
+    },
+    "measurement_mm": {
+      "type": "float",
+      "description": "The size in millimetres of the main lesion, if one is measured",
+      "optional": true
+    },
+    "recommendation": {
+      "type": "str",
+      "description": "The follow-up action the report recommends, if any",
+      "optional": true
+    }
+  }
+}

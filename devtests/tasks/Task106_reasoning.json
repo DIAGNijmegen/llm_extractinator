@@ -1,0 +1,25 @@
+{
+  "Description": "Judge what a radiology report implies. This needs a comparison against the prior study and an assessment of what should happen next, not just copying a sentence out.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "change_since_prior": {
+      "type": "str",
+      "description": "How the findings have changed since the prior study",
+      "literals": [
+        "improved",
+        "stable",
+        "worsened",
+        "no_prior_available"
+      ]
+    },
+    "requires_action": {
+      "type": "bool",
+      "description": "Whether the report implies any clinical action is needed"
+    },
+    "rationale": {
+      "type": "str",
+      "description": "One sentence explaining the judgement, citing the report"
+    }
+  }
+}

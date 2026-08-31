@@ -40,3 +40,4 @@ New here? The [Quickstart](quickstart.md) walks through a complete first extract
 - **[Few-shot prompting](examples.md)** — steering the model with examples
 - **[Understanding output](output.md)** — where results land and what's in them
 - **[Troubleshooting](troubleshooting.md)** — when something goes sideways
+- **[Development & testing](development.md)** — running the test suites, offline and against a real model
