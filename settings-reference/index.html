@@ -995,6 +995,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-max_context_cap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --max_context_cap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-quantile" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1017,6 +1028,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-no_reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --no_reasoning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-num_examples" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1032,6 +1054,28 @@
     <span class="md-ellipsis">
       
         --chunk_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-test_run_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --test_run_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-test_run_random" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --test_run_random
       
     </span>
   </a>
@@ -1333,7 +1377,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Contributing
   
 
     
@@ -1346,6 +1390,93 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development & testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1622,6 +1753,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-max_context_cap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --max_context_cap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-quantile" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1644,6 +1786,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-no_reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --no_reasoning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-num_examples" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1659,6 +1812,28 @@
     <span class="md-ellipsis">
       
         --chunk_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-test_run_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --test_run_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-test_run_random" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --test_run_random
       
     </span>
   </a>
@@ -1971,8 +2146,8 @@
 </tr>
 <tr>
 <td><code>--temperature</code></td>
-<td><code>0.0</code></td>
-<td>Sampling randomness.</td>
+<td><em>auto</em></td>
+<td>Sampling randomness; <code>0.0</code> normally, <code>0.6</code> for a thinking model.</td>
 </tr>
 <tr>
 <td><code>--top_k</code></td>
@@ -1986,13 +2161,18 @@
 </tr>
 <tr>
 <td><code>--num_predict</code></td>
-<td><code>512</code></td>
-<td>Maximum generated tokens.</td>
+<td><em>auto</em></td>
+<td>Maximum generated tokens; sized from the schema when unset.</td>
 </tr>
 <tr>
 <td><code>--max_context_len</code></td>
 <td><code>"max"</code></td>
 <td>Context length strategy.</td>
+</tr>
+<tr>
+<td><code>--max_context_cap</code></td>
+<td><code>None</code></td>
+<td>Upper bound on the context window in <code>max</code>/<code>split</code> mode. Must exceed <code>--num_predict</code>.</td>
 </tr>
 <tr>
 <td><code>--quantile</code></td>
@@ -2002,7 +2182,12 @@
 <tr>
 <td><code>--reasoning_model</code></td>
 <td><code>False</code></td>
-<td>Enables reasoning‑model mode.</td>
+<td>Forces reasoning‑model mode on (thinking models are auto‑detected).</td>
+</tr>
+<tr>
+<td><code>--no_reasoning</code></td>
+<td><code>False</code></td>
+<td>Forces reasoning‑model mode off, overriding auto‑detection.</td>
 </tr>
 <tr>
 <td><code>--num_examples</code></td>
@@ -2013,6 +2198,16 @@
 <td><code>--chunk_size</code></td>
 <td><code>None</code></td>
 <td>Chunk size for long inputs.</td>
+</tr>
+<tr>
+<td><code>--test_run_size</code></td>
+<td><code>None</code></td>
+<td>Run on only the first N rows (or a random sample) of the test set.</td>
+</tr>
+<tr>
+<td><code>--test_run_random</code></td>
+<td><code>False</code></td>
+<td>With <code>--test_run_size</code>, sample randomly instead of taking the first N rows.</td>
 </tr>
 <tr>
 <td><code>--translate</code></td>
@@ -2104,11 +2299,12 @@ Base URL of an already-running Ollama server, e.g. <code>"http://localhost:11500
 Name of the embedding model to use for few-shot example selection via semantic similarity. Only used when <code>--num_examples &gt; 0</code>. See <a href="https://ollama.com/models">Ollama models</a> for available embedding models (e.g., <code>"mxbai-embed-large"</code>, <code>"nomic-embed-text"</code>).</p>
 <hr />
 <h3 id="-temperature"><code>--temperature</code><a class="headerlink" href="#-temperature" title="Permanent link">&para;</a></h3>
-<p><strong>Type:</strong> <code>float</code>
-<strong>Default:</strong> <code>0.0</code><br />
-Controls randomness in generation:
-- <code>0.0</code> = deterministic<br />
-- Higher values = more creative output</p>
+<p><strong>Type:</strong> <code>float</code><br />
+<strong>Default:</strong> chosen automatically  </p>
+<p>Left unset, the temperature is picked from the model: <strong>0.0</strong> (greedy, deterministic) for an ordinary model, <strong>0.6</strong> for a thinking one.</p>
+<p>That second case is not a preference. Qwen's model cards state it plainly for thinking mode: <em>"DO NOT use greedy decoding, as it can lead to performance degradation and endless repetitions."</em> A repetition loop is a particularly bad failure for extraction — the model spends its whole <code>--num_predict</code> budget looping and returns no JSON at all. Qwen recommends 0.6 alongside <code>--top_p 0.95</code> and <code>--top_k 20</code>; only the temperature is applied for you, so set those two yourself if you want the full recommended configuration.</p>
+<p>Reproducibility is not lost: with <code>--seed</code>, a non-zero temperature is still deterministic run to run.</p>
+<p>Pass a value to override, including <code>--temperature 0</code> to force greedy on a thinking model anyway — the run logs a warning when you do.</p>
 <hr />
 <h3 id="-top_k"><code>--top_k</code><a class="headerlink" href="#-top_k" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
@@ -2122,8 +2318,16 @@ Nucleus sampling: sample from the smallest token set whose cumulative probabilit
 <hr />
 <h3 id="-num_predict"><code>--num_predict</code><a class="headerlink" href="#-num_predict" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
-<strong>Default:</strong> <code>512</code><br />
+<strong>Default:</strong> <em>auto — sized from the output schema</em><br />
 Maximum number of tokens to generate for the model’s output.</p>
+<p>Left unset, this is derived from your schema: a schema of thirty free-text
+fields needs far more room than one of three enums, and a truncated answer loses
+the whole row rather than degrading gracefully. The derived value never goes
+below 512, so it can only ever raise the budget relative to the old fixed
+default. A thinking model gets a further allowance on top, because its chain of
+thought is charged to this same budget.</p>
+<p>Set it explicitly to override. If output comes back truncated on a model that
+reasons regardless of <code>think: false</code>, raising it is the fix.</p>
 <hr />
 <h3 id="-max_context_len"><code>--max_context_len</code><a class="headerlink" href="#-max_context_len" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>str</code> or <code>int</code><br />
@@ -2133,6 +2337,13 @@ Controls context length policy:
 - <code>"split"</code> — split dataset in two by input size, running each subset with a right-sized context (good when lengths vary a lot); results are merged afterwards<br />
 - integer — explicitly set context length</p>
 <hr />
+<h3 id="-max_context_cap"><code>--max_context_cap</code><a class="headerlink" href="#-max_context_cap" title="Permanent link">&para;</a></h3>
+<p><strong>Type:</strong> <code>int</code><br />
+<strong>Default:</strong> <code>None</code><br />
+An upper bound on the context window when <code>--max_context_len</code> is <code>max</code> or <code>split</code>. The window is still fitted to your data; it just never grows past this value. Inputs longer than the cap are truncated.</p>
+<p>It must be larger than <code>--num_predict</code>: <code>num_ctx</code> is the <em>whole</em> window, so the prompt and the generated answer share it, and a ceiling at or below the output budget would leave no room for your documents at all.</p>
+<p>This is the knob for fitting a run into a given GPU. <code>max</code> sizes the window to the longest document in the dataset, which is right for accuracy but says nothing about what your card can hold — and the context window, not the model weights, is usually what turns a run that fits into one that runs out of memory. The Studio's hardware presets set this for you.</p>
+<hr />
 <h3 id="-quantile"><code>--quantile</code><a class="headerlink" href="#-quantile" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>float</code><br />
 <strong>Default:</strong> <code>0.8</code><br />
@@ -2141,8 +2352,15 @@ Only used with <code>--max_context_len split</code>. Sets the token-count quanti
 <h3 id="-reasoning_model"><code>--reasoning_model</code><a class="headerlink" href="#-reasoning_model" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>bool</code><br />
 <strong>Default:</strong> <code>False</code><br />
-Enable this for models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON.<br />
-Enabling this flag allows the model to emit reasoning steps prior to the final answer extraction.</p>
+For models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON, so the reasoning is routed away from the answer instead of swamping it.</p>
+<p>You usually don't need this flag: models already installed in Ollama are inspected for a <code>thinking</code> capability and reasoning mode is switched on automatically. Set it when the model has not been pulled yet, or when the server can't be reached, so auto‑detection can't see the model. It also raises the generation budget — see <a href="#--num_predict"><code>--num_predict</code></a>.</p>
+<hr />
+<h3 id="-no_reasoning"><code>--no_reasoning</code><a class="headerlink" href="#-no_reasoning" title="Permanent link">&para;</a></h3>
+<p><strong>Type:</strong> <code>bool</code> (flag)<br />
+<strong>Default:</strong> <code>False</code><br />
+Forces reasoning mode off. This overrides both auto‑detection and <code>--reasoning_model</code>, so it's the way to make a thinking model answer directly. Passing both flags together logs a warning and <code>--no_reasoning</code> wins.</p>
+<p>On a model that advertises thinking, this sends Ollama an explicit <code>think: false</code>. On a model that doesn't, it does nothing at all — Ollama rejects <code>think</code> outright for those, and there is no reasoning to disable anyway.</p>
+<p>A few models (qwen3.5 among them) reason regardless of <code>think: false</code>. Their reasoning is stripped from the output before parsing so extraction still works, but it is still generated, so it still spends the <code>--num_predict</code> budget. If output comes back truncated on such a model, either raise <code>--num_predict</code> or leave reasoning enabled.</p>
 <hr />
 <h3 id="-num_examples"><code>--num_examples</code><a class="headerlink" href="#-num_examples" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>int</code><br />
@@ -2154,6 +2372,16 @@ Requires setting <code>Example_Path</code> inside the task JSON file.</p>
 <p><strong>Type:</strong> <code>int</code><br />
 <strong>Default:</strong> <code>None</code><br />
 Splits the dataset into chunks of this many documents for processing. Useful for very large datasets as the chunks are saved incrementally. If a crash occurs, only the current chunk needs to be reprocessed.</p>
+<hr />
+<h3 id="-test_run_size"><code>--test_run_size</code><a class="headerlink" href="#-test_run_size" title="Permanent link">&para;</a></h3>
+<p><strong>Type:</strong> <code>int</code><br />
+<strong>Default:</strong> <code>None</code><br />
+Runs on only the first N rows of the test set instead of the full dataset — a quick sanity check before committing to a full run. The context window is still sized from the <em>full</em> dataset, so what the subset exercises matches what the real run will do. Combine with <code>--test_run_random</code> to sample randomly instead. Output is written to its own folder, <code>&lt;task_name&gt;-test&lt;N&gt;-run&lt;idx&gt;</code>, so it never collides with a full run's output — and because the row count is part of the name, repeating a test run at a different size writes somewhere new instead of silently returning the earlier, smaller run's results. Not compatible with <code>--max_context_len split</code>, which falls back to <code>max</code> automatically.</p>
+<hr />
+<h3 id="-test_run_random"><code>--test_run_random</code><a class="headerlink" href="#-test_run_random" title="Permanent link">&para;</a></h3>
+<p><strong>Type:</strong> <code>bool</code> (flag)<br />
+<strong>Default:</strong> <code>False</code><br />
+With <code>--test_run_size</code>, sample rows randomly instead of taking the first N. Reproducible via <code>--seed</code>.</p>
 <hr />
 <h3 id="-translate"><code>--translate</code><a class="headerlink" href="#-translate" title="Permanent link">&para;</a></h3>
 <p><strong>Type:</strong> <code>bool</code><br />

@@ -761,6 +761,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The status field">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-a-row-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a row failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -946,7 +963,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Contributing
   
 
     
@@ -959,6 +976,93 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development & testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1088,6 +1192,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The status field">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-a-row-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a row failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1160,8 +1281,9 @@
 <p>The output file is a JSON list with <strong>one object per input row</strong>. Each object is the union of three things:</p>
 <ol>
 <li>your <strong>original input columns</strong> (everything from the source row, plus an added <code>token_count</code>),</li>
-<li>the <strong>fields from your output schema</strong>, and</li>
-<li>a <strong><code>status</code></strong> field.</li>
+<li>the <strong>fields from your output schema</strong>,</li>
+<li>a <strong><code>status</code></strong> field, and</li>
+<li>three <strong>diagnostic</strong> fields — <code>error_type</code>, <code>error_message</code> and <code>raw_output</code> — which are <code>null</code> on a successful row.</li>
 </ol>
 <p>For a schema extracting <code>product_name</code> and <code>price</code> from a CSV with <code>id</code> and <code>text</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span>
@@ -1171,7 +1293,10 @@
 <span class="w">    </span><span class="nt">&quot;token_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;product_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Olive oil 250ml&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;price&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.99</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;error_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;raw_output&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
@@ -1193,11 +1318,41 @@
 </tr>
 <tr>
 <td><code>"failure"</code></td>
-<td>The response could <strong>not</strong> be coerced into the schema, even after automatic fix-up attempts.</td>
+<td>The response could <strong>not</strong> be coerced into the schema.</td>
 </tr>
 </tbody>
 </table>
-<p>On failure, the schema fields are still present but filled with <strong>type-appropriate defaults</strong> — empty string for <code>str</code>, <code>0</code> for <code>int</code>, <code>0.0</code> for <code>float</code>, <code>False</code> for <code>bool</code>, <code>[]</code> for lists, <code>{}</code> for dicts, <code>None</code> for optionals, and a random valid choice for <code>Literal</code>. This keeps every record the same shape, so downstream code doesn't break — but it means a <code>0.0</code> price could be a real zero <em>or</em> a failed extraction. <strong>Always check <code>status</code></strong> before trusting a value.</p>
+<p>On failure, every schema field is <code>null</code>. The keys are still there, so each record keeps the same shape and downstream code doesn't break — but nothing is invented. A <code>0.0</code> price means the model really said zero; a failed row says <code>null</code> and nothing else.</p>
+<div class="admonition note">
+<p class="admonition-title">This changed in 0.7.0</p>
+<p>Failed rows used to be filled with type-appropriate defaults — <code>""</code> for text, <code>0</code> for numbers, and a <em>random</em> valid choice for a fixed set of values. That made a failure indistinguishable from an answer: a failed heart-rate row contributed a real <code>0</code> to a mean. If you have code that reads values without checking <code>status</code>, it was silently wrong before and will now see <code>null</code>/<code>NaN</code> instead.</p>
+</div>
+<h3 id="why-a-row-failed">Why a row failed<a class="headerlink" href="#why-a-row-failed" title="Permanent link">&para;</a></h3>
+<p>Three fields describe the failure, and the most useful is <code>raw_output</code> — what the model actually said:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error_type</code></td>
+<td>The exception class, e.g. <code>OutputParserException</code> for unparseable output</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>The full error text</td>
+</tr>
+<tr>
+<td><code>raw_output</code></td>
+<td>The model's own response, before parsing — <code>null</code> if the request never completed</td>
+</tr>
+</tbody>
+</table>
+<p>Truncated JSON in <code>raw_output</code> means the answer ran out of room; prose means the model ignored the schema. Those need opposite fixes, and you cannot tell them apart without the text.</p>
+<p>A run with any failures also writes a <strong><code>failures.json</code></strong> next to the predictions, containing just the failed rows with their input and the model's output — the same information, without having to filter several thousand records to find it.</p>
 <div class="admonition warning">
 <p class="admonition-title">Failures are expected sometimes</p>
 <p>A few failures in a large run are normal, especially with smaller models or messy input. If most records fail, that usually points at a schema or prompt problem — see <a href="../troubleshooting/">Troubleshooting</a>.</p>

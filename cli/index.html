@@ -935,7 +935,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Contributing
   
 
     
@@ -948,6 +948,93 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development & testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1165,7 +1252,7 @@
 <p>Models that emit intermediate reasoning before their answer (DeepSeek-R1, Qwen3, and similar) need <code>--reasoning_model</code> so the tool pulls the final JSON out of the surrounding thought process:</p>
 <div class="highlight"><pre><span></span><code>extractinate<span class="w"> </span>--task_id<span class="w"> </span><span class="m">1</span><span class="w"> </span>--model_name<span class="w"> </span><span class="s2">&quot;deepseek-r1&quot;</span><span class="w"> </span>--reasoning_model
 </code></pre></div>
-<p>These models also need more room to generate — if output comes back empty or truncated, raise <code>--num_predict</code>.</p>
+<p>These models also need more room to generate; that allowance is added for you, and if output still comes back empty or truncated you can raise <code>--num_predict</code> explicitly.</p>
 <hr />
 <h2 id="a-few-common-recipes">A few common recipes<a class="headerlink" href="#a-few-common-recipes" title="Permanent link">&para;</a></h2>
 <p><strong>Reproducible run</strong> (fixed seed, deterministic sampling):</p>

@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../troubleshooting/">
+        <link rel="prev" href="../development/">
       
       
         <link rel="next" href="../cpu-only/">
@@ -816,6 +816,93 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development & testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -834,10 +921,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -855,8 +942,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1044,10 +1131,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-notes" class="md-nav__link">
+  <a href="#7-building-the-image-yourself-and-updating-ollama" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Notes
+        7. Building the image yourself, and updating Ollama
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Building the image yourself, and updating Ollama">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#your-models-are-not-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your models are not affected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-cannot-reach-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If you cannot reach GitHub
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Notes
       
     </span>
   </a>
@@ -1236,10 +1362,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-notes" class="md-nav__link">
+  <a href="#7-building-the-image-yourself-and-updating-ollama" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Notes
+        7. Building the image yourself, and updating Ollama
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Building the image yourself, and updating Ollama">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#your-models-are-not-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your models are not affected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-cannot-reach-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If you cannot reach GitHub
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Notes
       
     </span>
   </a>
@@ -1432,11 +1597,52 @@ docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </
 </code></pre></div>
 <p>That will <strong>not</strong> start the Streamlit UI; instead you’ll get a bash shell inside the container with <code>llm_extractinator</code> installed.</p>
 <hr />
-<h2 id="7-notes">7. Notes<a class="headerlink" href="#7-notes" title="Permanent link">&para;</a></h2>
+<h2 id="7-building-the-image-yourself-and-updating-ollama">7. Building the image yourself, and updating Ollama<a class="headerlink" href="#7-building-the-image-yourself-and-updating-ollama" title="Permanent link">&para;</a></h2>
+<p>A model released after your image was built will not run in it — Ollama has to
+know the architecture, and that means a newer Ollama binary. This is the most
+common reason a model that "should" work reports as unsupported.</p>
+<p><strong>Rebuilding normally does not fix it.</strong> The Dockerfile installs Ollama in a
+<code>RUN</code> layer, and Docker caches those by the command text alone. That text never
+changes, so the layer is reused indefinitely — and because it sits above
+<code>COPY . /app</code>, even a source change does not touch it. A plain
+<code>docker build -t image:latest .</code> will happily keep an Ollama from months ago.</p>
+<p>Use the build script, which resolves the newest release and passes it in as a
+build argument. Changing that argument changes the layer, so Ollama is rebuilt
+when — and only when — the version has actually moved:</p>
+<div class="highlight"><pre><span></span><code>./build.sh<span class="w">                       </span><span class="c1"># llm-extractinator:latest, newest Ollama</span>
+./build.sh<span class="w"> </span>myname:tag<span class="w">            </span><span class="c1"># a name of your choosing</span>
+<span class="nv">OLLAMA_VERSION</span><span class="o">=</span><span class="m">0</span>.32.0<span class="w"> </span>./build.sh<span class="w">  </span><span class="c1"># pin, to roll back or reproduce an older image</span>
+</code></pre></div>
+<p>On Windows, <code>build.sh</code> runs in Git Bash or WSL. From PowerShell, use the twin
+script instead — it does exactly the same thing:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Image</span> <span class="n">myname</span><span class="p">:</span><span class="n">tag</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-OllamaVersion</span> <span class="n">0</span><span class="p">.</span><span class="n">32</span><span class="p">.</span><span class="n">0</span>   <span class="c"># pin, to roll back or reproduce</span>
+</code></pre></div>
+<p>If <code>./build.sh</code> reports "permission denied" after a fresh clone, Git did not
+record the executable bit (it never does on Windows). <code>bash build.sh</code> works
+regardless, and <code>git update-index --chmod=+x build.sh</code> fixes it for good.</p>
+<p>The build prints the version it resolved, and <code>ollama --version</code> inside the
+running container confirms what you ended up with.</p>
+<h3 id="your-models-are-not-affected">Your models are not affected<a class="headerlink" href="#your-models-are-not-affected" title="Permanent link">&para;</a></h3>
+<p>Models live in the <code>ollama_models/</code> mount, not in the image, so rebuilding does
+not touch them — the new binary reads the same store. You will still need to
+<code>ollama pull</code> the <em>new</em> model, but that is a separate step from the rebuild.</p>
+<p>On a large Ollama version jump the model store format can change. It is a plain
+directory, so either take a copy first or accept that a re-pull may be needed.</p>
+<h3 id="if-you-cannot-reach-github">If you cannot reach GitHub<a class="headerlink" href="#if-you-cannot-reach-github" title="Permanent link">&para;</a></h3>
+<p>The script falls back to building without a version, letting Ollama's own
+install script choose. Note the caveat it prints: if the layer is already
+cached, that build will <em>not</em> change the Ollama in the image. Use
+<code>docker build --no-cache</code> when you need to be certain — it is slow, because it
+rebuilds CUDA and Python too, but it is unambiguous.</p>
+<hr />
+<h2 id="8-notes">8. Notes<a class="headerlink" href="#8-notes" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The image exposes <strong>two ports</strong>: <code>8501</code> (Streamlit) and <code>11434</code> (Ollama).</li>
 <li>If you don’t have a GPU, you can try omitting <code>--gpus all</code>, but the image is CUDA-based, so GPU is the intended path.</li>
 <li>If your Docker Desktop uses different volume mappings (e.g., Windows drive letters), adjust the <code>-v</code> paths accordingly.</li>
+<li><code>docker build --pull</code> refreshes the CUDA base image as well, which is worth doing occasionally for security updates. It is a separate axis from the Ollama version.</li>
 </ul>
 
 

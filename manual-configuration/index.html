@@ -579,6 +579,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The task file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-model-is-told" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the model is told
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -946,7 +963,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Contributing
   
 
     
@@ -959,6 +976,93 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development & testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1077,6 +1181,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The task file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-model-is-told" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the model is told
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1190,9 +1311,25 @@
 <td>—</td>
 <td>Few-shot file, relative to <code>--example_dir</code> (only if using examples)</td>
 </tr>
+<tr>
+<td><code>Extra_Instructions</code></td>
+<td>—</td>
+<td>Extra text appended to the built-in system prompt (house style, output language, a domain convention)</td>
+</tr>
 </tbody>
 </table>
 <p><code>Data_Path</code> and <code>Parser_Format</code> are <strong>filenames</strong>, resolved against the data and <code>tasks/parsers/</code> directories respectively — not full paths.</p>
+<h3 id="what-the-model-is-told">What the model is told<a class="headerlink" href="#what-the-model-is-told" title="Permanent link">&para;</a></h3>
+<p>The system prompt is assembled from three things: a fixed frame, your
+<code>Description</code>, and a field guide generated from the schema — each field's name,
+its type, its allowed values if it has a fixed set, whether it is optional, and
+the <code>description</code> you gave it. Those descriptions are worth writing: the schema
+reaches Ollama as a grammar, which enforces the <em>shape</em> of the output and
+discards the prose, so the prompt is the only route by which the model learns
+what a field means.</p>
+<p><code>Extra_Instructions</code> is appended after the built-in rules. Use it for guidance
+that applies to the whole task rather than to one field — an output language, a
+unit convention, a house style.</p>
 <h2 id="naming-task-files">Naming task files<a class="headerlink" href="#naming-task-files" title="Permanent link">&para;</a></h2>
 <p>Task files must be named so the CLI can extract the numeric ID:</p>
 <div class="highlight"><pre><span></span><code>Task&lt;NNN&gt;...json
