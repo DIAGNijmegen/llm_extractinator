@@ -1,9 +1,11 @@
 import logging
 import os
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import httpx
 import ollama
 import pandas as pd
 
@@ -19,6 +21,32 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 
+# Errors worth trying again — and only these. A retry re-sends a byte-identical
+# request, so it can only help when the failure was in the *transport* rather
+# than in the answer:
+#
+#   ConnectionError       ollama's own translation of httpx.ConnectError (see
+#                         ollama/_client.py) — the server is starting, restarting
+#                         or briefly unreachable
+#   httpx.TransportError  read/write timeouts and protocol errors, which the
+#                         ollama client passes through untouched
+#
+# Deliberately not retried:
+#
+#   ollama.ResponseError  the server answered, with a 400 or a 404. It will
+#                         answer the same way next time
+#   OutputParserException the model answered and the answer did not parse. At
+#                         temperature 0 — the default for a non-thinking model --
+#                         or with a seed set, the reply is deterministic, so
+#                         three attempts buy three identical failures at three
+#                         times the cost. That was the previous behaviour:
+#                         a bare .with_retry() retries on Exception.
+RETRYABLE_ERRORS = (ConnectionError, httpx.TransportError)
+RETRY_ATTEMPTS = 3
+
+# LangChain message types to the role names Ollama's chat API expects.
+_OLLAMA_ROLES = {"system": "system", "human": "user", "ai": "assistant"}
+
 
 def _strip_think_tags(msg):
     """Strip <think>...</think> blocks from model output before JSON parsing.
@@ -32,9 +60,18 @@ def _strip_think_tags(msg):
 
 
 from llm_extractinator.callbacks import BatchCallBack
-from llm_extractinator.output_parsers import load_parser, load_parser_pydantic
-from llm_extractinator.prompt_utils import build_few_shot_prompt, build_zero_shot_prompt
-from llm_extractinator.validator import handle_prediction_failure
+from llm_extractinator.output_parsers import resolve_parser_model
+from llm_extractinator.prompt_utils import (
+    build_few_shot_prompt,
+    build_zero_shot_prompt,
+    describe_fields,
+    extra_instructions,
+    task_description,
+)
+from llm_extractinator.validator import (
+    handle_prediction_failure,
+    success_diagnostics,
+)
 
 
 class _TruncatingEmbeddings(Embeddings):
@@ -84,7 +121,8 @@ class Predictor:
         Extract task information from the task configuration.
         """
         self.length = self.task_config.get("Length")
-        self.description = self.task_config.get("Description")
+        self.description = task_description(self.task_config)
+        self.extra_instructions = extra_instructions(self.task_config)
         self.input_field = self.task_config.get("Input_Field")
         self.test_path = self.task_config.get("Data_Path")
         self.parser_format = self.task_config.get("Parser_Format")
@@ -95,43 +133,9 @@ class Predictor:
         """
         Prepare the system and human prompts for few-shot learning based on provided examples.
         """
-        if isinstance(self.parser_format, dict):
-            try:
-                self.parser_model = load_parser(
-                    task_type="Extraction", parser_format=self.parser_format
-                )
-            except KeyError as e:
-                logger.error(
-                    f"Missing required key in parser format dictionary: {e}"
-                )
-                raise ValueError(f"Invalid parser format dictionary: {e}") from e
-            except Exception as e:
-                logger.error(
-                    f"Failed to load parser model from dictionary format: {type(e).__name__}: {e}"
-                )
-                raise
-        else:
-            parser_path = self.task_dir / "parsers" / self.parser_format
-            try:
-                if not parser_path.exists():
-                    raise FileNotFoundError(f"Parser file not found: {parser_path}")
-                self.parser_model = load_parser_pydantic(parser_path=parser_path)
-            except FileNotFoundError as e:
-                logger.error(str(e))
-                raise
-            except (ImportError, AttributeError, SyntaxError) as e:
-                logger.error(
-                    f"Failed to import parser from {parser_path}: {type(e).__name__}: {e}"
-                )
-                raise ValueError(
-                    f"Parser file '{self.parser_format}' has invalid Python code or structure"
-                ) from e
-            except Exception as e:
-                logger.error(
-                    f"Failed to load parser model from {parser_path}: {type(e).__name__}: {e}"
-                )
-                raise
+        self.parser_model = resolve_parser_model(self.task_config, self.task_dir)
         self.base_parser = PydanticOutputParser(pydantic_object=self.parser_model)
+        field_guide = describe_fields(self.parser_model)
 
         if examples:
             logger.info("Creating few-shot prompt.")
@@ -151,23 +155,60 @@ class Predictor:
             )
             self.prompt = build_few_shot_prompt(
                 example_selector=self.example_selector,
-            ).partial(description=self.description)
+            ).partial(
+                description=self.description,
+                fields=field_guide,
+                extra_instructions=self.extra_instructions,
+            )
         else:
             logger.info("Creating zero-shot prompt.")
-            self.prompt = build_zero_shot_prompt().partial(description=self.description)
+            self.prompt = build_zero_shot_prompt().partial(
+                description=self.description,
+                fields=field_guide,
+                extra_instructions=self.extra_instructions,
+            )
+
+    def assemble_prompt(self, text: str) -> List[Dict[str, str]]:
+        """The exact messages this run would send for one input, as Ollama dicts.
+
+        Goes through the same template and the same example selector the
+        predictions use, so what gets measured is what will actually be sent —
+        including the few-shot exchanges, which are the part an estimate is
+        least able to predict.
+        """
+        return [
+            {
+                "role": _OLLAMA_ROLES.get(message.type, "user"),
+                "content": str(message.content),
+            }
+            for message in self.prompt.format_messages(input=text)
+        ]
 
     def predict(self, test_data: pd.DataFrame) -> List[Dict[str, Any]]:
         """
         Make predictions on the test data.
         """
         logger.info("Starting prediction on test data with %d samples.", len(test_data))
+        # `required` is left exactly as pydantic emits it. It used to be forced to
+        # *every* property whenever pydantic omitted the key — and pydantic omits
+        # it only when every field has a default, which is precisely when the
+        # task author marked them all optional. That turned "everything optional"
+        # into "everything mandatory" and made the model invent values for the
+        # fields it had been given permission to leave out.
         response_format = self.parser_model.model_json_schema()
-        if "required" not in response_format:
-            response_format["required"] = list(response_format.get("properties", {}).keys())
         bound_llm = self.model.bind(format=response_format)
+        # The retry wraps the model call alone, not the parse that follows it.
+        # Scoping it this way means a parse failure structurally cannot trigger
+        # another generation, whatever RETRYABLE_ERRORS is later widened to.
         model = (
-            bound_llm | RunnableLambda(_strip_think_tags) | self.base_parser
-        ).with_retry()
+            bound_llm.with_retry(
+                retry_if_exception_type=RETRYABLE_ERRORS,
+                stop_after_attempt=RETRY_ATTEMPTS,
+                wait_exponential_jitter=True,
+            )
+            | RunnableLambda(_strip_think_tags)
+            | self.base_parser
+        )
         chain = self.prompt | model
         test_data_processed = [
             {"input": row[self.input_field]} for _, row in test_data.iterrows()
@@ -181,20 +222,40 @@ class Predictor:
         callbacks.progress_bar.close()
 
         final_results = []
-        failure_counter = 0
-        for input_data, result in zip(test_data_processed, raw_results):
+        for result in raw_results:
             if isinstance(result, Exception):
                 final_results.append(
-                    handle_prediction_failure(result, input_data, self.parser_model)
+                    handle_prediction_failure(result, self.parser_model)
                 )
-                failure_counter += 1
             else:
                 result_dict = (
                     result.model_dump() if hasattr(result, "model_dump") else result
                 )
                 result_dict["status"] = "success"
+                result_dict.update(success_diagnostics())
                 final_results.append(result_dict)
 
-        logger.info("Prediction completed successfully.")
-        logger.info(f"Failed predictions: {failure_counter}")
+        self._log_outcome(final_results)
         return final_results
+
+    @staticmethod
+    def _log_outcome(results: List[Dict[str, Any]]) -> None:
+        """Say what happened, in terms someone can act on.
+
+        A bare count of failures does not distinguish "the server went away"
+        from "the model wrote prose", and those need opposite responses. The
+        breakdown by exception type is the cheapest thing that does.
+        """
+        failures = [r for r in results if r.get("status") == "failure"]
+        if not failures:
+            logger.info("Prediction completed: %d rows, no failures.", len(results))
+            return
+
+        breakdown = Counter(r.get("error_type") for r in failures)
+        logger.warning(
+            "%d of %d rows failed (%s). The model's own output for each is in "
+            "failures.json alongside the predictions.",
+            len(failures),
+            len(results),
+            ", ".join(f"{name} x{count}" for name, count in breakdown.most_common()),
+        )

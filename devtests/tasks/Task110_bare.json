@@ -1,0 +1,31 @@
+{
+  "Description": "Extract a structured summary from a radiology report.",
+  "Data_Path": "reports_en.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "optional": true
+    },
+    "body_region": {
+      "type": "str",
+      "optional": true
+    },
+    "contrast_used": {
+      "type": "bool",
+      "optional": true
+    },
+    "primary_finding": {
+      "type": "str",
+      "optional": true
+    },
+    "measurement_mm": {
+      "type": "float",
+      "optional": true
+    },
+    "recommendation": {
+      "type": "str",
+      "optional": true
+    }
+  }
+}

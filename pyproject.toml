@@ -52,7 +52,7 @@ include = ["llm_extractinator*"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "--strict-markers --cov=llm_extractinator --cov-report=term-missing"
+addopts = "--strict-markers -m 'not integration' --cov=llm_extractinator --cov-report=term-missing"
 testpaths = ["tests"]
 markers = [
     "integration: requires Ollama and a local LLM (skipped in CI)",

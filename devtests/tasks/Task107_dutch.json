@@ -1,0 +1,20 @@
+{
+  "Description": "Extract the key facts from a Dutch radiology report. The reports are free text written by radiologists and follow no fixed template.",
+  "Extra_Instructions": "The reports are in Dutch. Give every extracted value in English, except where the value is a direct quotation from the report.",
+  "Data_Path": "reports_nl.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality used, e.g. CT, MRI, ultrasound, radiograph"
+    },
+    "body_region": {
+      "type": "str",
+      "description": "The anatomical region imaged, as named in the report"
+    },
+    "primary_finding": {
+      "type": "str",
+      "description": "The single most important finding, in the report's own words"
+    }
+  }
+}

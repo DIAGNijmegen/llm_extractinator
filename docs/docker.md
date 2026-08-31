@@ -215,8 +215,66 @@ That will **not** start the Streamlit UI; instead you’ll get a bash shell insi
 
 ---
 
-## 7. Notes
+## 7. Building the image yourself, and updating Ollama
+
+A model released after your image was built will not run in it — Ollama has to
+know the architecture, and that means a newer Ollama binary. This is the most
+common reason a model that "should" work reports as unsupported.
+
+**Rebuilding normally does not fix it.** The Dockerfile installs Ollama in a
+`RUN` layer, and Docker caches those by the command text alone. That text never
+changes, so the layer is reused indefinitely — and because it sits above
+`COPY . /app`, even a source change does not touch it. A plain
+`docker build -t image:latest .` will happily keep an Ollama from months ago.
+
+Use the build script, which resolves the newest release and passes it in as a
+build argument. Changing that argument changes the layer, so Ollama is rebuilt
+when — and only when — the version has actually moved:
+
+```bash
+./build.sh                       # llm-extractinator:latest, newest Ollama
+./build.sh myname:tag            # a name of your choosing
+OLLAMA_VERSION=0.32.0 ./build.sh  # pin, to roll back or reproduce an older image
+```
+
+On Windows, `build.sh` runs in Git Bash or WSL. From PowerShell, use the twin
+script instead — it does exactly the same thing:
+
+```powershell
+.\build.ps1
+.\build.ps1 -Image myname:tag
+.\build.ps1 -OllamaVersion 0.32.0   # pin, to roll back or reproduce
+```
+
+If `./build.sh` reports "permission denied" after a fresh clone, Git did not
+record the executable bit (it never does on Windows). `bash build.sh` works
+regardless, and `git update-index --chmod=+x build.sh` fixes it for good.
+
+The build prints the version it resolved, and `ollama --version` inside the
+running container confirms what you ended up with.
+
+### Your models are not affected
+
+Models live in the `ollama_models/` mount, not in the image, so rebuilding does
+not touch them — the new binary reads the same store. You will still need to
+`ollama pull` the *new* model, but that is a separate step from the rebuild.
+
+On a large Ollama version jump the model store format can change. It is a plain
+directory, so either take a copy first or accept that a re-pull may be needed.
+
+### If you cannot reach GitHub
+
+The script falls back to building without a version, letting Ollama's own
+install script choose. Note the caveat it prints: if the layer is already
+cached, that build will *not* change the Ollama in the image. Use
+`docker build --no-cache` when you need to be certain — it is slow, because it
+rebuilds CUDA and Python too, but it is unambiguous.
+
+---
+
+## 8. Notes
 
 - The image exposes **two ports**: `8501` (Streamlit) and `11434` (Ollama).
 - If you don’t have a GPU, you can try omitting `--gpus all`, but the image is CUDA-based, so GPU is the intended path.
 - If your Docker Desktop uses different volume mappings (e.g., Windows drive letters), adjust the `-v` paths accordingly.
+- `docker build --pull` refreshes the CUDA base image as well, which is worth doing occasionally for security updates. It is a separate axis from the Ollama version.

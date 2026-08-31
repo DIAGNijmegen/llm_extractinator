@@ -1,0 +1,19 @@
+{
+  "Description": "Extract three facts from a long staging CT report. The schema is deliberately small: what is being exercised is the length of the input, not the width of the output.",
+  "Data_Path": "reports_long.json",
+  "Input_Field": "text",
+  "Parser_Format": {
+    "modality": {
+      "type": "str",
+      "description": "The imaging modality and the region covered"
+    },
+    "impression_summary": {
+      "type": "str",
+      "description": "The impression, summarised in one sentence"
+    },
+    "recommendation": {
+      "type": "str",
+      "description": "The recommendation given at the end of the report"
+    }
+  }
+}

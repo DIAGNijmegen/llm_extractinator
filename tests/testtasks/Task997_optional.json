@@ -1,0 +1,19 @@
+{
+    "Description": "Extract whatever the report happens to state; every field may be absent.",
+    "Extra_Instructions": "Prefer the wording used in the source text.",
+    "Data_Path": "testdata.json",
+    "Input_Field": "text",
+    "Parser_Format": {
+        "diagnosis": {
+            "type": "str",
+            "description": "The stated diagnosis, verbatim",
+            "optional": true
+        },
+        "severity": {
+            "type": "str",
+            "description": "How severe the report says it is",
+            "literals": ["mild", "moderate", "severe"],
+            "optional": true
+        }
+    }
+}

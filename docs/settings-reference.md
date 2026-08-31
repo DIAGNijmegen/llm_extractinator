@@ -22,15 +22,19 @@ It follows a professional documentation pattern:
 | `--model_name` | `"phi4"` | Model used via Ollama. |
 | `--ollama_host` | `None` | Connect to an already-running Ollama server instead of managing one. |
 | `--embedding_model` | `"nomic-embed-text"` | Embedding model for few‑shot selection. |
-| `--temperature` | `0.0` | Sampling randomness. |
+| `--temperature` | *auto* | Sampling randomness; `0.0` normally, `0.6` for a thinking model. |
 | `--top_k` | `None` | Top‑K sampling. |
 | `--top_p` | `None` | Nucleus sampling. |
-| `--num_predict` | `512` | Maximum generated tokens. |
+| `--num_predict` | *auto* | Maximum generated tokens; sized from the schema when unset. |
 | `--max_context_len` | `"max"` | Context length strategy. |
+| `--max_context_cap` | `None` | Upper bound on the context window in `max`/`split` mode. Must exceed `--num_predict`. |
 | `--quantile` | `0.8` | Split point for `--max_context_len split` (short vs long cases). |
-| `--reasoning_model` | `False` | Enables reasoning‑model mode. |
+| `--reasoning_model` | `False` | Forces reasoning‑model mode on (thinking models are auto‑detected). |
+| `--no_reasoning` | `False` | Forces reasoning‑model mode off, overriding auto‑detection. |
 | `--num_examples` | `0` | Number of few‑shot examples. |
 | `--chunk_size` | `None` | Chunk size for long inputs. |
+| `--test_run_size` | `None` | Run on only the first N rows (or a random sample) of the test set. |
+| `--test_run_random` | `False` | With `--test_run_size`, sample randomly instead of taking the first N rows. |
 | `--translate` | `False` | Translate input to English first. |
 | `--output_dir` | `output/` | Output location. |
 | `--log_dir` | `output/` | Log location. |
@@ -115,11 +119,16 @@ Name of the embedding model to use for few-shot example selection via semantic s
 
 ### `--temperature`
 
-**Type:** `float`
-**Default:** `0.0`  
-Controls randomness in generation:
-- `0.0` = deterministic  
-- Higher values = more creative output
+**Type:** `float`  
+**Default:** chosen automatically  
+
+Left unset, the temperature is picked from the model: **0.0** (greedy, deterministic) for an ordinary model, **0.6** for a thinking one.
+
+That second case is not a preference. Qwen's model cards state it plainly for thinking mode: *"DO NOT use greedy decoding, as it can lead to performance degradation and endless repetitions."* A repetition loop is a particularly bad failure for extraction — the model spends its whole `--num_predict` budget looping and returns no JSON at all. Qwen recommends 0.6 alongside `--top_p 0.95` and `--top_k 20`; only the temperature is applied for you, so set those two yourself if you want the full recommended configuration.
+
+Reproducibility is not lost: with `--seed`, a non-zero temperature is still deterministic run to run.
+
+Pass a value to override, including `--temperature 0` to force greedy on a thinking model anyway — the run logs a warning when you do.
 
 ---
 
@@ -139,8 +148,18 @@ Nucleus sampling: sample from the smallest token set whose cumulative probabilit
 
 ### `--num_predict`
 **Type:** `int`  
-**Default:** `512`  
+**Default:** *auto — sized from the output schema*  
 Maximum number of tokens to generate for the model’s output.
+
+Left unset, this is derived from your schema: a schema of thirty free-text
+fields needs far more room than one of three enums, and a truncated answer loses
+the whole row rather than degrading gracefully. The derived value never goes
+below 512, so it can only ever raise the budget relative to the old fixed
+default. A thinking model gets a further allowance on top, because its chain of
+thought is charged to this same budget.
+
+Set it explicitly to override. If output comes back truncated on a model that
+reasons regardless of `think: false`, raising it is the fix.
 
 ---
 
@@ -154,6 +173,17 @@ Controls context length policy:
 
 ---
 
+### `--max_context_cap`
+**Type:** `int`  
+**Default:** `None`  
+An upper bound on the context window when `--max_context_len` is `max` or `split`. The window is still fitted to your data; it just never grows past this value. Inputs longer than the cap are truncated.
+
+It must be larger than `--num_predict`: `num_ctx` is the *whole* window, so the prompt and the generated answer share it, and a ceiling at or below the output budget would leave no room for your documents at all.
+
+This is the knob for fitting a run into a given GPU. `max` sizes the window to the longest document in the dataset, which is right for accuracy but says nothing about what your card can hold — and the context window, not the model weights, is usually what turns a run that fits into one that runs out of memory. The Studio's hardware presets set this for you.
+
+---
+
 ### `--quantile`
 **Type:** `float`  
 **Default:** `0.8`  
@@ -164,8 +194,20 @@ Only used with `--max_context_len split`. Sets the token-count quantile that div
 ### `--reasoning_model`
 **Type:** `bool`  
 **Default:** `False`  
-Enable this for models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON.  
-Enabling this flag allows the model to emit reasoning steps prior to the final answer extraction.
+For models like DeepSeek‑R1 and Qwen3 that output chain‑of‑thought before JSON, so the reasoning is routed away from the answer instead of swamping it.
+
+You usually don't need this flag: models already installed in Ollama are inspected for a `thinking` capability and reasoning mode is switched on automatically. Set it when the model has not been pulled yet, or when the server can't be reached, so auto‑detection can't see the model. It also raises the generation budget — see [`--num_predict`](#--num_predict).
+
+---
+
+### `--no_reasoning`
+**Type:** `bool` (flag)  
+**Default:** `False`  
+Forces reasoning mode off. This overrides both auto‑detection and `--reasoning_model`, so it's the way to make a thinking model answer directly. Passing both flags together logs a warning and `--no_reasoning` wins.
+
+On a model that advertises thinking, this sends Ollama an explicit `think: false`. On a model that doesn't, it does nothing at all — Ollama rejects `think` outright for those, and there is no reasoning to disable anyway.
+
+A few models (qwen3.5 among them) reason regardless of `think: false`. Their reasoning is stripped from the output before parsing so extraction still works, but it is still generated, so it still spends the `--num_predict` budget. If output comes back truncated on such a model, either raise `--num_predict` or leave reasoning enabled.
 
 ---
 
@@ -181,6 +223,20 @@ Requires setting `Example_Path` inside the task JSON file.
 **Type:** `int`  
 **Default:** `None`  
 Splits the dataset into chunks of this many documents for processing. Useful for very large datasets as the chunks are saved incrementally. If a crash occurs, only the current chunk needs to be reprocessed.
+
+---
+
+### `--test_run_size`
+**Type:** `int`  
+**Default:** `None`  
+Runs on only the first N rows of the test set instead of the full dataset — a quick sanity check before committing to a full run. The context window is still sized from the *full* dataset, so what the subset exercises matches what the real run will do. Combine with `--test_run_random` to sample randomly instead. Output is written to its own folder, `<task_name>-test<N>-run<idx>`, so it never collides with a full run's output — and because the row count is part of the name, repeating a test run at a different size writes somewhere new instead of silently returning the earlier, smaller run's results. Not compatible with `--max_context_len split`, which falls back to `max` automatically.
+
+---
+
+### `--test_run_random`
+**Type:** `bool` (flag)  
+**Default:** `False`  
+With `--test_run_size`, sample rows randomly instead of taking the first N. Reproducible via `--seed`.
 
 ---
 

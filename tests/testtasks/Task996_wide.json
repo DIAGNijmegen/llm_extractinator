@@ -1,0 +1,107 @@
+{
+    "Description": "A deliberately wide schema: twenty free-text fields.",
+    "Data_Path": "testdata.json",
+    "Input_Field": "text",
+    "Parser_Format": {
+        "finding_1": {
+            "type": "str",
+            "description": "Free-text finding number 1, quoted from the report",
+            "optional": true
+        },
+        "finding_2": {
+            "type": "str",
+            "description": "Free-text finding number 2, quoted from the report",
+            "optional": true
+        },
+        "finding_3": {
+            "type": "str",
+            "description": "Free-text finding number 3, quoted from the report",
+            "optional": true
+        },
+        "finding_4": {
+            "type": "str",
+            "description": "Free-text finding number 4, quoted from the report",
+            "optional": true
+        },
+        "finding_5": {
+            "type": "str",
+            "description": "Free-text finding number 5, quoted from the report",
+            "optional": true
+        },
+        "finding_6": {
+            "type": "str",
+            "description": "Free-text finding number 6, quoted from the report",
+            "optional": true
+        },
+        "finding_7": {
+            "type": "str",
+            "description": "Free-text finding number 7, quoted from the report",
+            "optional": true
+        },
+        "finding_8": {
+            "type": "str",
+            "description": "Free-text finding number 8, quoted from the report",
+            "optional": true
+        },
+        "finding_9": {
+            "type": "str",
+            "description": "Free-text finding number 9, quoted from the report",
+            "optional": true
+        },
+        "finding_10": {
+            "type": "str",
+            "description": "Free-text finding number 10, quoted from the report",
+            "optional": true
+        },
+        "finding_11": {
+            "type": "str",
+            "description": "Free-text finding number 11, quoted from the report",
+            "optional": true
+        },
+        "finding_12": {
+            "type": "str",
+            "description": "Free-text finding number 12, quoted from the report",
+            "optional": true
+        },
+        "finding_13": {
+            "type": "str",
+            "description": "Free-text finding number 13, quoted from the report",
+            "optional": true
+        },
+        "finding_14": {
+            "type": "str",
+            "description": "Free-text finding number 14, quoted from the report",
+            "optional": true
+        },
+        "finding_15": {
+            "type": "str",
+            "description": "Free-text finding number 15, quoted from the report",
+            "optional": true
+        },
+        "finding_16": {
+            "type": "str",
+            "description": "Free-text finding number 16, quoted from the report",
+            "optional": true
+        },
+        "finding_17": {
+            "type": "str",
+            "description": "Free-text finding number 17, quoted from the report",
+            "optional": true
+        },
+        "finding_18": {
+            "type": "str",
+            "description": "Free-text finding number 18, quoted from the report",
+            "optional": true
+        },
+        "finding_19": {
+            "type": "str",
+            "description": "Free-text finding number 19, quoted from the report",
+            "optional": true
+        },
+        "finding_20": {
+            "type": "str",
+            "description": "Free-text finding number 20, quoted from the report",
+            "optional": true
+        }
+    }
+}

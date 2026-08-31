@@ -40,8 +40,23 @@ A minimal task:
 | `Input_Field` | ✅ | Exact column/key holding the text |
 | `Parser_Format` | ✅ | Schema filename in `tasks/parsers/` |
 | `Example_Path` | — | Few-shot file, relative to `--example_dir` (only if using examples) |
+| `Extra_Instructions` | — | Extra text appended to the built-in system prompt (house style, output language, a domain convention) |
 
 `Data_Path` and `Parser_Format` are **filenames**, resolved against the data and `tasks/parsers/` directories respectively — not full paths.
+
+### What the model is told
+
+The system prompt is assembled from three things: a fixed frame, your
+`Description`, and a field guide generated from the schema — each field's name,
+its type, its allowed values if it has a fixed set, whether it is optional, and
+the `description` you gave it. Those descriptions are worth writing: the schema
+reaches Ollama as a grammar, which enforces the *shape* of the output and
+discards the prose, so the prompt is the only route by which the model learns
+what a field means.
+
+`Extra_Instructions` is appended after the built-in rules. Use it for guidance
+that applies to the whole task rather than to one field — an output language, a
+unit convention, a house style.
 
 ## Naming task files
 

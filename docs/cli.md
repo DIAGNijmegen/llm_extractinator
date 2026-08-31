@@ -35,7 +35,7 @@ Models that emit intermediate reasoning before their answer (DeepSeek-R1, Qwen3,
 extractinate --task_id 1 --model_name "deepseek-r1" --reasoning_model
 ```
 
-These models also need more room to generate — if output comes back empty or truncated, raise `--num_predict`.
+These models also need more room to generate; that allowance is added for you, and if output still comes back empty or truncated you can raise `--num_predict` explicitly.
 
 ---
 

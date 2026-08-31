@@ -17,7 +17,30 @@ RUN apt-get update && \
 
 
 # install ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
+#
+# Deliberately not pinned to a fixed version: new model architectures need a new
+# Ollama, and this image exists to run new models.
+#
+# But a RUN layer is cached by its command *text*, which never changes on its
+# own — so without a varying value here, a rebuild silently keeps whichever
+# Ollama was current when this layer was first built. That is exactly how a
+# newly released model ends up unsupported in an image you just rebuilt, and it
+# is worse here because this layer sits above `COPY . /app`: a source change
+# invalidates everything below it but never this.
+#
+# build.sh resolves the newest release and passes it in, so the layer rebuilds
+# when — and only when — the version actually moves. Leave it empty and the
+# install script picks the latest itself; set it to an older version to roll
+# back or to reproduce an earlier image.
+ARG OLLAMA_VERSION=
+# Downloaded first rather than piped straight into sh: a pipeline's exit status
+# is the last command's, so `curl … | sh` succeeds even when curl fails and
+# hands sh an empty script. Printing the version at the end makes the build log
+# say which Ollama actually went in.
+RUN curl -fsSL https://ollama.com/install.sh -o /tmp/install-ollama.sh \
+    && OLLAMA_VERSION="${OLLAMA_VERSION}" sh /tmp/install-ollama.sh \
+    && rm /tmp/install-ollama.sh \
+    && ollama --version
 
 WORKDIR /app
 COPY . /app

@@ -24,6 +24,8 @@ nav:
   - Reference:
       - Settings & Flags: settings-reference.md
       - Troubleshooting: troubleshooting.md
+  - Contributing:
+      - Development & testing: development.md
   - Deployment:
       - Docker: docker.md
       - CPU only: cpu-only.md
