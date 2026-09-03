@@ -2,7 +2,7 @@
 name: ticket-implementer
 description: Implements one fully specified ticket from PLAN_0.8.0.md end to end — source change, tests, changelog entry. Use for Lane B and Lane C tickets, which are independent and can run in parallel. Do NOT use for Lane A, which is sequential and must not be split.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: inherit
+model: sonnet
 color: blue
 ---
 
