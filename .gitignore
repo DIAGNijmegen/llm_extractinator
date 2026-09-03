@@ -180,3 +180,9 @@ devtests/reports/
 # Release-prep scratch, not repo content
 PR_BODY.md
 RELEASE_NOTES.md
+
+# Claude Code: the shared team config is committed (CLAUDE.md, .claude/agents,
+# .claude/rules, .claude/skills, .claude/settings.json). Only the personal and
+# machine-local overrides stay out.
+.claude/settings.local.json
+CLAUDE.local.md
