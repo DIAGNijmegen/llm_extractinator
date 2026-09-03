@@ -130,19 +130,56 @@ def test_a_transport_error_is_still_retried_and_can_recover():
     assert result.content == HR_RESPONSE
 
 
-def test_a_server_side_error_is_not_retried():
+@pytest.mark.parametrize("status", [400, 404])
+def test_a_client_side_response_error_is_not_retried(status):
     """A 400 or 404 is an answer. Asking again produces the same answer."""
     state = {"calls": 0}
 
     class Refusing(FakeChatModel):
         def _generate(self, messages, stop=None, run_manager=None, **kwargs):
             state["calls"] += 1
-            raise ollama.ResponseError("does not support thinking", 400)
+            raise ollama.ResponseError("does not support thinking", status)
 
     with pytest.raises(ollama.ResponseError):
         _retrying(Refusing(responses=["x"])).invoke("anything")
 
     assert state["calls"] == 1
+
+
+@pytest.mark.parametrize("status", [503, 429])
+def test_a_busy_server_response_error_is_retried(status):
+    """503 (unavailable) and 429 (rate limited) on a shared Ollama are the
+    retryable case: the request is fine, the server was momentarily saturated,
+    and the next attempt meets a different server state — not a byte-identical
+    dead end like a 400."""
+    state = {"calls": 0}
+
+    class Busy(FakeChatModel):
+        def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+            state["calls"] += 1
+            if state["calls"] <= 2:
+                raise ollama.ResponseError("server busy", status)
+            return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
+
+    result = _retrying(Busy(responses=[HR_RESPONSE])).invoke("anything")
+
+    assert state["calls"] == 3
+    assert result.content == HR_RESPONSE
+
+
+def test_a_busy_server_error_that_never_clears_stops_after_the_attempt_cap():
+    """The carve-out is still bounded — 503 does not loop forever."""
+    state = {"calls": 0}
+
+    class AlwaysBusy(FakeChatModel):
+        def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+            state["calls"] += 1
+            raise ollama.ResponseError("server busy", 503)
+
+    with pytest.raises(ollama.ResponseError):
+        _retrying(AlwaysBusy(responses=["x"])).invoke("anything")
+
+    assert state["calls"] == RETRY_ATTEMPTS
 
 
 # ── the progress bar tells the truth ──────────────────────────────

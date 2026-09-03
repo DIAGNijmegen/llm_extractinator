@@ -22,26 +22,64 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 # Errors worth trying again — and only these. A retry re-sends a byte-identical
-# request, so it can only help when the failure was in the *transport* rather
-# than in the answer:
+# request, so it can only help when something *other than the request* changed
+# between attempts — the transport, or the server's own availability:
 #
-#   ConnectionError       ollama's own translation of httpx.ConnectError (see
-#                         ollama/_client.py) — the server is starting, restarting
-#                         or briefly unreachable
-#   httpx.TransportError  read/write timeouts and protocol errors, which the
-#                         ollama client passes through untouched
+#   ConnectionError          ollama's own translation of httpx.ConnectError (see
+#                            ollama/_client.py) — the server is starting,
+#                            restarting or briefly unreachable
+#   httpx.TransportError     read/write timeouts and protocol errors, which the
+#                            ollama client passes through untouched
+#   RetryableResponseError   a ResponseError carrying HTTP 503 (server
+#                            unavailable) or 429 (rate limited). On a busy shared
+#                            Ollama this is the retryable case by definition: the
+#                            request is fine, the server is momentarily saturated,
+#                            and the next attempt meets a different server state.
 #
 # Deliberately not retried:
 #
-#   ollama.ResponseError  the server answered, with a 400 or a 404. It will
-#                         answer the same way next time
+#   ollama.ResponseError  every *other* status — a 400 or a 404 is a settled
+#                         answer about the request itself, and it will answer the
+#                         same way next time. Only 503/429 are carved out, by
+#                         status code, via RetryableResponseError below; the
+#                         caught type is not widened.
 #   OutputParserException the model answered and the answer did not parse. At
 #                         temperature 0 — the default for a non-thinking model --
 #                         or with a seed set, the reply is deterministic, so
 #                         three attempts buy three identical failures at three
 #                         times the cost. That was the previous behaviour:
 #                         a bare .with_retry() retries on Exception.
-RETRYABLE_ERRORS = (ConnectionError, httpx.TransportError)
+
+
+class _RetryableResponseErrorMeta(type):
+    """isinstance() hook: a ``ResponseError`` is retryable only for 503/429.
+
+    ``RETRYABLE_ERRORS`` is a plain tuple of exception types because that is all
+    ``Runnable.with_retry`` accepts, and the retry decision is ``isinstance``.
+    Narrowing the exclusion by status code therefore means a type whose
+    ``isinstance`` check inspects ``status_code`` rather than the class alone —
+    every non-503/429 ``ResponseError`` stays outside the tuple's reach.
+    """
+
+    _RETRYABLE_STATUS = frozenset({429, 503})
+
+    def __instancecheck__(cls, instance: object) -> bool:
+        return (
+            isinstance(instance, ollama.ResponseError)
+            and getattr(instance, "status_code", None) in cls._RETRYABLE_STATUS
+        )
+
+
+class RetryableResponseError(Exception, metaclass=_RetryableResponseErrorMeta):
+    """Marker for ``RETRYABLE_ERRORS`` — never raised, never instantiated.
+
+    Only its ``isinstance`` behaviour is used: ``isinstance(err, this)`` is true
+    for an ``ollama.ResponseError`` whose ``status_code`` is 503 or 429. It
+    subclasses ``Exception`` so ``with_retry``'s type validation accepts it.
+    """
+
+
+RETRYABLE_ERRORS = (ConnectionError, httpx.TransportError, RetryableResponseError)
 RETRY_ATTEMPTS = 3
 
 # LangChain message types to the role names Ollama's chat API expects.
