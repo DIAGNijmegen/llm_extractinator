@@ -189,23 +189,24 @@ Constraints:
 
 ## Lane B — independent defects
 
-**Parallel. One `ticket-implementer` agent each.** Every one of these has an
-obvious correct answer and a test that confirms it, which is exactly what makes
-them safe to delegate and exactly why they never get done otherwise.
+**Verified against the code on 2026-09-03. Three of the five were already fixed
+in the 0.7.0 squash (5dc02a3) and never should have been tickets.** They were
+written from the "Hazards (still live)" list in the project notes, which was
+authored *during* 0.7.0 development and not updated when the work landed. The
+lesson is cheap and worth keeping: a ticket derived from a note is a hypothesis
+until it is grepped.
 
-| id | Defect | Scope |
-|---|---|---|
-| B1 | `OllamaServerManager.stop()` unloads the model but never terminates `self.process`. A server we spawned outlives the run holding VRAM. | `ollama_server.py`, `tests/test_lifecycle.py` |
-| B2 | `RETRYABLE_ERRORS` excludes `ollama.ResponseError` wholesale. Right for 400/404, wrong for **503/429** — a busy shared server is the retryable case by definition. Narrow the exclusion, don't widen the type. | `predictor.py`, `tests/test_failure_reporting.py` |
-| B3 | Nothing checks that `PredictionTask.REQUIRED_PARAMS` covers every `TaskConfig` field. It is a silent-drop allowlist; this already cost one release. Test only, no source change. | `tests/test_prediction_task.py` |
-| B4 | Split mode merges and deletes the prediction files but leaves `failures-short.json` / `failures-long.json` unmerged, so a split run's failures are easy to miss. | `main.py`, `utils.py`, `tests/test_pipeline_offline.py` |
-| B5 | `_TruncatingEmbeddings` clips examples to 2,000 chars before similarity selection with no log line. It changes *which* examples are chosen. | `predictor.py`, `tests/test_failure_reporting.py` |
+| id | Status | Defect | Scope |
+|---|---|---|---|
+| ~~B1~~ | **Already done** | `_stop_server()` terminates, waits, force-kills, and leaves attached servers alone. Four behaviours pinned in `tests/test_lifecycle.py`. | — |
+| B2 | **Live** | `RETRYABLE_ERRORS` is `(ConnectionError, httpx.TransportError)` and excludes `ollama.ResponseError` wholesale. Right for 400/404, wrong for **503/429** — a busy shared server is the retryable case by definition. Narrow the exclusion, don't widen the type. | `predictor.py`, `tests/test_failure_reporting.py` |
+| ~~B3~~ | **Already done** | `test_required_params_accounts_for_every_task_config_field` and `test_required_params_has_nothing_that_comes_from_nowhere` are in `tests/test_lifecycle.py`, not `test_prediction_task.py` where the ticket looked. | — |
+| ~~B4~~ | **Already done** | `_combine_results` calls `_combine_failures(rows, short_path.parent)`. | — |
+| B5 | **Live** | `_TruncatingEmbeddings` clips examples to 2,000 chars before similarity selection with no log line. It changes *which* examples are chosen. | `predictor.py`, `tests/test_failure_reporting.py` |
 
-> **B2 and B5 share `predictor.py`.** Give them to the **same** agent, in that
-> order. Do not dispatch them concurrently.
-
-> **B3** is a pure test ticket — dispatch it to `test-author`, not
-> `ticket-implementer`.
+> **Lane B is now one agent run.** B2 and B5 both touch `predictor.py`, so they
+> go to the **same** `ticket-implementer`, in that order. There is nothing left
+> to parallelise here.
 
 ---
 
@@ -260,19 +261,23 @@ distinction; no behaviour change outside the Studio.
 
 ## Execution order
 
-**Wave 1 — parallel, file-disjoint.** B1, B4, C1, C2 as `ticket-implementer`;
-B3 as `test-author`; B2→B5 as one `ticket-implementer` in sequence. Six agents,
-no shared files. None edit `CHANGELOG.md` — they propose entries and
+**Wave 1 — three agent runs, file-disjoint.** B2→B5 as one
+`ticket-implementer` in sequence (shared file); C1 and C2 as one
+`ticket-implementer` each. None edit `CHANGELOG.md` — they propose entries and
 `docs-keeper` writes them in one pass when the wave lands. `budget-guardian`
-reviews C1 before merge.
+reviews C1 before merge, since it is the only Wave 1 ticket in the sizing path.
+
+Wave 1 was six runs before the Lane B verification pass; B1, B3 and B4 turned out
+to be already shipped. Worth doing that check on any lane whose tickets came from
+notes rather than from reading the code.
 
 **Wave 2 — sequential, one session.** A1, A2, A3 in order, on the clean tree Wave
 1 leaves behind. `budget-guardian` after A3. This is the release.
 
 **Wave 3 — Luc.** E1, E2, then `docs-keeper` for the release notes.
 
-The ordering is not arbitrary: Lane B touches `predictor.py` and `main.py`, and so
-does Lane A. Landing the small work first means Lane A starts from a clean tree
+The ordering is not arbitrary: Lane B touches `predictor.py`, and so does Lane
+A's A2. Landing the small work first means Lane A starts from a clean tree
 instead of merging into one.
 
 ---

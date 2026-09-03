@@ -151,7 +151,7 @@ which is the whole reason this checklist exists.
 ## Commands
 
 ```bash
-pytest                      # 255 hermetic tests, ~7s. No Ollama, no network, no GPU.
+pytest                      # 277 hermetic tests. No Ollama, no network, no GPU.
 pytest -q --no-cov          # use this when running agents in parallel: addopts
                             # sets --cov, and concurrent runs fight over .coverage
 pytest tests/test_budget.py -q
@@ -162,8 +162,13 @@ python devtests/run.py --list
 mkdocs serve                # docs preview
 ```
 
-`pytest` is the gate. A slow suite is itself a finding — something reached the
-network, most likely a tiktoken vocabulary fetch.
+`pytest` is the gate. Wall time varies a lot by platform (seconds on Linux,
+minutes on Windows under `--cov`), so judge it against *this machine's* previous
+run rather than an absolute number. A suite that suddenly got much slower is a
+finding: the usual cause is something reaching the network, most often a tiktoken
+vocabulary fetch. `pytest -q --no-cov --durations=20` tells the two apart — time
+spread evenly across tests is instrumentation, time concentrated in a few
+token-counting tests is the network.
 
 `devtests/` answers only what a faked model **structurally cannot** — never put
 there what the offline suite could verify. `docs/development.md` is the human
