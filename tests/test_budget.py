@@ -31,6 +31,38 @@ def test_a_fitted_window_is_exactly_the_prompt_plus_the_answer():
     assert not budget.is_clamped
 
 
+def test_an_answer_dominated_fitted_window_is_not_called_fitted_to_the_data():
+    """The real case from PLAN_0.8.0: a 33,441-token window three quarters of
+    which is a user-set --num_predict. The size came from the generation leash,
+    not from the documents, so the label must not say "fitted to the data"."""
+    budget = resolve_budget(prompt_tokens=8441, output_tokens=25_000)
+
+    # Arithmetic is unchanged: this ticket relabels, it does not resize.
+    assert budget.num_ctx == 33_441
+    assert budget.num_predict == 25_000
+    assert budget.fitted_ctx == 33_441
+
+    assert budget.source == "fitted to the answer budget"
+    assert budget.source != "fitted to the data"
+
+
+def test_a_prompt_dominated_fitted_window_is_still_fitted_to_the_data():
+    """The common case is untouched: when the documents are the larger term the
+    window really is fitted to the data."""
+    budget = resolve_budget(prompt_tokens=25_000, output_tokens=5_000)
+
+    assert budget.num_ctx == 30_000
+    assert budget.source == "fitted to the data"
+
+
+def test_an_equal_split_fitted_window_is_fitted_to_the_data():
+    """The boundary: num_predict must *exceed* the prompt to be the dominant
+    term, not merely equal it."""
+    budget = resolve_budget(prompt_tokens=5_000, output_tokens=5_000)
+
+    assert budget.source == "fitted to the data"
+
+
 def test_an_explicit_window_is_honoured():
     budget = resolve_budget(prompt_tokens=1000, output_tokens=512, requested_ctx=4096)
 
@@ -189,6 +221,31 @@ def test_describe_shows_where_the_window_went():
         prompt_tokens=10_000, output_tokens=512, hardware_ceiling=4096
     )
     assert "capped by --max_context_cap" in capped.describe()
+
+
+def test_describe_names_the_answer_budget_when_it_is_the_larger_term():
+    """When the window is mostly generation leash, the log line says so instead
+    of pretending the documents set the size."""
+    answer_heavy = resolve_budget(prompt_tokens=8441, output_tokens=25_000)
+
+    assert answer_heavy.describe() == (
+        "context 33441 = 8441 prompt + 25000 answer + 0 headroom "
+        "(fitted to the answer budget; answer budget is the larger term)"
+    )
+    assert "fitted to the data" not in answer_heavy.describe()
+
+
+def test_describe_does_not_flag_domination_when_the_prompt_is_the_larger_term():
+    """The dominant-term clause is a signal for the surprising case only; a
+    prompt-led window reads exactly as it did before."""
+    prompt_heavy = resolve_budget(prompt_tokens=25_000, output_tokens=5_000)
+
+    line = prompt_heavy.describe()
+    assert line == (
+        "context 30000 = 25000 prompt + 5000 answer + 0 headroom "
+        "(fitted to the data)"
+    )
+    assert "larger term" not in line
 
 
 def test_reasoning_allowance_is_a_named_constant():

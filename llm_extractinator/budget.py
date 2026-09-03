@@ -50,7 +50,13 @@ class Budget:
     prompt_tokens: int
     #: What the data actually asked for, before any ceiling was applied.
     fitted_ctx: int
-    #: Human-readable origin of ``num_ctx`` ("fitted to the data", "--max_context_len").
+    #: Human-readable origin of ``num_ctx``. One of:
+    #: ``"--max_context_len"`` (the user fixed the window explicitly),
+    #: ``"fitted to the data"`` (auto, and the prompt is the larger term — the
+    #: documents set the size), or ``"fitted to the answer budget"`` (auto, but
+    #: ``num_predict`` is the larger term — a generation leash, not a
+    #: measurement, set the size). The last is called out because a window that
+    #: is mostly answer budget is not "fitted to the data" in any useful sense.
     source: str
     #: The ceiling that bound the window, if one did.
     limited_by: Optional[str] = None
@@ -73,17 +79,23 @@ class Budget:
         """One line, for the log: where the window went.
 
         The point is that someone who does not think in tokens can still see
-        that the answer and the prompt are competing for the same space.
+        that the answer and the prompt are competing for the same space. When
+        ``num_predict`` is the larger of the two, the line says so outright:
+        that is the case where the window size came from a generation leash
+        rather than from the documents, and calling it "fitted to the data"
+        would hide exactly the thing worth noticing.
         """
         headroom = self.num_ctx - self.prompt_tokens - self.num_predict
-        line = (
+        origin = self.source
+        if self.limited_by:
+            origin += f", capped by {self.limited_by}"
+        if self.num_predict > self.prompt_tokens:
+            origin += "; answer budget is the larger term"
+        return (
             f"context {self.num_ctx} = {self.prompt_tokens} prompt "
             f"+ {self.num_predict} answer "
-            f"+ {max(headroom, 0)} headroom ({self.source}"
+            f"+ {max(headroom, 0)} headroom ({origin})"
         )
-        if self.limited_by:
-            line += f", capped by {self.limited_by}"
-        return line + ")"
 
 
 def _tightest_ceiling(
@@ -148,6 +160,12 @@ def resolve_budget(
                 f"max_context_len must be positive, got {requested_ctx}."
             )
         num_ctx, source = requested_ctx, "--max_context_len"
+    elif output_tokens > prompt_tokens:
+        # The window is mostly generation budget: num_predict, not the
+        # documents, set its size. num_predict is a leash the caller chose, not
+        # a measurement, so "fitted to the data" would misdescribe where the
+        # number came from. See PLAN_0.8.0 C1 and .claude/rules/context-budget.md.
+        num_ctx, source = fitted, "fitted to the answer budget"
     else:
         num_ctx, source = fitted, "fitted to the data"
 
