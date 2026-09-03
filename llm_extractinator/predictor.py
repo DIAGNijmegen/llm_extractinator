@@ -112,21 +112,50 @@ from llm_extractinator.validator import (
 )
 
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
+
 class _TruncatingEmbeddings(Embeddings):
-    """Wraps an embeddings model and truncates texts to avoid exceeding the model's context limit."""
+    """Wraps an embeddings model and truncates texts to avoid exceeding the model's context limit.
+
+    The clip is not free: MMR example selection ranks candidates by embedding
+    similarity, so a document that loses its tail can be ranked differently and a
+    different few-shot set reaches the model for that row. That used to happen
+    with no trace at all. The clip still happens — this class only makes it
+    *visible* when it bites, with an aggregate count rather than a line per text
+    so a large example pool does not flood the log.
+    """
 
     def __init__(self, base: Embeddings, max_chars: int = 2000) -> None:
         self._base = base
         self._max_chars = max_chars
+        self._query_clip_warned = False
 
     def embed_documents(self, texts):
+        clipped = sum(1 for t in texts if len(t) > self._max_chars)
+        if clipped:
+            logger.warning(
+                "Truncated %d of %d example text(s) to %d chars before similarity "
+                "embedding; this can change which few-shot examples are selected.",
+                clipped,
+                len(texts),
+                self._max_chars,
+            )
         return self._base.embed_documents([t[: self._max_chars] for t in texts])
 
     def embed_query(self, text: str):
+        if len(text) > self._max_chars and not self._query_clip_warned:
+            # One line per Predictor, not per row: select_examples() calls this
+            # once for every input document.
+            self._query_clip_warned = True
+            logger.warning(
+                "Truncated an input document to %d chars before similarity "
+                "embedding; this can change which few-shot examples are selected. "
+                "Further truncations this run are not logged.",
+                self._max_chars,
+            )
         return self._base.embed_query(text[: self._max_chars])
-
-# Configure logging
-logger = logging.getLogger(__name__)
 
 
 class Predictor:

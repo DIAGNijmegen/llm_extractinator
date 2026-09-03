@@ -7,16 +7,22 @@ and every parse failure was retried three times with a byte-identical request.
 """
 
 import json
+import logging
 from pathlib import Path
 from uuid import uuid4
 
 import ollama
 import pytest
+from langchain_core.embeddings import Embeddings
 from langchain_core.exceptions import OutputParserException
 from langchain_core.runnables import RunnableLambda
 
 from llm_extractinator.callbacks import BatchCallBack
-from llm_extractinator.predictor import RETRY_ATTEMPTS, RETRYABLE_ERRORS
+from llm_extractinator.predictor import (
+    RETRY_ATTEMPTS,
+    RETRYABLE_ERRORS,
+    _TruncatingEmbeddings,
+)
 from tests.conftest import FakeChatModel, RecordingFakeChatModel, load_predictions
 
 HR_RESPONSE = '{"HR": 78, "Name": "Alice"}'
@@ -247,3 +253,73 @@ def test_a_failed_translation_keeps_the_original_text(offline_run):
 
     translated = json.loads((out / "translations" / "999.json").read_text("utf-8"))
     assert translated[0]["text"] == "Alice has a heart rate of 78 bpm."
+
+
+# ── the example clip is no longer silent ──────────────────────────
+
+PREDICTOR_LOGGER = "llm_extractinator.predictor"
+
+
+class _RecordingEmbeddings(Embeddings):
+    """Base embeddings that just remembers the exact strings it was handed."""
+
+    def __init__(self) -> None:
+        self.seen: list[str] = []
+
+    def embed_documents(self, texts):
+        self.seen.extend(texts)
+        return [[0.0, 0.0] for _ in texts]
+
+    def embed_query(self, text):
+        self.seen.append(text)
+        return [0.0, 0.0]
+
+
+def test_clipping_example_texts_logs_the_count_and_the_limit(caplog):
+    """MMR selection ranks by embedding similarity, so a clipped example can
+    change which few-shot set a row gets. That must not happen silently."""
+    emb = _TruncatingEmbeddings(_RecordingEmbeddings(), max_chars=10)
+    with caplog.at_level(logging.WARNING, logger=PREDICTOR_LOGGER):
+        emb.embed_documents(["short one", "x" * 40, "y" * 99])
+
+    messages = [r.getMessage() for r in caplog.records if r.name == PREDICTOR_LOGGER]
+    assert len(messages) == 1
+    assert "2 of 3" in messages[0]
+    assert "10 chars" in messages[0]
+
+
+def test_no_log_when_no_example_exceeds_the_limit(caplog):
+    emb = _TruncatingEmbeddings(_RecordingEmbeddings(), max_chars=100)
+    with caplog.at_level(logging.WARNING, logger=PREDICTOR_LOGGER):
+        emb.embed_documents(["short", "also short", "still short"])
+
+    assert [r for r in caplog.records if r.name == PREDICTOR_LOGGER] == []
+
+
+def test_the_clip_itself_is_unchanged_the_base_still_sees_truncated_text(caplog):
+    """Visibility only: the selector must get exactly the same truncated
+    strings it got before, so example selection does not shift."""
+    base = _RecordingEmbeddings()
+    emb = _TruncatingEmbeddings(base, max_chars=5)
+    with caplog.at_level(logging.WARNING, logger=PREDICTOR_LOGGER):
+        emb.embed_documents(["abcdefghij", "no"])
+        emb.embed_query("qrstuvwxyz")
+
+    assert base.seen == ["abcde", "no", "qrstu"]
+
+
+def test_input_document_clip_is_logged_once_not_once_per_row(caplog):
+    """``select_examples`` calls ``embed_query`` for every input row; a warning
+    per row would bury the run's real output."""
+    emb = _TruncatingEmbeddings(_RecordingEmbeddings(), max_chars=5)
+    with caplog.at_level(logging.WARNING, logger=PREDICTOR_LOGGER):
+        emb.embed_query("x" * 20)
+        emb.embed_query("y" * 20)
+        emb.embed_query("z" * 20)
+
+    query_warnings = [
+        r for r in caplog.records
+        if r.name == PREDICTOR_LOGGER and "input document" in r.getMessage()
+    ]
+    assert len(query_warnings) == 1
+    assert "5 chars" in query_warnings[0].getMessage()
