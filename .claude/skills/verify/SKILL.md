@@ -43,17 +43,25 @@ If the diff touches `budget.py`, `prediction_task.py`, `data_loader.py`,
 sufficient on its own — dispatch the `budget-guardian` agent and include its
 report. Do not self-certify a change to the sizing path.
 
-## 5. Tests and changelog
+## 5. The Evidence line
+
+Confirm the report says whether the ticket's Evidence line matched the working
+tree. A ticket completed without that check is not verified, however green the
+suite is — three tickets in the first version of this plan described defects that
+had already been shipped.
+
+## 6. Tests and changelog
 
 - Every behavioural change in the diff has a corresponding test in `tests/`.
   Name it.
-- `CHANGELOG.md` has an entry under the unreleased 0.8.0 heading, phrased from
-  the user's point of view.
+- The entry for `CHANGELOG.md`'s `## [Unreleased]` heading was *proposed in the
+  report*, not written into the file — implementers do not edit it, `docs-keeper`
+  writes them in one pass.
 - If a flag, default or documented log message changed, `docs/cli.md` and
   `docs/settings-reference.md` are consistent with it — or the `docs-keeper`
   agent has been dispatched.
 
-## Report
+## 7. Report
 
 One line per check: name, pass or fail, and the evidence (the pytest line, the
 file list, the test name). If everything passes, say so and name the ticket.

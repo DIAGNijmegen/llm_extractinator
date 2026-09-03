@@ -1,7 +1,28 @@
 # 0.8.0 — bounding the chain of thought
 
-**Branch:** `0.8.0` (not `0.7.1`: this adds a CLI flag and a pipeline phase, which
-is a minor bump under the convention every previous branch here has followed.)
+**Branch:** `0.8.0`. **Reconciled against the code on 2026-09-03** — every ticket
+below carries a file:line Evidence entry that was checked, not remembered.
+
+## How tickets are written here
+
+The first version of this plan had five Lane B tickets. Three were already fixed
+in the 0.7.0 squash (`5dc02a3`) and only turned up when an agent was dispatched
+to do one and correctly refused. They existed because the lane was written from
+the "Hazards (still live)" note in project memory, which was authored *during*
+0.7.0 development and never updated when the work landed.
+
+So, the rule for this file:
+
+> **A ticket carries Evidence: a file:line showing the current behaviour, checked
+> against the working tree at the time of writing. No evidence, no ticket.**
+> A note, a memory file or a changelog entry is a hypothesis about the code. The
+> code is the only fact.
+
+And the corollary, which is now in the implementer's contract: **before changing
+anything, confirm the Evidence line still describes what you see.** If it does
+not, stop and report. That refusal is a successful outcome.
+
+---
 
 ## The problem, settled
 
@@ -16,65 +37,46 @@ raw_output:    ""                      67/67
 
 The model returns **zero content**. The chain of thought consumes the whole
 generation budget and the JSON is never reached. `num_predict` covers thinking
-and answer together, and thinking is spent first.
+and answer together, and thinking is spent first. Confirmed by Luc independently.
 
-This is not a defect in this package. [ollama/ollama#17561](https://github.com/ollama/ollama/issues/17561)
-is an open proposal to bound thinking separately; today there is no
-`think_budget`, and the issue names this exact symptom on Qwen-family models.
-The only levers that exist are **shortening the trace** (`think: "low"`) and
-**not thinking** (`think: false`).
+Not a defect in this package: [ollama/ollama#17561](https://github.com/ollama/ollama/issues/17561)
+is an open proposal to bound thinking separately, and today there is no
+`think_budget`. The only levers that exist are **shortening the trace**
+(`think: "low"`) and **not thinking** (`think: false`).
 
-Two further facts from the same run:
+Two supporting facts from the same run:
 
 - `raw_output` is empty because it captures the *content* channel only. With
-  `reasoning=True` the trace goes to `additional_kwargs["reasoning_content"]`
-  and is discarded before the exception is raised — so the one artifact that
-  would say whether the model was looping or merely slow is thrown away.
-- The budget log is misleading. `context 33441 = 8441 prompt + 25000 answer + 0
-  headroom (fitted to the data)` described a window three quarters of which came
-  from a user-set `--num_predict`. `Budget.source` reports "fitted to the data"
-  whenever `requested_ctx is None`, regardless of what actually filled it.
-
-## What ships in 0.8.0
-
-Prevention, then recovery, then honesty about both.
-
-1. **`--reasoning_effort`** — expose Ollama's thinking levels. Shortens the trace
-   at the source and cuts wall-clock at the same time.
-2. **Metadata capture** — `done_reason`, `eval_count` and the reasoning channel,
-   so truncation is diagnosable and the budget is sizable from measurement.
-3. **A retry pass** — one second pass over failed rows only, at a larger window
-   and reduced thinking, marked as degraded.
-4. **Naming fixes** — `Budget.source`, and the three confusable token fields in
-   the Studio.
-5. **The loose ends** — five small independent defects already identified.
-
-Explicitly **not** in 0.8.0, with reasons, in `Deferred` at the bottom.
+  `reasoning=True` the trace goes to `additional_kwargs["reasoning_content"]` and
+  is discarded before the exception is raised.
+- `context 33441 = 8441 prompt + 25000 answer + 0 headroom (fitted to the data)`
+  described a window three quarters of which came from a user-set `--num_predict`.
 
 ---
 
 ## Lane A — the reasoning budget
 
-**Sequential. One owner. Not delegated to parallel agents.**
-
-The reason is specific rather than precautionary: A1 changes how the reasoning
-state is resolved, A2 changes what a failure carries, and A3 consumes both. Three
-agents each holding one third of that would reproduce, organisationally, the
-exact bug class this codebase exists to have fixed — one rule computed in several
-places by parties who each know part of it. Run these in order, in one session,
-and dispatch `budget-guardian` after A3.
+**Sequential. One owner. Not delegated.** A1 changes how reasoning state resolves,
+A2 changes what a failure carries, A3 consumes both. Three agents each holding a
+third would reproduce, organisationally, the bug class this codebase exists to
+have fixed. `budget-guardian` reviews the whole lane diff after A3.
 
 ### A1 — `--reasoning_effort {low,medium,high,max}`
 
-**Scope:** `main.py` (flag + `TaskConfig`), `run_config.py`, `prediction_task.py`,
-`gui.py`, `tests/test_run_config.py`, `tests/test_cli.py`, `tests/test_prediction_task.py`
+**Evidence:** `prediction_task.py:119-128` resolves `_reasoning_param` to `True`,
+`False` or `None` only; `grep -rn "reasoning_effort" llm_extractinator/` returns
+nothing. `resolve_thinking` is at `run_config.py:279` and returns `bool`.
 
-Ollama accepts `think: "low"|"medium"|"high"|"max"` on most reasoning models.
-`ChatOllama`'s `reasoning=` parameter takes those strings. gpt-oss accepts **only**
-levels and silently ignores booleans, so the current True/False/None resolution is
-already incomplete for that family.
+**Scope:** `main.py` (`parse_args` at :596, `TaskConfig`), `run_config.py`,
+`prediction_task.py`, `gui.py`, `tests/test_run_config.py`, `tests/test_cli.py`,
+`tests/test_prediction_task.py`
 
-Design: keep `resolve_thinking()` returning `bool` — the budget only needs to know
+Ollama accepts `think: "low"|"medium"|"high"|"max"` on most reasoning models;
+`ChatOllama`'s `reasoning=` takes those strings. gpt-oss accepts **only** levels
+and silently ignores booleans, so the current three-state resolution is already
+incomplete for that family.
+
+Keep `resolve_thinking()` returning `bool` — the budget only needs to know
 *whether* this run reasons — and add a separate resolver for the wire value:
 
 ```python
@@ -82,32 +84,30 @@ resolve_reasoning_param(detected, reasoning_model, no_reasoning, effort)
     -> True | False | None | "low" | "medium" | "high" | "max"
 ```
 
-That preserves the property that the runner and the task cannot disagree, while
-keeping the four-state wire value out of the budget's way. Precedence:
-`no_reasoning` beats everything; an explicit `effort` implies reasoning is on.
-
-Follow the `None = auto` convention. Do **not** make `"medium"` the default —
-auto stays auto.
+Precedence: `no_reasoning` beats everything; an explicit `effort` implies
+reasoning is on. Follow `None = auto`; do **not** default to `"medium"`.
 
 **Acceptance**
 - `--reasoning_effort low` reaches `ChatOllama(reasoning="low")`, pinned by a test.
-- `--no_reasoning --reasoning_effort high` resolves to reasoning off, with a warning.
-- The flag round-trips through `RunSettings.to_command()`.
-- The field is in `PredictionTask.REQUIRED_PARAMS`.
+- `--no_reasoning --reasoning_effort high` → reasoning off, with a warning.
+- Round-trips through `RunSettings.to_command()`.
+- Present in `PredictionTask.REQUIRED_PARAMS`.
 - `pytest -q` green.
 
 ### A2 — capture what the model actually did
 
+**Evidence:** `predictor.py:204-212` is
+`bound_llm.with_retry(...) | RunnableLambda(_strip_think_tags) | self.base_parser`.
+The parser consumes the `AIMessage`, so `response_metadata` is lost.
+`grep -rn "done_reason\|eval_count\|reasoning_content" llm_extractinator/` returns
+only `prompt_eval_count` in `ollama_server.py:109-130`, which is the calibration
+probe, not per-row generation.
+
 **Scope:** `predictor.py`, `validator.py`, `tests/test_failure_reporting.py`
 
-Today the chain is `bound_llm | _strip_think_tags | base_parser`. The parser
-consumes the `AIMessage`, so `response_metadata` is dropped on success and only
-`llm_output` survives on failure.
-
-Design: classify inside the chain rather than correlating callbacks. Insert a step
-**after** `_strip_think_tags` (which preserves `response_metadata` through
-`model_copy`) and **before** the parser, which raises a typed exception carrying
-the metadata:
+Classify **inside the chain** rather than correlating callbacks. `_strip_think_tags`
+uses `model_copy`, so it preserves `response_metadata`. Insert a step after it and
+before the parser that raises a typed exception carrying the metadata:
 
 ```
 bound_llm | _strip_think_tags | _classify_completion | base_parser
@@ -118,22 +118,18 @@ bound_llm | _strip_think_tags | _classify_completion | base_parser
 - otherwise pass through
 
 The exception carries the metadata itself, so no run-id correlation is needed —
-which is the trap here, since `chain.batch` runs rows concurrently and the parse
+which is the trap here, since `chain.batch` runs rows concurrently and a parse
 failure has no handle on the callback's `parent_run_id`.
 
 New diagnostic columns on every row: `done_reason`, `eval_count`, and a clipped
-tail of `reasoning_content`. The reasoning tail is the point — it is what
-distinguishes a long-but-finite trace (retry will work) from a repetition loop
-(retry will not).
-
-For the distribution, an ordered list of `eval_count` is enough; per-row
-correlation on *successful* rows is not required and is not worth restructuring
-the chain for.
+tail of `reasoning_content`. **The reasoning tail is the point** — it is what
+distinguishes a long-but-finite trace (A3 will recover it) from a repetition loop
+(A3 will not). An ordered list of `eval_count` is enough for the distribution;
+per-row correlation on *successful* rows is not worth restructuring the chain for.
 
 **Acceptance**
-- A faked response with `done_reason: "length"` produces `error_type:
-  "TruncatedOutput"`, not `OutputParserException`.
-- A faked response with empty content produces `EmptyCompletion`.
+- A faked `done_reason: "length"` yields `error_type: "TruncatedOutput"`.
+- A faked empty content yields `EmptyCompletion`.
 - Failure rows carry a non-empty reasoning tail when the fake supplies one.
 - End of run logs p50 / p95 / max `eval_count` against `num_predict`.
 - Successful rows still carry the full diagnostic key set as `None`.
@@ -141,8 +137,11 @@ the chain for.
 
 ### A3 — the retry pass
 
-**Scope:** `prediction_task.py`, `main.py`, `utils.py`, `tests/test_prediction_task.py`,
-`tests/test_pipeline_offline.py`
+**Evidence:** `grep -rn "_retry_phase\|attempts\|degraded" llm_extractinator/`
+finds only unrelated prose. No second pass exists.
+
+**Scope:** `prediction_task.py`, `main.py`, `utils.py`,
+`tests/test_prediction_task.py`, `tests/test_pipeline_offline.py`
 
 A **second pass over failed rows only**, not a per-row retry. Changing `num_ctx`
 reallocates the KV cache, which means a model reload; per row that is ruinous,
@@ -154,34 +153,28 @@ retry pass   num_predict = 2N       think = one level lower (or False)
 ```
 
 Escalating both is deliberate. Budget alone loses to a repetition loop; reduced
-thinking alone loses to a genuinely long trace. Together they cover both, and the
-retry is a materially different request — which is what makes it legitimate under
+thinking alone loses to a genuinely long trace. Together they cover both — and the
+retry is a materially different request, which is what makes it legitimate under
 the project's no-identical-retry rule.
 
-Constraints:
-- **Eligibility:** only `EmptyCompletion` and `TruncatedOutput` rows. A transport
-  failure or a genuine schema violation is not retried here.
+- **Eligibility:** only `EmptyCompletion` and `TruncatedOutput`. Not transport
+  failures, not genuine schema violations.
 - **One pass. No ladder, no loop.**
 - **Clamped:** the escalated window goes through `resolve_budget` under the same
-  `max_context_cap` and `model_native_max`. If it cannot grow, skip the pass and
-  say so rather than reloading for nothing.
+  `max_context_cap` and `model_native_max`. If it cannot grow, skip and say so
+  rather than reloading for nothing.
 - **VRAM:** Ollama multiplies `num_ctx` by `OLLAMA_NUM_PARALLEL`. A doubled window
-  on a server with four slots is eight times the KV cache. Log the escalated
-  window prominently; full slot-awareness is deferred (see below).
+  on four slots is eight times the KV cache. Log the escalated window prominently.
 - **No eligible failures → no reload.** The common case must cost nothing.
-- **Marking:** recovered rows carry `attempts: 2` and `degraded: true`. They were
-  answered with less reasoning and are not equivalent to a first-pass row.
-  Consistent with the existing rule that a row never hides how it was produced.
-- Results merge back by row index. Must be correct under `chunk_size`, `n_runs`
-  and `split`.
+- **Marking:** recovered rows carry `attempts: 2` and `degraded: true`.
+- Results merge by row index; correct under `chunk_size`, `n_runs` and `split`.
 
 **Acceptance**
-- A run with zero eligible failures performs no reload and no second pass.
-- A run with eligible failures re-runs exactly those rows and merges by index.
-- Recovered rows carry `attempts` and `degraded`; first-pass rows do not.
-- A row that fails twice keeps its **second** diagnostic and stays `status: failure`.
-- The escalated budget is clamped by the ceiling; a blocked escalation skips the
-  pass with a log line naming the blocker.
+- Zero eligible failures → no reload, no second pass.
+- Eligible failures → exactly those rows re-run and merged by index.
+- Recovered rows carry `attempts` / `degraded`; first-pass rows do not.
+- A row failing twice keeps its **second** diagnostic and stays `status: failure`.
+- A blocked escalation skips the pass with a log line naming the blocker.
 - Correct under `chunk_size` and `split`.
 - `pytest -q` green, then **`budget-guardian` reports no findings.**
 
@@ -189,61 +182,77 @@ Constraints:
 
 ## Lane B — independent defects
 
-**Verified against the code on 2026-09-03. Three of the five were already fixed
-in the 0.7.0 squash (5dc02a3) and never should have been tickets.** They were
-written from the "Hazards (still live)" list in the project notes, which was
-authored *during* 0.7.0 development and not updated when the work landed. The
-lesson is cheap and worth keeping: a ticket derived from a note is a hypothesis
-until it is grepped.
+**One agent run.** B2 and B5 both live in `predictor.py`, so they go to the same
+`ticket-implementer`, in that order. There is nothing here to parallelise.
 
-| id | Status | Defect | Scope |
-|---|---|---|---|
-| ~~B1~~ | **Already done** | `_stop_server()` terminates, waits, force-kills, and leaves attached servers alone. Four behaviours pinned in `tests/test_lifecycle.py`. | — |
-| B2 | **Live** | `RETRYABLE_ERRORS` is `(ConnectionError, httpx.TransportError)` and excludes `ollama.ResponseError` wholesale. Right for 400/404, wrong for **503/429** — a busy shared server is the retryable case by definition. Narrow the exclusion, don't widen the type. | `predictor.py`, `tests/test_failure_reporting.py` |
-| ~~B3~~ | **Already done** | `test_required_params_accounts_for_every_task_config_field` and `test_required_params_has_nothing_that_comes_from_nowhere` are in `tests/test_lifecycle.py`, not `test_prediction_task.py` where the ticket looked. | — |
-| ~~B4~~ | **Already done** | `_combine_results` calls `_combine_failures(rows, short_path.parent)`. | — |
-| B5 | **Live** | `_TruncatingEmbeddings` clips examples to 2,000 chars before similarity selection with no log line. It changes *which* examples are chosen. | `predictor.py`, `tests/test_failure_reporting.py` |
+| id | Evidence | Defect |
+|---|---|---|
+| B2 | `predictor.py:44` — `RETRYABLE_ERRORS = (ConnectionError, httpx.TransportError)`; the comment at :36 excludes `ollama.ResponseError` for being a 400/404 | Right for 400/404, wrong for **503/429** — a busy shared server is the retryable case by definition. Narrow the exclusion by `status_code`; do not widen the type. |
+| B5 | `predictor.py:77-88` — `_TruncatingEmbeddings` clips to `max_chars=2000` in both `embed_documents` and `embed_query`, no logging | The clip changes *which* examples the selector picks, silently. A debug line when it actually bites. |
 
-> **Lane B is now one agent run.** B2 and B5 both touch `predictor.py`, so they
-> go to the **same** `ticket-implementer`, in that order. There is nothing left
-> to parallelise here.
+**Already shipped in 0.7.0, not tickets** — recorded so they are not re-raised:
+`_stop_server()` (`ollama_server.py:211`, four behaviours pinned in
+`tests/test_lifecycle.py`); the `REQUIRED_PARAMS` coverage tests
+(`tests/test_lifecycle.py:32,52` — note: *not* `test_prediction_task.py`);
+split-mode failure merging (`_combine_results` calls `_combine_failures`).
 
 ---
 
 ## Lane C — naming and UX
 
-**Parallel with Lane B; file-disjoint from it.**
+Parallel with Lane B; file-disjoint from it and from each other.
 
 ### C1 — `Budget.source` must describe where the number came from
+
+**Evidence:** `budget.py:150-152` — `source` is `"--max_context_len"` when
+`requested_ctx` is set and `"fitted to the data"` otherwise, with nothing
+consulting `output_tokens`. The docstring at :53 states only those two values.
 
 **Scope:** `budget.py`, `tests/test_budget.py` *(budget.py only — if `main.py`
 needs to change, stop and hand it to Lane A)*
 
-`resolve_budget` emits `"fitted to the data"` whenever `requested_ctx is None`,
-which is true of a window that is three quarters user-set answer budget. Add a
-source that distinguishes them, and make `describe()` say which term dominates.
+A window that is three quarters user-set answer budget should not describe itself
+as fitted to the data. Add a source that distinguishes them; make `describe()`
+say which term dominates.
 
 **Acceptance:** a window whose `num_predict` exceeds its `prompt_tokens` does not
-describe itself as fitted to the data; the existing describe tests still pass;
+report "fitted to the data"; existing describe tests still pass;
 `budget-guardian` reports no findings.
 
 ### C2 — the Studio's three token fields
 
+**Evidence:** `gui.py:944` "Cap context length", `:953` "Context ceiling
+(tokens)" → `max_context_cap`; `:1107` "Context length strategy" radio, `:1121`
+"Fixed context length (tokens)" → `max_context_len`; `:1054` "Max output tokens"
+→ `num_predict`. All three in the same form, all measured in tokens.
+
 **Scope:** `gui.py`, `tests/test_gui_smoke.py`
 
-"Context ceiling (tokens)" (`max_context_cap`), "Fixed context length (tokens)"
-(`max_context_len`, hidden behind the *custom* radio option) and "Max output
-tokens" (`num_predict`) sit in the same form with confusable names. The field a
-user wants for the window takes two interactions to reach; the one that silently
-changes the answer budget takes one. A real user set 20,000 in the wrong field
-and it went unnoticed until the log was read closely.
+A real user meaning to set the window to 20,000 set the answer budget instead;
+nothing in the interface or the log said so. The field for the window takes two
+interactions to reach, the one that silently changes the answer budget takes one.
 
-Group them, say in each help string what the *other two* are not, and warn when
+Group them; say in each help string what the *other two* are not; warn when
 `num_predict` is set manually above a few thousand on a thinking model — that is
 the shape of somebody trying to set the window.
 
 **Acceptance:** a smoke test asserts the warning fires; help text names the
 distinction; no behaviour change outside the Studio.
+
+---
+
+## Lane D — release mechanics
+
+Do these last, in one pass, once Lanes A–C have landed.
+
+| id | Evidence | What |
+|---|---|---|
+| D1 | `llm_extractinator/__init__.py` reads `__version__ = "0.7.0"` | Bump to `0.8.0`. It is the only place — `pyproject.toml` reads it dynamically. |
+| D2 | `CHANGELOG.md:7` is `## [Unreleased]` | `docs-keeper` writes the collected entries there, then promotes the heading to `## [0.8.0] - <date>`. |
+| D3 | — | Delete `PLAN_0.8.0.md`. It is an input to the work, not a record of it, and it rots the moment the work lands. |
+
+**Merging to `main` publishes to PyPI** (`.github/workflows/publish.yml`).
+Nothing else guards that, so D1 and D2 are not optional tidying.
 
 ---
 
@@ -253,32 +262,28 @@ distinction; no behaviour change outside the Studio.
 
 | id | What |
 |---|---|
-| E1 | Add an `effort` probe to `devtests/`: the same failing task at `think=true` / `"low"` / `false`, reporting fill rate and `eval_count`. This is the number that decides whether A1 alone is sufficient. |
-| E2 | Re-run the RECIST task on this branch and compare the failure rate against the 7.8% baseline. |
-| E3 | Probe whether Ollama passes `maxItems` / `maxLength` through to the grammar. llama.cpp supports them and "skips unsupported features silently", so this must be measured. It gates the deferred schema-bounds work. |
+| E0 | Settle the 163s suite time. `pytest -q --no-cov --durations=20`: time spread evenly is Windows/coverage, time concentrated in token-counting tests is a tiktoken network stall. Or measure directly: `python -c "import time; t=time.time(); import tiktoken; tiktoken.get_encoding('cl100k_base'); print(time.time()-t)"`. If the vocabulary cannot be fetched, every token count on that machine is a word count × 1.2 — which matters before E1. |
+| E1 | Add an `effort` probe to `devtests/`: the same failing task at `think=true` / `"low"` / `false`, reporting fill rate and `eval_count`. **This is the number that decides whether A1 alone is sufficient.** |
+| E2 | Re-run the RECIST task on this branch; compare against the 7.8% baseline. |
+| E3 | Probe whether Ollama passes `maxItems` / `maxLength` through to the grammar. llama.cpp supports them and "skips unsupported features silently", so this must be measured. Gates the deferred schema-bounds work. |
 
 ---
 
 ## Execution order
 
-**Wave 1 — three agent runs, file-disjoint.** B2→B5 as one
-`ticket-implementer` in sequence (shared file); C1 and C2 as one
-`ticket-implementer` each. None edit `CHANGELOG.md` — they propose entries and
-`docs-keeper` writes them in one pass when the wave lands. `budget-guardian`
-reviews C1 before merge, since it is the only Wave 1 ticket in the sizing path.
-
-Wave 1 was six runs before the Lane B verification pass; B1, B3 and B4 turned out
-to be already shipped. Worth doing that check on any lane whose tickets came from
-notes rather than from reading the code.
+**Wave 1 — three agent runs, file-disjoint.** B2→B5 as one `ticket-implementer`
+in sequence (shared file); C1 and C2 as one each. None edit `CHANGELOG.md` — they
+propose entries and `docs-keeper` writes them in one pass. `budget-guardian`
+reviews C1, the only Wave 1 ticket in the sizing path.
 
 **Wave 2 — sequential, one session.** A1, A2, A3 in order, on the clean tree Wave
-1 leaves behind. `budget-guardian` after A3. This is the release.
+1 leaves. `budget-guardian` after A3. This is the release.
 
-**Wave 3 — Luc.** E1, E2, then `docs-keeper` for the release notes.
+**Wave 3 — Luc.** E0 first (it is free and it may invalidate E1's numbers), then
+E1, E2. Then Lane D.
 
-The ordering is not arbitrary: Lane B touches `predictor.py`, and so does Lane
-A's A2. Landing the small work first means Lane A starts from a clean tree
-instead of merging into one.
+Wave 1 before Wave 2 because Lane B touches `predictor.py` and so does A2:
+landing the small work first means Lane A starts from a clean tree.
 
 ---
 
@@ -286,10 +291,10 @@ instead of merging into one.
 
 | Deferred | Why not now |
 |---|---|
-| **Two-pass extraction** (think freely with no grammar, then a short `think:false` formatting call) | The only way to genuinely decouple the two budgets given the upstream gap, and structurally the right answer. But it doubles calls per row and changes the pipeline shape. If E2 shows A1+A3 leave the failure rate materially above zero, this becomes 0.9.0's headline. |
+| **Two-pass extraction** (think freely with no grammar, then a short `think:false` formatting call) | The only way to genuinely decouple the two budgets given the upstream gap, and structurally the right answer. Doubles calls per row and changes the pipeline shape. If E2 shows A1+A3 leave the failure rate materially above zero, this becomes 0.9.0's headline. |
 | **Schema `maxItems` / `maxLength` bounds** | The most durable fix for output sizing — a declared bound becomes a hard decoder constraint and makes the estimate exact. Blocked on E3. |
-| **Output calibration probe** (one real generation, size `num_predict` from `eval_count`) | Needs A2's `eval_count` capture to exist first, and needs the E1 numbers to choose a margin. Natural 0.9.0 work. |
-| **Concurrency / `OLLAMA_NUM_PARALLEL`** | Designed already in the project notes. Interacts directly with A3 — a doubled retry window multiplied by four slots is eight times the KV cache — so it needs the retry pass to exist before it can be sized against it. Its own release. |
+| **Output calibration probe** (one real generation, size `num_predict` from `eval_count`) | Needs A2's capture to exist, and E1's numbers to choose a margin. Natural 0.9.0 work. |
+| **Concurrency / `OLLAMA_NUM_PARALLEL`** | Designed in the project notes. Interacts directly with A3 — a doubled retry window times four slots is eight times the KV cache — so it needs the retry pass to exist before it can be sized against it. Its own release. |
 | **Partial JSON recovery** | Grammar-constrained truncation is a valid JSON prefix, so 12 of 15 lesions is recoverable. Widest correctness surface on the list, and A1+A3 may make it unnecessary. Last, or never. |
-| **`_ASSUMED_LIST_ITEMS` / the 512 floor** | Real, but they size the *answer*, and the failures are dominated by *reasoning*. Fixing them now would move a number nobody has measured yet. A2 gives the measurement. |
-| **GGUF tokenizer** | **Closed, not deferred.** Calibration on Dutch reported `1.08x` — 8% over on the language expected to drift worst. The estimate is sound. The only remaining argument is air-gapped deployment. |
+| **`_ASSUMED_LIST_ITEMS` / the 512 floor** | Real, but they size the *answer*, and the failures are dominated by *reasoning*. Fixing them now moves a number nobody has measured. A2 provides the measurement. |
+| **GGUF tokenizer** | **Closed, not deferred** — unless E0 says the vocabulary cannot be fetched on the target machines, in which case it returns as the air-gapped fix. Calibration on Dutch reported 1.08x, so the estimate itself is sound. |

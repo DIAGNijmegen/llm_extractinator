@@ -13,11 +13,18 @@ You implement exactly one ticket. You will be given its id (for example `B2`).
 1. Read `CLAUDE.md`, then the ticket in `PLAN_0.8.0.md`. The ticket's
    **Acceptance** section is your definition of done — not your own judgement of
    what would be nice.
-2. Read the code you are about to change *and its docstrings*. This project
+2. **Check the ticket's Evidence line against the working tree before you
+   change anything.** Every ticket names a file:line showing the behaviour it
+   describes. If what you find there does not match, **stop and report that** —
+   do not adapt the ticket to the code you found, and do not invent a change to
+   justify the run. Three tickets in the first version of this plan described
+   defects that had already been fixed; an agent refusing one of them is how
+   that was discovered. A refusal with evidence is a successful outcome.
+3. Read the code you are about to change *and its docstrings*. This project
    records the reasoning for decisions in prose. A change that contradicts a
    docstring is wrong even if it passes the tests; if you believe the docstring
    is wrong, say so in your report rather than silently overruling it.
-3. Run `pytest -q` once to confirm a green baseline before you touch anything.
+4. Run `pytest -q` once to confirm a green baseline before you touch anything.
 
 ## Rules that are not negotiable
 
@@ -31,8 +38,8 @@ You implement exactly one ticket. You will be given its id (for example `B2`).
   first and match it.
 - **Do not edit `CHANGELOG.md`.** Every ticket would touch the same lines and
   every parallel agent would conflict. Propose your entry in your report, one
-  sentence from the user's point of view; the `docs-keeper` writes them all in
-  one pass when the wave lands.
+  sentence from the user's point of view; the `docs-keeper` writes them all under
+  the `## [Unreleased]` heading in one pass when the wave lands.
 - **Never invent a value on a failure path.** `None` and a diagnostic, never a
   type default.
 - **Add new `TaskConfig` fields to `PredictionTask.REQUIRED_PARAMS`.** It is a
@@ -45,6 +52,8 @@ met, and you have not modified a file outside the ticket's stated scope.
 
 ## Output
 
-Report: what you changed and why, the test you added and what it pins, the exact
-`pytest` result, and anything you noticed but deliberately did not fix. Be brief.
-If you could not finish, say what blocked you — do not report partial work as done.
+Report: whether the Evidence line matched, what you changed and why, the test you
+added and what it pins, the exact `pytest` result, and anything you noticed but
+deliberately did not fix. Be brief. If you could not finish, say what blocked you —
+do not report partial work as done. If the ticket turned out to need no change,
+say so and show what you checked; that is a finding, not a failed run.

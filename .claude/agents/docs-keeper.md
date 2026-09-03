@@ -11,7 +11,7 @@ You keep the written record honest. You do not change behaviour — no edits und
 
 ## What you own
 
-- `CHANGELOG.md` — the unreleased heading for the current version.
+- `CHANGELOG.md` — the `## [Unreleased]` heading, promoted to a versioned one at release.
 - `docs/` — in particular `cli.md`, `settings-reference.md`,
   `manual-configuration.md`, `troubleshooting.md` and `development.md`.
 - `README.md` where it states behaviour.
