@@ -94,6 +94,38 @@ reasoning is on. Follow `None = auto`; do **not** default to `"medium"`.
 - Present in `PredictionTask.REQUIRED_PARAMS`.
 - `pytest -q` green.
 
+**Scope decision: global flag only. Not per-model, not per-task — for now.**
+
+*Per model, as a lookup table:* **no, and not later either.** There is no ground
+truth for "qwen3 wants low, gpt-oss wants medium", it goes stale with every model
+release, and it repeats the hardcoded-hardware mistake the model-sizing notes
+already warn about. The one real per-model difference is a **capability** one —
+gpt-oss accepts only levels and ignores booleans — and that is answered by asking
+`model_capabilities()`, which A1 already does. Ask the server, never a table.
+
+*Per task, as a `Reasoning_Effort` field in the task file:* **appealing, deferred,
+with a stated trigger.** It is the motivating case — a classification task and a
+per-lesion measurement task want different amounts of thinking, and the task file
+is where task-shaped configuration belongs. Held back because:
+
+1. The task file is a **public format**. Adding a field is easy; removing one
+   after users have written task files is a breaking change. That needs E1, not
+   plausibility.
+2. It would create the **first setting that two places can supply**. Today the
+   task file's vocabulary and the CLI's are disjoint. Overlap means a precedence
+   rule, a resolver and tests for it — a small instance of the exact bug class
+   `budget.py` exists to prevent, and worth paying for only once the knob is
+   known to earn it.
+3. **A3 likely subsumes it.** The retry pass already adapts effort per row from
+   *observed failure* rather than *declared intent*: a task that does not need
+   constraint never triggers it, one that does gets it with nothing configured.
+   That is the same `None = auto` shape as the rest of the package, where auto
+   means derived rather than guessed.
+
+**Trigger to revisit:** E1 shows the right *default* level differs by task in a
+way the A3 retry cannot reach. Then the task-file field is obviously right rather
+than speculatively right, and it arrives with a precedence rule and a test.
+
 ### A2 — capture what the model actually did
 
 **Evidence:** `predictor.py:204-212` is
