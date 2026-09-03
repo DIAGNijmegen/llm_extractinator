@@ -3,6 +3,7 @@ name: ticket-implementer
 description: Implements one fully specified ticket from PLAN_0.8.0.md end to end — source change, tests, changelog entry. Use for Lane B and Lane C tickets, which are independent and can run in parallel. Do NOT use for Lane A, which is sequential and must not be split.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+maxTurns: 60
 color: blue
 ---
 
@@ -44,6 +45,11 @@ You implement exactly one ticket. You will be given its id (for example `B2`).
   type default.
 - **Add new `TaskConfig` fields to `PredictionTask.REQUIRED_PARAMS`.** It is a
   silent-drop allowlist; forgetting is not caught by anything.
+- **Do not commit, stage, branch or push.** Leave your work in the working tree.
+  The session that dispatched you reviews the diff and commits it, one commit per
+  ticket, so that a ticket which turns out to be wrong is one revert rather than
+  an archaeology exercise. `git status` and `git diff` to inspect your own work
+  are fine.
 
 ## Definition of done
 

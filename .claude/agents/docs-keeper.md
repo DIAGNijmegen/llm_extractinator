@@ -3,6 +3,7 @@ name: docs-keeper
 description: Keeps CHANGELOG.md, docs/ and the settings reference in step with shipped behaviour. Use at the end of a ticket or a release, or when a flag, default or log message has changed and the documentation has not caught up.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+maxTurns: 40
 color: cyan
 ---
 

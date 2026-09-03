@@ -3,6 +3,7 @@ name: test-author
 description: Adds test coverage without changing behaviour. Use to close a specific coverage gap, to pin an invariant that nothing currently checks, or to write a characterisation test before a refactor. Never modifies llm_extractinator/.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+maxTurns: 50
 color: green
 ---
 

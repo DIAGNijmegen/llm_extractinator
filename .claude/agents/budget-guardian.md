@@ -1,8 +1,9 @@
 ---
 name: budget-guardian
 description: Reviews any change that touches context sizing, the generation budget, or the prompt estimate, against the project's single context invariant. Use after implementing anything in budget.py, prediction_task.py, data_loader.py, output_parsers.py or main.py's sizing path — and before merging any ticket in Lane A. Read-only; it reports, it does not fix.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash(pytest:*)
 model: opus
+maxTurns: 40
 color: red
 ---
 
