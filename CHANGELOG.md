@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-07
+
 - **Fixed:** nested schemas were described to the model only one level deep. A three-level schema such as `OutputParser -> Specimen -> Cassette` reached the prompt as `cassettes (list of objects)` and nothing more — no Cassette field, no description, no allowed value — so the model was held by the grammar to values it had never been shown. Every level is now written out. Prompts for deeply nested schemas get longer; the context budget already counts the field guide, so the window grows with them. A model that refers to itself (`children: list[Node]`), directly or through another model, is described once and then referred back to. `list[Optional[Model]]` is now followed as well
 - **Fixed:** `Enum` fields (`Enum`, `StrEnum`, `IntEnum`) were not listed as allowed values. The grammar enforced them, but the prompt described them only as "value", and the output-budget estimate costed them as an unknown type. They now read `one of: ...` with the enum's *values* — what the JSON accepts — exactly like a `Literal`, and are costed like one
 - **Fixed:** a schema that refers to itself crashed output-budget sizing with `RecursionError` when `--num_predict` was not set
