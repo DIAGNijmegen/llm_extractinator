@@ -29,19 +29,60 @@ logger = logging.getLogger(__name__)
 # short enough that a run with thousands of failures stays readable.
 MAX_CAPTURED_CHARS = 4000
 
+# How a clipped string is split. Both ends are kept because both ends carry the
+# cause: LangChain's parser puts the completion first and the reason last
+# ("Failed to parse X from completion {...}. Got: <the error>"), and a raw
+# completion shows that it was cut off only at its end. Keeping just the head
+# discarded exactly the sentence that explained the failure.
+_HEAD_CHARS = 1500
+_TAIL_CHARS = MAX_CAPTURED_CHARS - _HEAD_CHARS
+
 # Columns a failed row adds. Successful rows carry them as None so every row in
 # an output file has the same keys.
 DIAGNOSTIC_FIELDS = ("error_type", "error_message", "raw_output")
 
 
 def _clip(text: Optional[Any]) -> Optional[str]:
-    """Bound a captured string, saying so rather than silently shortening it."""
+    """Bound a captured string, saying so rather than silently shortening it.
+
+    Keeps the head and the tail with a marker between them, not just the head.
+    """
     if text is None:
         return None
     text = str(text)
     if len(text) <= MAX_CAPTURED_CHARS:
         return text
-    return f"{text[:MAX_CAPTURED_CHARS]}… [truncated, {len(text)} chars total]"
+    return (
+        f"{text[:_HEAD_CHARS]}… [truncated, {len(text)} chars total] "
+        f"…{text[-_TAIL_CHARS:]}"
+    )
+
+
+def _llm_output(error: BaseException) -> Optional[str]:
+    """The completion carried by the exception or its cause, unclipped."""
+    output = getattr(error, "llm_output", None)
+    if output is None and error.__cause__ is not None:
+        output = getattr(error.__cause__, "llm_output", None)
+    return None if output is None else str(output)
+
+
+def _error_message(error: BaseException) -> str:
+    """The exception's message, without a second copy of the completion.
+
+    ``PydanticOutputParser`` embeds the whole completion in its message, and
+    ``raw_output`` already holds it. Storing it twice is what pushed the reason
+    for the failure past the clip limit, so the message refers to it instead.
+    A completion shorter than the reference is left alone: replacing a short
+    string could hit an unrelated occurrence of it in the message, and keeping
+    it costs nothing.
+    """
+    message = str(error)
+    output = _llm_output(error)
+    if output:
+        reference = f"<completion: {len(output)} chars, see raw_output>"
+        if len(output) > len(reference) and output in message:
+            message = message.replace(output, reference, 1)
+    return message
 
 
 def raw_model_output(error: BaseException) -> Optional[str]:
@@ -53,10 +94,7 @@ def raw_model_output(error: BaseException) -> Optional[str]:
     said anything — a transport error, for instance — which is itself
     informative: no output means the request never completed.
     """
-    output = getattr(error, "llm_output", None)
-    if output is None and error.__cause__ is not None:
-        output = getattr(error.__cause__, "llm_output", None)
-    return _clip(output)
+    return _clip(_llm_output(error))
 
 
 def handle_prediction_failure(
@@ -71,7 +109,7 @@ def handle_prediction_failure(
     row: Dict[str, Any] = {name: None for name in parser_model.model_fields}
     row["status"] = "failure"
     row["error_type"] = type(error).__name__
-    row["error_message"] = _clip(error)
+    row["error_message"] = _clip(_error_message(error))
     row["raw_output"] = raw_model_output(error)
 
     logger.debug("Prediction failed (%s): %s", row["error_type"], row["error_message"])

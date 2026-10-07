@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-07
+
+- **Fixed:** nested schemas were described to the model only one level deep. A three-level schema such as `OutputParser -> Specimen -> Cassette` reached the prompt as `cassettes (list of objects)` and nothing more — no Cassette field, no description, no allowed value — so the model was held by the grammar to values it had never been shown. Every level is now written out. Prompts for deeply nested schemas get longer; the context budget already counts the field guide, so the window grows with them. A model that refers to itself (`children: list[Node]`), directly or through another model, is described once and then referred back to. `list[Optional[Model]]` is now followed as well
+- **Fixed:** `Enum` fields (`Enum`, `StrEnum`, `IntEnum`) were not listed as allowed values. The grammar enforced them, but the prompt described them only as "value", and the output-budget estimate costed them as an unknown type. They now read `one of: ...` with the enum's *values* — what the JSON accepts — exactly like a `Literal`, and are costed like one
+- **Fixed:** a schema that refers to itself crashed output-budget sizing with `RecursionError` when `--num_predict` was not set
+- **Fixed:** `error_message` on a failed row lost the reason for the failure. LangChain's parser puts the whole completion in the message and the cause at the end (`... Got: <validation error>`), and only the first 4,000 characters were kept — so on a long completion the one sentence that explained the failure was the part thrown away. The completion in the message is now replaced by `<completion: N chars, see raw_output>`, since `raw_output` already holds it, and anything still too long keeps its beginning *and* its end, for `raw_output` too
+- **Fixed:** the error when the measured prompt does not fit the window gave the wrong advice. It told the user to "Raise the model's native context length", which no flag can do, and blamed tokenizer drift even though it is raised after the model's own count. It now says how much of the window the answer reservation took (separating out the reasoning allowance on a thinking model), and the advice matches what blocked the window: a model with a larger native context, `--max_context_cap` if the GPU allows, or `--max_context_len`; and always lower `--num_predict`, fewer `--num_examples` or shorter schema descriptions
+
 ## [0.7.0] - 2026-08-31
 
 ### Upgrading from 0.6.x

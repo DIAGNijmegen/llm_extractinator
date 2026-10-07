@@ -255,3 +255,67 @@ def test_an_unverifiable_estimate_does_not_stop_the_run(offline_run):
         measured_prompt_tokens=None,
     )
     assert len(load_predictions(out, "unverified", "Task999_example")) == 5
+
+
+# ── the refusal names what actually blocked it ────────────────────
+
+
+def _refusal(record_model_kwargs, **kwargs) -> str:
+    with pytest.raises(ContextBudgetError) as raised:
+        record_model_kwargs(
+            responses=[PRODUCTS_RESPONSE], task_id=998, max_context_len="max",
+            **kwargs,
+        )
+    return str(raised.value)
+
+
+def test_a_native_limit_is_not_something_to_raise(record_model_kwargs):
+    """"Raise the model's native context length" was advice nobody can follow."""
+    message = _refusal(
+        record_model_kwargs, run_name="native", num_predict=64,
+        native_context=300, measured_prompt_tokens=400,
+    )
+
+    assert "Raise the model's native context length" not in message
+    assert "use a model with a larger native context" in message
+    assert "64 are reserved for the answer" in message
+    assert "--num_predict" in message
+
+
+def test_a_cap_limited_refusal_names_the_cap(record_model_kwargs):
+    message = _refusal(
+        record_model_kwargs, run_name="cap", num_predict=64,
+        max_context_cap=300, measured_prompt_tokens=400,
+    )
+
+    assert "--max_context_cap holds the window at 300" in message
+    assert "raise it if your GPU allows" in message
+
+
+def test_the_refusal_separates_the_reasoning_allowance(record_model_kwargs):
+    """On a thinking model the allowance is most of the reservation.
+
+    The colleague's case: 11,664 of 16,384 went to the answer, and the message
+    never said so.
+    """
+    from llm_extractinator.budget import REASONING_ALLOWANCE
+
+    message = _refusal(
+        record_model_kwargs, run_name="thinking", thinking=True, num_predict=64,
+        native_context=REASONING_ALLOWANCE + 1000, measured_prompt_tokens=2000,
+    )
+
+    assert f"{REASONING_ALLOWANCE + 64} are reserved for the answer" in message
+    assert "64 for the JSON answer" in message
+    assert f"plus {REASONING_ALLOWANCE} for the model's reasoning" in message
+
+
+def test_the_refusal_no_longer_blames_tokenizer_drift(record_model_kwargs):
+    """It is raised after the model's own count, so drift cannot be the cause."""
+    message = _refusal(
+        record_model_kwargs, run_name="drift", num_predict=64,
+        max_context_cap=300, measured_prompt_tokens=400,
+    )
+
+    assert "OpenAI" not in message
+    assert "drifts" not in message

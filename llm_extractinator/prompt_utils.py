@@ -1,12 +1,14 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Type, Union, get_args, get_origin
+from typing import Any, Dict, List, Tuple, Type, Union, get_args, get_origin
 
 from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
 )
 from pydantic import BaseModel
+
+from llm_extractinator.output_parsers import allowed_values
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +35,6 @@ _PLURAL_PHRASES = {
     "true or false": "true/false values",
 }
 
-#: How far to recurse into nested models. One level covers the realistic case —
-#: a list of objects — without letting a deeply nested schema quietly triple the
-#: size of every prompt.
-_MAX_NESTING = 1
-
-
 def _unwrap_optional(annotation):
     """Split ``Optional[X]`` into ``(X, True)``; anything else into ``(it, False)``."""
     if get_origin(annotation) is Union:
@@ -53,8 +49,9 @@ def _type_phrase(annotation) -> str:
     annotation, _ = _unwrap_optional(annotation)
     origin = get_origin(annotation)
 
-    if origin is Literal:
-        return "one of: " + ", ".join(str(value) for value in get_args(annotation))
+    values = allowed_values(annotation)
+    if values is not None:
+        return "one of: " + ", ".join(str(value) for value in values)
     if origin in (list, List):
         args = get_args(annotation)
         if not args:
@@ -72,19 +69,35 @@ def _type_phrase(annotation) -> str:
     return "value"
 
 
+def _is_model(annotation) -> bool:
+    return isinstance(annotation, type) and issubclass(annotation, BaseModel)
+
+
 def _nested_model(annotation):
-    """The model inside ``X`` or ``list[X]``, if there is one."""
+    """The model inside ``X``, ``list[X]`` or ``list[Optional[X]]``, if any."""
     annotation, _ = _unwrap_optional(annotation)
-    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+    if _is_model(annotation):
         return annotation
     if get_origin(annotation) in (list, List):
         args = get_args(annotation)
-        if args and isinstance(args[0], type) and issubclass(args[0], BaseModel):
-            return args[0]
+        if args:
+            inner, _ = _unwrap_optional(args[0])
+            if _is_model(inner):
+                return inner
     return None
 
 
-def describe_fields(model: Type[BaseModel], _depth: int = 0) -> str:
+#: How the guide names a model it has already started describing. The root has
+#: no field of its own, so it gets a phrase rather than a name. Class names are
+#: deliberately not used: they never appear in the guide, so "same shape as
+#: Node" would point the model at something it was never shown.
+_ROOT_LABEL = "the top-level object"
+
+
+def describe_fields(
+    model: Type[BaseModel],
+    _path: Tuple[Tuple[type, str], ...] = (),
+) -> str:
     """The output schema written out for the model to read.
 
     The schema itself reaches Ollama as the ``format`` parameter, which compiles
@@ -94,8 +107,26 @@ def describe_fields(model: Type[BaseModel], _depth: int = 0) -> str:
     arrived at the model as the bare key ``diagnosis``, and everything the task
     author wrote to explain it was silently dropped. Putting it in the prompt is
     the only route by which the model gets to read it.
+
+    Nested models are described at every depth. This used to stop after one
+    level, on the theory that depth would multiply the prompt — but the guide
+    describes each *model* once, not each list item, so it grows with the
+    number of fields, not with nesting. What the cut-off actually did was hide
+    the innermost fields, the ones carrying the most specific instructions:
+    a ``Specimen -> Cassette`` schema reached the model as ``cassettes (list
+    of objects)`` and nothing more, enum values included.
+
+    The one real hazard is a schema that refers to itself, directly
+    (``Node.children: list[Node]``) or through another model. ``_path`` holds
+    the models on the way down from the root, each with the label it was
+    introduced under; a model already on it is referred back to instead of
+    described again. It is the *path*, not every model seen so far, so one
+    model used by two sibling fields is still written out under both.
     """
-    indent = "    " * _depth
+    if not _path:
+        _path = ((model, _ROOT_LABEL),)
+    indent = "    " * (len(_path) - 1)
+    on_path = {seen: label for seen, label in _path}
     lines = []
     for name, field in model.model_fields.items():
         annotation, optional = _unwrap_optional(field.annotation)
@@ -106,14 +137,23 @@ def describe_fields(model: Type[BaseModel], _depth: int = 0) -> str:
         if optional:
             bits.append("optional")
 
+        nested = _nested_model(annotation)
+        recurses = nested is not None and nested in on_path
+        if recurses:
+            label = on_path[nested]
+            bits.append(
+                f"same shape as {label}"
+                if label == _ROOT_LABEL
+                else f"same shape as {label} above"
+            )
+
         line = f"{indent}- {name} ({'; '.join(bits)})"
         if field.description:
             line += f": {field.description}"
         lines.append(line)
 
-        nested = _nested_model(annotation)
-        if nested is not None and _depth < _MAX_NESTING:
-            lines.append(describe_fields(nested, _depth + 1))
+        if nested is not None and not recurses:
+            lines.append(describe_fields(nested, _path + ((nested, name),)))
 
     return "\n".join(lines)
 

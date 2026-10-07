@@ -6,7 +6,11 @@ from typing import Dict, List, Optional
 import pandas as pd
 from langchain_ollama import ChatOllama
 
-from llm_extractinator.budget import ContextBudgetError, resolve_budget
+from llm_extractinator.budget import (
+    REASONING_ALLOWANCE,
+    ContextBudgetError,
+    resolve_budget,
+)
 from llm_extractinator.ollama_server import (
     ModelInfo,
     measure_prompt_tokens,
@@ -360,16 +364,8 @@ class PredictionTask:
         )
 
         if measured > corrected.prompt_room:
-            blocker = corrected.limited_by or "--max_context_len"
             raise ContextBudgetError(
-                f"The prompt does not fit the window reserved for it and the "
-                f"window cannot grow: the model counts {measured} tokens, "
-                f"{shortfall} more than the {reserved} reserved, and "
-                f"{blocker} holds num_ctx at {corrected.num_ctx} which leaves "
-                f"only {corrected.prompt_room}. The token estimate uses OpenAI's "
-                f"vocabulary against a different model and cannot see the chat "
-                f"template, so it drifts — further on non-English text. Raise "
-                f"{blocker}, lower --num_predict, or use fewer --num_examples."
+                self._refusal_message(measured, reserved, shortfall, corrected)
             )
 
         logger.warning(
@@ -386,6 +382,59 @@ class PredictionTask:
         # replacing the reference is enough — but it has to be replaced, or the
         # run continues against the model built with the too-small window.
         self.predictor.model = self.model
+
+    def _answer_reservation(self) -> str:
+        """Where ``num_predict`` came from, in words.
+
+        By the time it reaches this object it is a single number: the runner
+        has already chosen between ``--num_predict`` and the schema estimate
+        and added the reasoning allowance. The allowance is the part worth
+        separating out, because on a thinking model it is usually most of it.
+        """
+        source = "from --num_predict, or estimated from the schema when it is unset"
+        if self._is_thinking and self.num_predict > REASONING_ALLOWANCE:
+            return (
+                f"{self.num_predict - REASONING_ALLOWANCE} for the JSON answer, "
+                f"{source}, plus {REASONING_ALLOWANCE} for the model's reasoning"
+            )
+        return source
+
+    def _refusal_message(
+        self, measured: int, reserved: int, shortfall: int, corrected
+    ) -> str:
+        """Why the window cannot hold the prompt, and what would let it.
+
+        The advice has to match what actually blocked the window. "Raise the
+        model's native context length" is not something a user can do, and
+        tokenizer drift is irrelevant here: ``measured`` is the model's own
+        count. What usually is relevant, and was never said, is how much of
+        the window the answer reservation took.
+        """
+        num_ctx = corrected.num_ctx
+        blocker = corrected.limited_by
+        if blocker == "the model's native context length":
+            ceiling = (
+                f"{num_ctx} is the model's native context length, so the window "
+                f"cannot grow; use a model with a larger native context, or"
+            )
+        elif blocker == "--max_context_cap":
+            ceiling = (
+                f"--max_context_cap holds the window at {num_ctx}; raise it if "
+                f"your GPU allows, or"
+            )
+        else:
+            ceiling = (
+                f"--max_context_len holds the window at {num_ctx}; raise it, or"
+            )
+        return (
+            f"The prompt does not fit the window reserved for it: the model "
+            f"counts {measured} tokens, {shortfall} more than the {reserved} "
+            f"reserved. Of the {num_ctx}-token window, {self.num_predict} are "
+            f"reserved for the answer ({self._answer_reservation()}), which "
+            f"leaves {corrected.prompt_room} for the prompt. {ceiling} make "
+            f"room: lower --num_predict, use fewer --num_examples, or shorten "
+            f"the schema descriptions."
+        )
 
     def _run_single_prediction(self, run_idx: int) -> Path:
         output_path = self.output_path_base / run_folder_name(
