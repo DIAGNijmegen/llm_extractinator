@@ -9,8 +9,11 @@ reasoning flags.
 """
 
 import json
+from enum import Enum
+from typing import List, Literal
 
 import pytest
+from pydantic import BaseModel
 
 from llm_extractinator.output_parsers import (
     estimate_output_tokens,
@@ -61,6 +64,40 @@ def test_a_list_of_objects_accounts_for_several_items():
         )
     )
     assert estimate_output_tokens(model) > one_object
+
+
+def test_an_enum_field_costs_the_same_as_the_equivalent_literal():
+    """Both compile to the same fixed set in the grammar.
+
+    An Enum used to fall through to "unknown" and cost twice as much as the
+    Literal with the same values.
+    """
+
+    class Tissue(str, Enum):
+        LUNG = "lung"
+        BRONCHUS = "bronchus"
+
+    class WithEnum(BaseModel):
+        tissue: Tissue
+        many: List[Tissue]
+
+    class WithLiteral(BaseModel):
+        tissue: Literal["lung", "bronchus"]
+        many: List[Literal["lung", "bronchus"]]
+
+    assert estimate_output_tokens(WithEnum) == estimate_output_tokens(WithLiteral)
+
+
+def test_a_self_referencing_schema_has_a_finite_estimate():
+    """``Node.children: list[Node]`` used to recurse until RecursionError."""
+
+    class Node(BaseModel):
+        name: str
+        children: List["Node"] = []
+
+    Node.model_rebuild()
+
+    assert 0 < estimate_output_tokens(Node) < 10_000
 
 
 # ── the resolver ──────────────────────────────────────────────────

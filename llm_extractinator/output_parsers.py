@@ -1,8 +1,20 @@
 import importlib.util
 import logging
 import sys
+from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from pydantic import BaseModel, Field, create_model
 from pydantic.types import StrictBool
@@ -206,27 +218,58 @@ _ASSUMED_LIST_ITEMS = 5
 _KEY_TOKENS = 4
 
 
-def _value_tokens(annotation) -> int:
-    """Cost of one value of this annotation, following nested models."""
-    from typing import Literal, Union, get_args, get_origin
+def allowed_values(annotation) -> Optional[tuple]:
+    """The values a field is constrained to, or ``None`` if it is open.
 
+    A ``Literal`` and an ``Enum`` subclass are the same thing to the grammar —
+    Ollama compiles both into a fixed set of permitted values — so they have to
+    be the same thing everywhere else too. Before this helper existed only
+    ``Literal`` was recognised: an ``Enum`` field was enforced by the grammar
+    yet never listed in the prompt, so the model was held to a list it had not
+    been shown, and the output estimate costed it as an unknown value.
+
+    For an ``Enum`` these are the member *values*, not their names, because the
+    values are what the JSON schema — and so the grammar — accepts.
+
+    Both the field guide and the output estimate call this, so they cannot
+    disagree about what counts as a fixed set again.
+    """
+    if get_origin(annotation) is Literal:
+        return get_args(annotation)
+    if isinstance(annotation, type) and issubclass(annotation, Enum):
+        return tuple(member.value for member in annotation)
+    return None
+
+
+def _value_tokens(annotation, _path: Tuple[type, ...] = ()) -> int:
+    """Cost of one value of this annotation, following nested models.
+
+    ``_path`` holds the models already being costed on the way down, so a
+    self-referencing schema (``Node.children: list[Node]``) terminates instead
+    of recursing until Python gives up. A model met again on its own path is
+    costed as one value of unknown shape: a tree's depth is not in the schema,
+    so any fixed number here is a guess, and this one is the cheapest that does
+    not pretend otherwise.
+    """
     if get_origin(annotation) is Union:
         present = [arg for arg in get_args(annotation) if arg is not type(None)]
         if present:
             annotation = present[0]
 
-    origin = get_origin(annotation)
-    if origin is Literal:
+    if allowed_values(annotation) is not None:
         return _VALUE_TOKENS["enum"]
-    if origin in (list, List):
+    if get_origin(annotation) in (list, List):
         args = get_args(annotation)
-        inner = _value_tokens(args[0]) if args else _VALUE_TOKENS["unknown"]
+        inner = _value_tokens(args[0], _path) if args else _VALUE_TOKENS["unknown"]
         return _ASSUMED_LIST_ITEMS * inner
 
     if isinstance(annotation, type):
         if issubclass(annotation, BaseModel):
+            if annotation in _path:
+                return _VALUE_TOKENS["unknown"]
+            path = _path + (annotation,)
             return sum(
-                _KEY_TOKENS + _value_tokens(field.annotation)
+                _KEY_TOKENS + _value_tokens(field.annotation, path)
                 for field in annotation.model_fields.values()
             )
         if annotation is bool:
@@ -252,7 +295,7 @@ def estimate_output_tokens(model: Type[BaseModel]) -> int:
     ``TaskRunner._output_budget`` so it applies whatever the schema looks like.
     """
     body = sum(
-        _KEY_TOKENS + _value_tokens(field.annotation)
+        _KEY_TOKENS + _value_tokens(field.annotation, (model,))
         for field in model.model_fields.values()
     )
     return 2 * body

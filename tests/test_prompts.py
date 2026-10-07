@@ -9,8 +9,13 @@ structure and discards the prose.
 """
 
 import json
+import sys
+from enum import Enum, IntEnum
+from typing import List, Literal, Optional
 
+import pytest
 from langchain_core.example_selectors.base import BaseExampleSelector
+from pydantic import BaseModel
 from pydantic import Field as PydanticField
 
 from llm_extractinator.output_parsers import load_parser, resolve_parser_model
@@ -95,7 +100,7 @@ def test_types_are_described_in_words_not_python():
     assert "typing." not in guide
 
 
-def test_nested_objects_are_described_one_level_deep():
+def test_nested_objects_are_described():
     """Task 998's schema is a list of objects; naming only the outer field would
     leave the model to guess what each object contains."""
     task = json.loads((TASK_DIR / "Task998_example2.json").read_text("utf-8"))
@@ -104,6 +109,220 @@ def test_nested_objects_are_described_one_level_deep():
     assert "products (list of objects)" in guide
     assert "- name (text)" in guide
     assert "- price (number)" in guide
+
+
+# ── nested schemas, at every depth ────────────────────────────────
+
+
+class _Cassette(BaseModel):
+    tissue_type: Literal["LUNG", "BRONCHUS", "LYMPH NODE", "OTHER"] = PydanticField(
+        description="Tissue in this cassette, as named in its own block"
+    )
+    evidence: str = PydanticField(description="The sentence the tissue type is read from")
+
+
+class _Specimen(BaseModel):
+    label: str = PydanticField(description="Specimen label, e.g. A or B")
+    cassettes: List[_Cassette] = PydanticField(description="One per cassette")
+
+
+class _ThreeLevel(BaseModel):
+    """The shape of the pathology task that exposed the one-level cut-off."""
+
+    specimens: List[_Specimen] = PydanticField(description="One per specimen")
+
+
+def test_a_three_level_schema_reaches_the_model_down_to_its_leaves():
+    """The guide used to stop at ``cassettes (list of objects)``.
+
+    Every Cassette field, its description and its allowed values were cut, so
+    the only tissue types the model read were the ones in the task Description.
+    """
+    guide = describe_fields(_ThreeLevel)
+
+    assert "- specimens (list of objects): One per specimen" in guide
+    assert "    - cassettes (list of objects): One per cassette" in guide
+    assert (
+        "        - tissue_type (one of: LUNG, BRONCHUS, LYMPH NODE, OTHER): "
+        "Tissue in this cassette, as named in its own block"
+    ) in guide
+    assert (
+        "        - evidence (text): The sentence the tissue type is read from"
+    ) in guide
+
+
+class _Node(BaseModel):
+    name: str
+    children: List["_Node"] = PydanticField(default_factory=list)
+
+
+_Node.model_rebuild()
+
+
+def test_a_self_referencing_model_terminates_and_says_so():
+    guide = describe_fields(_Node)
+
+    assert guide.splitlines() == [
+        "- name (text)",
+        "- children (list of objects; same shape as the top-level object)",
+    ]
+
+
+class _Holder(BaseModel):
+    node: _Node
+
+
+def test_a_recursive_model_below_the_root_points_back_at_its_own_field():
+    guide = describe_fields(_Holder)
+
+    assert "    - children (list of objects; same shape as node above)" in guide
+
+
+class _A(BaseModel):
+    a_value: int
+    b: Optional["_B"] = None
+
+
+class _B(BaseModel):
+    b_value: str
+    a: Optional[_A] = None
+
+
+_A.model_rebuild()
+
+
+def test_a_mutually_referencing_pair_terminates():
+    guide = describe_fields(_A)
+
+    assert guide.splitlines() == [
+        "- a_value (whole number)",
+        "- b (object; optional)",
+        "    - b_value (text)",
+        "    - a (object; optional; same shape as the top-level object)",
+    ]
+
+
+class _Pair(BaseModel):
+    left: _Cassette
+    right: _Cassette
+
+
+def test_one_model_in_two_sibling_fields_is_described_under_both():
+    """The guard is the current path, not every model seen so far."""
+    guide = describe_fields(_Pair)
+
+    assert guide.count("tissue_type (one of:") == 2
+    assert "same shape as" not in guide
+
+
+class _MaybeItems(BaseModel):
+    items: List[Optional[_Cassette]]
+
+
+def test_a_list_of_optional_models_is_followed():
+    guide = describe_fields(_MaybeItems)
+
+    assert "- items (list of objects)" in guide
+    assert "    - evidence (text)" in guide
+
+
+def test_a_level_three_description_is_counted_in_the_scaffolding():
+    """The guide is in the scaffolding the budget counts, at every depth."""
+    from llm_extractinator.data_loader import DataLoader
+
+    class Bare(BaseModel):
+        tissue_type: str
+
+    class Described(BaseModel):
+        tissue_type: str = PydanticField(
+            description="Tissue in this cassette, as named in its own block "
+            "of the report rather than in the summary"
+        )
+
+    def three_levels(leaf):
+        class Middle(BaseModel):
+            cassettes: List[leaf]
+
+        class Top(BaseModel):
+            specimens: List[Middle]
+
+        return Top
+
+    counter = DataLoader()
+    bare, described = (
+        counter.count_tokens(
+            prompt_scaffolding_text(description="d", fields=describe_fields(three_levels(leaf)))
+        )
+        for leaf in (Bare, Described)
+    )
+
+    assert described > bare
+
+
+# ── Enum classes are allowed values ───────────────────────────────
+
+
+class _Tissue(str, Enum):
+    LUNG = "lung"
+    BRONCHUS = "bronchus"
+
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+
+    class _TissueStrEnum(StrEnum):
+        LUNG = "lung"
+        BRONCHUS = "bronchus"
+
+else:  # pragma: no cover - StrEnum is 3.11+, the package supports 3.10
+    _TissueStrEnum = None
+
+
+class _Laterality(Enum):
+    LEFT = "left"
+    RIGHT = "right"
+
+
+class _Grade(IntEnum):
+    LOW = 1
+    HIGH = 3
+
+
+@pytest.mark.parametrize(
+    "enum_cls, phrase",
+    [
+        (_Tissue, "one of: lung, bronchus"),
+        pytest.param(
+            _TissueStrEnum,
+            "one of: lung, bronchus",
+            marks=pytest.mark.skipif(_TissueStrEnum is None, reason="StrEnum is 3.11+"),
+        ),
+        (_Laterality, "one of: left, right"),
+        (_Grade, "one of: 1, 3"),
+    ],
+)
+def test_an_enum_field_lists_its_values(enum_cls, phrase):
+    """The grammar enforces an Enum's values; the model must be shown them.
+
+    Values, not member names: ``LEFT`` is what the class calls it, ``left`` is
+    what the grammar accepts.
+    """
+
+    class M(BaseModel):
+        x: enum_cls
+
+    assert describe_fields(M) == f"- x ({phrase})"
+
+
+def test_a_list_of_enums_and_an_optional_enum_read_like_literals():
+    class M(BaseModel):
+        many: List[_Tissue]
+        maybe: Optional[_Tissue] = None
+
+    guide = describe_fields(M)
+
+    assert "- many (list, each one of: lung, bronchus)" in guide
+    assert "- maybe (one of: lung, bronchus; optional)" in guide
 
 
 # ── what the prompt no longer says ────────────────────────────────
